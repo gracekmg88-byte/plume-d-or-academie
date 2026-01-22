@@ -14,4 +14,4 @@ User-agent: *
 Allow: /
 Disallow: /admin
 
-Sitemap: https://plumedorkmg.lovable.app/sitemap.xml
+Sitemap: https://plume-d-or-academie.lovable.app/sitemap.xml
