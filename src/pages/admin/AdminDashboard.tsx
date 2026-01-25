@@ -2,7 +2,8 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { 
   Feather, LogOut, Plus, Book, FileText, GraduationCap, Newspaper, 
-  Eye, LayoutDashboard, Settings, Trash2, Edit, ToggleLeft, ToggleRight
+  Eye, LayoutDashboard, Settings, Trash2, Edit, ToggleLeft, ToggleRight,
+  MessageSquare, Mail
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -166,6 +167,36 @@ export default function AdminDashboard() {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Quick Links */}
+        <div className="grid sm:grid-cols-2 gap-4 mb-8">
+          <Link to="/admin/messages" className="block">
+            <div className="bg-card rounded-xl border border-border p-6 hover:shadow-elegant transition-all">
+              <div className="flex items-center gap-4">
+                <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <MessageSquare className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <div className="font-semibold text-foreground">Messages de contact</div>
+                  <div className="text-sm text-muted-foreground">Voir les demandes</div>
+                </div>
+              </div>
+            </div>
+          </Link>
+          <Link to="/admin/settings" className="block">
+            <div className="bg-card rounded-xl border border-border p-6 hover:shadow-elegant transition-all">
+              <div className="flex items-center gap-4">
+                <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center">
+                  <Settings className="h-6 w-6 text-muted-foreground" />
+                </div>
+                <div>
+                  <div className="font-semibold text-foreground">Paramètres</div>
+                  <div className="text-sm text-muted-foreground">Changer le mot de passe</div>
+                </div>
+              </div>
+            </div>
+          </Link>
         </div>
 
         {/* Actions */}

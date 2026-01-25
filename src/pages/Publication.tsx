@@ -1,10 +1,11 @@
 import { useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Book, FileText, GraduationCap, Newspaper, Eye, Calendar, User, Download } from "lucide-react";
+import { ArrowLeft, Book, FileText, GraduationCap, Newspaper, Eye, Calendar, User } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { usePublication, useIncrementViews } from "@/hooks/usePublications";
+import { PaymentInstructions } from "@/components/publications/PaymentInstructions";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -13,9 +14,9 @@ type Category = "livre" | "memoire" | "tfc" | "article";
 
 const categoryConfig: Record<Category, { label: string; icon: typeof Book; className: string }> = {
   livre: { label: "Livre", icon: Book, className: "bg-primary/10 text-primary" },
-  memoire: { label: "Mémoire", icon: GraduationCap, className: "bg-blue-500/10 text-blue-600" },
-  tfc: { label: "TFC", icon: FileText, className: "bg-green-500/10 text-green-600" },
-  article: { label: "Article", icon: Newspaper, className: "bg-purple-500/10 text-purple-600" },
+  memoire: { label: "Mémoire", icon: GraduationCap, className: "bg-secondary/80 text-secondary-foreground" },
+  tfc: { label: "TFC", icon: FileText, className: "bg-accent text-accent-foreground" },
+  article: { label: "Article", icon: Newspaper, className: "bg-muted text-muted-foreground" },
 };
 
 export default function Publication() {
@@ -105,17 +106,11 @@ export default function Publication() {
 
               {/* Actions */}
               {publication.file_url && (
-                <div className="mt-6 space-y-3">
+                <div className="mt-6">
                   <a href={publication.file_url} target="_blank" rel="noopener noreferrer">
                     <Button className="w-full gap-2">
                       <Eye className="h-4 w-4" />
-                      Lire en ligne
-                    </Button>
-                  </a>
-                  <a href={publication.file_url} download>
-                    <Button variant="outline" className="w-full gap-2">
-                      <Download className="h-4 w-4" />
-                      Télécharger
+                      Lire en ligne (gratuit)
                     </Button>
                   </a>
                 </div>
@@ -179,6 +174,11 @@ export default function Publication() {
                 </div>
               </div>
             )}
+
+            {/* Payment Instructions for Download */}
+            <div className="mt-8">
+              <PaymentInstructions />
+            </div>
           </div>
         </div>
       </div>
