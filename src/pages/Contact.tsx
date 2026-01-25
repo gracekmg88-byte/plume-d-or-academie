@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useSubmitContactMessage } from "@/hooks/useContactMessages";
 
 const contactInfo = [
   {
@@ -35,21 +36,22 @@ export default function Contact() {
     subject: "",
     message: "",
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const submitMessage = useSubmitContactMessage();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
 
-    // Simulate form submission
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    toast.success("Message envoyé !", {
-      description: "Nous vous répondrons dans les plus brefs délais.",
-    });
-
-    setFormData({ name: "", email: "", subject: "", message: "" });
-    setIsSubmitting(false);
+    try {
+      await submitMessage.mutateAsync(formData);
+      toast.success("Message envoyé !", {
+        description: "Nous vous répondrons dans les plus brefs délais.",
+      });
+      setFormData({ name: "", email: "", subject: "", message: "" });
+    } catch (error) {
+      toast.error("Erreur lors de l'envoi du message", {
+        description: "Veuillez réessayer plus tard.",
+      });
+    }
   };
 
   return (
@@ -167,9 +169,9 @@ export default function Contact() {
                     />
                   </div>
 
-                  <Button type="submit" size="lg" className="w-full gap-2" disabled={isSubmitting}>
+                  <Button type="submit" size="lg" className="w-full gap-2" disabled={submitMessage.isPending}>
                     <Send className="h-4 w-4" />
-                    {isSubmitting ? "Envoi en cours..." : "Envoyer le message"}
+                    {submitMessage.isPending ? "Envoi en cours..." : "Envoyer le message"}
                   </Button>
                 </form>
               </div>
