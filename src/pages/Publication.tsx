@@ -1,6 +1,6 @@
-import { useEffect } from "react";
+import { useEffect, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Book, FileText, GraduationCap, Newspaper, Eye, Calendar, User } from "lucide-react";
+import { ArrowLeft, Book, FileText, GraduationCap, Newspaper, Eye, Calendar, User, Lock } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -24,11 +24,42 @@ export default function Publication() {
   const { data: publication, isLoading, error } = usePublication(id || "");
   const incrementViews = useIncrementViews();
 
+  // Prevent copy, right-click and keyboard shortcuts
+  const preventCopy = useCallback((e: Event) => {
+    e.preventDefault();
+    return false;
+  }, []);
+
+  const preventKeyboardShortcuts = useCallback((e: KeyboardEvent) => {
+    // Prevent Ctrl+C, Ctrl+P, Ctrl+S, PrintScreen
+    if (
+      (e.ctrlKey && (e.key === 'c' || e.key === 'p' || e.key === 's' || e.key === 'a')) ||
+      (e.metaKey && (e.key === 'c' || e.key === 'p' || e.key === 's' || e.key === 'a')) ||
+      e.key === 'PrintScreen'
+    ) {
+      e.preventDefault();
+      return false;
+    }
+  }, []);
+
   useEffect(() => {
     if (id) {
       incrementViews.mutate(id);
     }
-  }, [id]);
+
+    // Add event listeners to prevent copying
+    document.addEventListener('copy', preventCopy);
+    document.addEventListener('cut', preventCopy);
+    document.addEventListener('contextmenu', preventCopy);
+    document.addEventListener('keydown', preventKeyboardShortcuts);
+
+    return () => {
+      document.removeEventListener('copy', preventCopy);
+      document.removeEventListener('cut', preventCopy);
+      document.removeEventListener('contextmenu', preventCopy);
+      document.removeEventListener('keydown', preventKeyboardShortcuts);
+    };
+  }, [id, preventCopy, preventKeyboardShortcuts]);
 
   if (isLoading) {
     return (
@@ -159,19 +190,52 @@ export default function Publication() {
               </div>
             )}
 
-            {/* PDF Viewer */}
+            {/* PDF Viewer with protection */}
             {publication.file_url && (
               <div className="mt-8">
                 <h2 className="font-serif text-xl font-semibold text-foreground mb-4">
                   Aperçu du document
                 </h2>
-                <div className="aspect-[4/3] rounded-xl overflow-hidden border border-border bg-muted">
+                <div 
+                  className="aspect-[4/3] rounded-xl overflow-hidden border border-border bg-muted relative select-none"
+                  style={{ 
+                    WebkitUserSelect: 'none',
+                    MozUserSelect: 'none',
+                    msUserSelect: 'none',
+                    userSelect: 'none'
+                  }}
+                  onContextMenu={(e) => e.preventDefault()}
+                >
                   <iframe
-                    src={`${publication.file_url}#view=FitH`}
-                    className="h-full w-full"
+                    src={`${publication.file_url}#view=FitH&toolbar=0&navpanes=0`}
+                    className="h-full w-full pointer-events-auto"
                     title={publication.title}
+                    style={{ 
+                      WebkitUserSelect: 'none',
+                      MozUserSelect: 'none',
+                      msUserSelect: 'none',
+                      userSelect: 'none'
+                    }}
                   />
+                  {/* Watermark overlay */}
+                  <div 
+                    className="absolute inset-0 pointer-events-none flex items-center justify-center opacity-10"
+                    style={{ zIndex: 10 }}
+                  >
+                    <div className="text-4xl font-bold text-foreground rotate-[-30deg] whitespace-nowrap">
+                      PLUME D'OR KMG - LECTURE SEULE
+                    </div>
+                  </div>
+                  {/* Protection notice */}
+                  <div className="absolute bottom-2 right-2 bg-background/80 backdrop-blur-sm px-3 py-1.5 rounded-lg flex items-center gap-2 text-xs text-muted-foreground">
+                    <Lock className="h-3 w-3" />
+                    Document protégé
+                  </div>
                 </div>
+                <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
+                  <Lock className="h-3 w-3" />
+                  Ce document est protégé. La copie et le téléchargement sont interdits.
+                </p>
               </div>
             )}
 
