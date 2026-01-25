@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, Book, FileText, GraduationCap, Newspaper, Eye, Calendar, User, Lock } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { usePublication, useIncrementViews } from "@/hooks/usePublications";
 import { PaymentInstructions } from "@/components/publications/PaymentInstructions";
+import { ReadingTimeLimit } from "@/components/publications/ReadingTimeLimit";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -23,6 +24,7 @@ export default function Publication() {
   const { id } = useParams<{ id: string }>();
   const { data: publication, isLoading, error } = usePublication(id || "");
   const incrementViews = useIncrementViews();
+  const [timeExpired, setTimeExpired] = useState(false);
 
   // Prevent copy, right-click and keyboard shortcuts
   const preventCopy = useCallback((e: Event) => {
@@ -107,7 +109,15 @@ export default function Publication() {
 
   return (
     <Layout>
-      <div className="container py-8 md:py-12">
+      {/* Reading time limit for non-paying users */}
+      {publication.file_url && !timeExpired && (
+        <ReadingTimeLimit
+          publicationId={publication.id}
+          onTimeExpired={() => setTimeExpired(true)}
+        />
+      )}
+      
+      <div className={cn("container py-8 md:py-12", timeExpired && "pointer-events-none opacity-50")}>
         {/* Back Link */}
         <Link
           to="/bibliotheque"
