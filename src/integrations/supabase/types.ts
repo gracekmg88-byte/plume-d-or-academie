@@ -86,6 +86,39 @@ export type Database = {
         }
         Relationships: []
       }
+      user_profiles: {
+        Row: {
+          created_at: string
+          email: string
+          full_name: string | null
+          id: string
+          subscription_type: Database["public"]["Enums"]["subscription_type"]
+          subscription_updated_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          full_name?: string | null
+          id?: string
+          subscription_type?: Database["public"]["Enums"]["subscription_type"]
+          subscription_updated_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          full_name?: string | null
+          id?: string
+          subscription_type?: Database["public"]["Enums"]["subscription_type"]
+          subscription_updated_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
@@ -117,10 +150,12 @@ export type Database = {
         Returns: boolean
       }
       increment_views: { Args: { publication_id: string }; Returns: undefined }
+      is_premium: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
       app_role: "admin"
       content_category: "livre" | "memoire" | "tfc" | "article"
+      subscription_type: "free" | "premium"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -250,6 +285,7 @@ export const Constants = {
     Enums: {
       app_role: ["admin"],
       content_category: ["livre", "memoire", "tfc", "article"],
+      subscription_type: ["free", "premium"],
     },
   },
 } as const

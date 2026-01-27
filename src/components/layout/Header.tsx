@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, BookOpen, Feather } from "lucide-react";
+import { Menu, X, BookOpen, Feather, User, LogIn, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/useAuth";
+import { useSubscription } from "@/hooks/useSubscription";
 
 const navLinks = [
   { href: "/", label: "Accueil" },
@@ -14,6 +16,8 @@ const navLinks = [
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const { user, isAdmin } = useAuth();
+  const { isPremium } = useSubscription();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
@@ -54,14 +58,44 @@ export function Header() {
           ))}
         </nav>
 
-        {/* Admin Link */}
-        <div className="hidden md:flex items-center gap-4">
-          <Link to="/admin">
-            <Button variant="outline" size="sm" className="gap-2">
-              <BookOpen className="h-4 w-4" />
-              Administration
-            </Button>
-          </Link>
+        {/* User Actions */}
+        <div className="hidden md:flex items-center gap-3">
+          {user ? (
+            <>
+              <Link to="/profil">
+                <Button variant="ghost" size="sm" className="gap-2">
+                  <User className="h-4 w-4" />
+                  Profil
+                  {isPremium && (
+                    <Crown className="h-3 w-3 text-primary" />
+                  )}
+                </Button>
+              </Link>
+              {isAdmin && (
+                <Link to="/admin/dashboard">
+                  <Button variant="outline" size="sm" className="gap-2">
+                    <BookOpen className="h-4 w-4" />
+                    Admin
+                  </Button>
+                </Link>
+              )}
+            </>
+          ) : (
+            <>
+              <Link to="/auth">
+                <Button variant="ghost" size="sm" className="gap-2">
+                  <LogIn className="h-4 w-4" />
+                  Connexion
+                </Button>
+              </Link>
+              <Link to="/abonnement">
+                <Button size="sm" className="gap-2">
+                  <Crown className="h-4 w-4" />
+                  Premium
+                </Button>
+              </Link>
+            </>
+          )}
         </div>
 
         {/* Mobile Menu Button */}
@@ -93,13 +127,50 @@ export function Header() {
                 {link.label}
               </Link>
             ))}
-            <Link
-              to="/admin"
-              onClick={() => setMobileMenuOpen(false)}
-              className="block px-4 py-3 mt-4 rounded-lg text-base font-medium text-muted-foreground hover:bg-accent hover:text-foreground"
-            >
-              Administration
-            </Link>
+            <div className="border-t border-border pt-4 mt-4 space-y-1">
+              {user ? (
+                <>
+                  <Link
+                    to="/profil"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-2 px-4 py-3 rounded-lg text-base font-medium text-muted-foreground hover:bg-accent hover:text-foreground"
+                  >
+                    <User className="h-4 w-4" />
+                    Mon profil
+                    {isPremium && <Crown className="h-3 w-3 text-primary ml-auto" />}
+                  </Link>
+                  {isAdmin && (
+                    <Link
+                      to="/admin/dashboard"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center gap-2 px-4 py-3 rounded-lg text-base font-medium text-muted-foreground hover:bg-accent hover:text-foreground"
+                    >
+                      <BookOpen className="h-4 w-4" />
+                      Administration
+                    </Link>
+                  )}
+                </>
+              ) : (
+                <>
+                  <Link
+                    to="/auth"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-2 px-4 py-3 rounded-lg text-base font-medium text-muted-foreground hover:bg-accent hover:text-foreground"
+                  >
+                    <LogIn className="h-4 w-4" />
+                    Connexion
+                  </Link>
+                  <Link
+                    to="/abonnement"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-2 px-4 py-3 rounded-lg text-base font-medium text-primary hover:bg-accent"
+                  >
+                    <Crown className="h-4 w-4" />
+                    Devenir Premium
+                  </Link>
+                </>
+              )}
+            </div>
           </nav>
         </div>
       )}

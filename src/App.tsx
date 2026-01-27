@@ -8,10 +8,14 @@ import Bibliotheque from "./pages/Bibliotheque";
 import Publication from "./pages/Publication";
 import APropos from "./pages/APropos";
 import Contact from "./pages/Contact";
+import Auth from "./pages/Auth";
+import Profil from "./pages/Profil";
+import Abonnement from "./pages/Abonnement";
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminMessages from "./pages/admin/AdminMessages";
 import AdminSettings from "./pages/admin/AdminSettings";
+import AdminUsers from "./pages/admin/AdminUsers";
 import PublicationForm from "./pages/admin/PublicationForm";
 import NotFound from "./pages/NotFound";
 
@@ -29,10 +33,14 @@ const App = () => (
           <Route path="/publication/:id" element={<Publication />} />
           <Route path="/a-propos" element={<APropos />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/profil" element={<Profil />} />
+          <Route path="/abonnement" element={<Abonnement />} />
           <Route path="/admin" element={<AdminLogin />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/messages" element={<AdminMessages />} />
           <Route path="/admin/settings" element={<AdminSettings />} />
+          <Route path="/admin/users" element={<AdminUsers />} />
           <Route path="/admin/publication/:id" element={<PublicationForm />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
