@@ -71,6 +71,19 @@ export default function Publication() {
     }
   }, []);
 
+  // Prevent touch long press (mobile context menu)
+  const preventTouchMenu = useCallback((e: TouchEvent) => {
+    if (e.touches.length > 1) {
+      e.preventDefault();
+    }
+  }, []);
+
+  // Prevent drag and drop
+  const preventDrag = useCallback((e: DragEvent) => {
+    e.preventDefault();
+    return false;
+  }, []);
+
   useEffect(() => {
     if (id) {
       incrementViews.mutate(id);
@@ -81,14 +94,28 @@ export default function Publication() {
     document.addEventListener('cut', preventCopy);
     document.addEventListener('contextmenu', preventCopy);
     document.addEventListener('keydown', preventKeyboardShortcuts);
+    document.addEventListener('touchstart', preventTouchMenu, { passive: false });
+    document.addEventListener('dragstart', preventDrag);
+    document.addEventListener('selectstart', preventCopy);
+
+    // Disable text selection on mobile
+    document.body.style.webkitUserSelect = 'none';
+    document.body.style.userSelect = 'none';
 
     return () => {
       document.removeEventListener('copy', preventCopy);
       document.removeEventListener('cut', preventCopy);
       document.removeEventListener('contextmenu', preventCopy);
       document.removeEventListener('keydown', preventKeyboardShortcuts);
+      document.removeEventListener('touchstart', preventTouchMenu);
+      document.removeEventListener('dragstart', preventDrag);
+      document.removeEventListener('selectstart', preventCopy);
+      
+      // Restore text selection when leaving page
+      document.body.style.webkitUserSelect = '';
+      document.body.style.userSelect = '';
     };
-  }, [id, preventCopy, preventKeyboardShortcuts]);
+  }, [id, preventCopy, preventKeyboardShortcuts, preventTouchMenu, preventDrag]);
 
   if (isLoading || subscriptionLoading) {
     return (
@@ -164,31 +191,21 @@ export default function Publication() {
                 )}
               </div>
 
-              {/* Actions */}
+              {/* Actions - Download Button Premium Only */}
               <div className="mt-6 space-y-3">
-                {publication.file_url && (
-                  <a href={publication.file_url} target="_blank" rel="noopener noreferrer">
-                    <Button className="w-full gap-2">
-                      <Eye className="h-4 w-4" />
-                      Lire en ligne
-                    </Button>
-                  </a>
-                )}
-                
-                {/* Download Button - Premium Only */}
                 {publication.file_url && (
                   isPremium ? (
                     <a href={publication.file_url} download>
-                      <Button variant="outline" className="w-full gap-2">
+                      <Button className="w-full gap-2">
                         <Download className="h-4 w-4" />
-                        Télécharger
+                        Télécharger le document
                       </Button>
                     </a>
                   ) : (
                     <Link to="/abonnement">
-                      <Button variant="outline" className="w-full gap-2" disabled>
+                      <Button variant="outline" className="w-full gap-2 opacity-60 cursor-not-allowed">
                         <Lock className="h-4 w-4" />
-                        Télécharger (Premium)
+                        Télécharger (Premium uniquement)
                       </Button>
                     </Link>
                   )
@@ -261,19 +278,29 @@ export default function Publication() {
                     WebkitUserSelect: 'none',
                     MozUserSelect: 'none',
                     msUserSelect: 'none',
-                    userSelect: 'none'
+                    userSelect: 'none',
+                    WebkitTouchCallout: 'none',
+                    touchAction: 'pan-x pan-y'
                   }}
                   onContextMenu={(e) => e.preventDefault()}
+                  onTouchStart={(e) => {
+                    // Prevent long press on mobile
+                    if (e.touches.length > 1) e.preventDefault();
+                  }}
+                  onDragStart={(e) => e.preventDefault()}
                 >
+                  {/* Use Google Docs Viewer to prevent direct PDF access on mobile */}
                   <iframe
-                    src={`${publication.file_url}#view=FitH&toolbar=0&navpanes=0`}
+                    src={`https://docs.google.com/gview?embedded=true&url=${encodeURIComponent(publication.file_url)}`}
                     className="h-full w-full pointer-events-auto"
                     title={publication.title}
+                    sandbox="allow-scripts allow-same-origin"
                     style={{ 
                       WebkitUserSelect: 'none',
                       MozUserSelect: 'none',
                       msUserSelect: 'none',
-                      userSelect: 'none'
+                      userSelect: 'none',
+                      WebkitTouchCallout: 'none'
                     }}
                   />
                   {/* Watermark overlay */}
