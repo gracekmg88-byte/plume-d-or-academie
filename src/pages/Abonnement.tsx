@@ -17,6 +17,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
+import { usePaymentSettings } from "@/hooks/usePaymentSettings";
 
 const freeFeatures = [
   { text: "Lecture en ligne", included: true },
@@ -39,6 +40,9 @@ const premiumFeatures = [
 export default function Abonnement() {
   const { user } = useAuth();
   const { isPremium } = useSubscription();
+  const { settings } = usePaymentSettings();
+
+  const whatsappLink = `https://wa.me/${settings.payment_whatsapp.replace(/\s/g, "").replace("+", "")}?text=${encodeURIComponent("Bonjour, je souhaite activer mon compte Premium sur Plume d'Or KMG. Voici ma preuve de paiement :")}`;
 
   return (
     <Layout>
@@ -116,7 +120,7 @@ export default function Abonnement() {
               </CardTitle>
               <CardDescription>Accès complet illimité</CardDescription>
               <div className="mt-4">
-                <span className="font-serif text-4xl font-bold text-foreground">5 $</span>
+                <span className="font-serif text-4xl font-bold text-foreground">{settings.payment_amount} $</span>
                 <span className="text-muted-foreground">/unique</span>
               </div>
             </CardHeader>
@@ -204,7 +208,7 @@ export default function Abonnement() {
                   </div>
                   <div>
                     <h4 className="font-semibold text-foreground mb-1">
-                      Effectuez le paiement de 5 $
+                      Effectuez le paiement de {settings.payment_amount} $
                     </h4>
                     <p className="text-sm text-muted-foreground">
                       Utilisez l'un des moyens de paiement ci-dessous
@@ -220,7 +224,7 @@ export default function Abonnement() {
                       Envoyez la preuve de paiement
                     </h4>
                     <p className="text-sm text-muted-foreground">
-                      Via WhatsApp au +243 998 102 000
+                      Via WhatsApp au {settings.payment_mobile_number}
                     </p>
                   </div>
                 </div>
@@ -259,11 +263,11 @@ export default function Abonnement() {
                   <div className="space-y-1 text-sm">
                     <p>
                       <span className="text-muted-foreground">Numéro :</span>{" "}
-                      <span className="font-semibold text-foreground">+243 998 102 000</span>
+                      <span className="font-semibold text-foreground">{settings.payment_mobile_number}</span>
                     </p>
                     <p>
                       <span className="text-muted-foreground">Bénéficiaire :</span>{" "}
-                      <span className="font-semibold text-foreground">Kot Gracia</span>
+                      <span className="font-semibold text-foreground">{settings.payment_mobile_name}</span>
                     </p>
                   </div>
                 </div>
@@ -276,24 +280,24 @@ export default function Abonnement() {
                     </div>
                     <div>
                       <h5 className="font-semibold text-foreground">Virement bancaire</h5>
-                      <p className="text-xs text-muted-foreground">Equity BCDC</p>
+                      <p className="text-xs text-muted-foreground">{settings.payment_bank_name}</p>
                     </div>
                   </div>
                   <div className="space-y-1 text-sm">
                     <p>
                       <span className="text-muted-foreground">Numéro de compte :</span>{" "}
-                      <span className="font-semibold text-foreground">500005286303929</span>
+                      <span className="font-semibold text-foreground">{settings.payment_bank_account}</span>
                     </p>
                     <p>
                       <span className="text-muted-foreground">Bénéficiaire :</span>{" "}
-                      <span className="font-semibold text-foreground">KOT MUNON GRÂCE</span>
+                      <span className="font-semibold text-foreground">{settings.payment_bank_beneficiary}</span>
                     </p>
                   </div>
                 </div>
 
                 {/* WhatsApp */}
                 <a
-                  href="https://wa.me/243998102000?text=Bonjour,%20je%20souhaite%20activer%20mon%20compte%20Premium%20sur%20Plume%20d'Or%20KMG.%20Voici%20ma%20preuve%20de%20paiement%20:"
+                  href={whatsappLink}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="block"

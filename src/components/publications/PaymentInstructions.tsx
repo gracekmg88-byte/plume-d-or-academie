@@ -1,11 +1,24 @@
-import { Phone, Building2, CreditCard, MessageCircle, Lock } from "lucide-react";
+import { Phone, Building2, MessageCircle, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { usePaymentSettings } from "@/hooks/usePaymentSettings";
 
 export function PaymentInstructions() {
-  const whatsappNumber = "+243998102000";
-  const whatsappLink = `https://wa.me/${whatsappNumber.replace(/\s/g, "")}?text=${encodeURIComponent(
+  const { settings, isLoading } = usePaymentSettings();
+
+  const whatsappLink = `https://wa.me/${settings.payment_whatsapp.replace(/\s/g, "").replace("+", "")}?text=${encodeURIComponent(
     "Bonjour, j'ai effectué le paiement pour le téléchargement d'un document. Voici ma preuve de paiement :"
   )}`;
+
+  if (isLoading) {
+    return (
+      <div className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 rounded-2xl border border-amber-200 dark:border-amber-800 p-6">
+        <div className="animate-pulse space-y-4">
+          <div className="h-6 bg-amber-200 dark:bg-amber-800 rounded w-1/3"></div>
+          <div className="h-20 bg-amber-200 dark:bg-amber-800 rounded"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 rounded-2xl border border-amber-200 dark:border-amber-800 p-6 space-y-6">
@@ -18,7 +31,7 @@ export function PaymentInstructions() {
             Téléchargement payant
           </h3>
           <p className="text-amber-700 dark:text-amber-400 font-semibold text-lg">
-            5 USD
+            {settings.payment_amount} USD
           </p>
         </div>
       </div>
@@ -36,8 +49,8 @@ export function PaymentInstructions() {
             </div>
             <div>
               <h4 className="font-semibold text-foreground mb-1">Mobile Money</h4>
-              <p className="text-foreground font-medium">+243 998 102 000</p>
-              <p className="text-muted-foreground text-sm">Nom bénéficiaire : <span className="font-medium">Kot Gracia</span></p>
+              <p className="text-foreground font-medium">{settings.payment_mobile_number}</p>
+              <p className="text-muted-foreground text-sm">Nom bénéficiaire : <span className="font-medium">{settings.payment_mobile_name}</span></p>
             </div>
           </div>
         </div>
@@ -50,9 +63,9 @@ export function PaymentInstructions() {
             </div>
             <div>
               <h4 className="font-semibold text-foreground mb-1">Virement bancaire</h4>
-              <p className="text-muted-foreground text-sm">Banque : <span className="font-medium text-foreground">BCDC</span></p>
-              <p className="text-muted-foreground text-sm">Compte : <span className="font-medium text-foreground">500005286303929</span></p>
-              <p className="text-muted-foreground text-sm">Bénéficiaire : <span className="font-medium text-foreground">KOT MUNON GRÂCE</span></p>
+              <p className="text-muted-foreground text-sm">Banque : <span className="font-medium text-foreground">{settings.payment_bank_name}</span></p>
+              <p className="text-muted-foreground text-sm">Compte : <span className="font-medium text-foreground">{settings.payment_bank_account}</span></p>
+              <p className="text-muted-foreground text-sm">Bénéficiaire : <span className="font-medium text-foreground">{settings.payment_bank_beneficiary}</span></p>
             </div>
           </div>
         </div>

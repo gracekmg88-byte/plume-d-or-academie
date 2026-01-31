@@ -86,6 +86,36 @@ export type Database = {
         }
         Relationships: []
       }
+      site_settings: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          key: string
+          label: string
+          updated_at: string
+          value: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          id?: string
+          key: string
+          label: string
+          updated_at?: string
+          value: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          key?: string
+          label?: string
+          updated_at?: string
+          value?: string
+        }
+        Relationships: []
+      }
       user_profiles: {
         Row: {
           created_at: string
