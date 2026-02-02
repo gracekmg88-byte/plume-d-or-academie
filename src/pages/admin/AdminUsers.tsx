@@ -8,6 +8,7 @@ import {
   Search,
   ArrowUpDown,
   Loader2,
+  BookOpen,
 } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
@@ -30,6 +31,7 @@ import {
 } from "@/components/ui/select";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdminUsers, SubscriptionType } from "@/hooks/useSubscription";
+import { useBillingConfig } from "@/hooks/useBillingConfig";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -37,6 +39,7 @@ import { fr } from "date-fns/locale";
 export default function AdminUsers() {
   const { user, loading, isAdmin } = useAuth();
   const { users, isLoading, updateSubscription } = useAdminUsers();
+  const { hidePremiumUI } = useBillingConfig();
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState<"all" | "free" | "premium">("all");
   const navigate = useNavigate();
@@ -68,6 +71,12 @@ export default function AdminUsers() {
     const matchesSearch =
       u.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
       u.full_name?.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    // When billing is disabled, show all users without filtering by subscription
+    if (hidePremiumUI) {
+      return matchesSearch;
+    }
+    
     const matchesFilter =
       filterType === "all" || u.subscription_type === filterType;
     return matchesSearch && matchesFilter;
@@ -97,30 +106,40 @@ export default function AdminUsers() {
             </h1>
           </div>
           <p className="text-muted-foreground">
-            Gérez les comptes utilisateurs et leurs abonnements
+            {hidePremiumUI 
+              ? "Consultez les comptes utilisateurs inscrits"
+              : "Gérez les comptes utilisateurs et leurs abonnements"
+            }
           </p>
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-4 mb-8">
+        <div className={`grid ${hidePremiumUI ? "grid-cols-1 max-w-xs" : "grid-cols-3"} gap-4 mb-8`}>
           <div className="bg-card rounded-xl border border-border p-4">
-            <div className="text-2xl font-bold text-foreground">{users?.length || 0}</div>
+            <div className="flex items-center gap-2">
+              <BookOpen className="h-5 w-5 text-primary" />
+              <span className="text-2xl font-bold text-foreground">{users?.length || 0}</span>
+            </div>
             <div className="text-sm text-muted-foreground">Total utilisateurs</div>
           </div>
-          <div className="bg-card rounded-xl border border-border p-4">
-            <div className="flex items-center gap-2">
-              <Crown className="h-5 w-5 text-primary" />
-              <span className="text-2xl font-bold text-foreground">{premiumCount}</span>
-            </div>
-            <div className="text-sm text-muted-foreground">Premium</div>
-          </div>
-          <div className="bg-card rounded-xl border border-border p-4">
-            <div className="flex items-center gap-2">
-              <Star className="h-5 w-5 text-muted-foreground" />
-              <span className="text-2xl font-bold text-foreground">{freeCount}</span>
-            </div>
-            <div className="text-sm text-muted-foreground">Gratuit</div>
-          </div>
+          {!hidePremiumUI && (
+            <>
+              <div className="bg-card rounded-xl border border-border p-4">
+                <div className="flex items-center gap-2">
+                  <Crown className="h-5 w-5 text-primary" />
+                  <span className="text-2xl font-bold text-foreground">{premiumCount}</span>
+                </div>
+                <div className="text-sm text-muted-foreground">Premium</div>
+              </div>
+              <div className="bg-card rounded-xl border border-border p-4">
+                <div className="flex items-center gap-2">
+                  <Star className="h-5 w-5 text-muted-foreground" />
+                  <span className="text-2xl font-bold text-foreground">{freeCount}</span>
+                </div>
+                <div className="text-sm text-muted-foreground">Gratuit</div>
+              </div>
+            </>
+          )}
         </div>
 
         {/* Filters */}
@@ -134,16 +153,18 @@ export default function AdminUsers() {
               className="pl-10"
             />
           </div>
-          <Select value={filterType} onValueChange={(v: any) => setFilterType(v)}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Filtrer par type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Tous</SelectItem>
-              <SelectItem value="free">Gratuit</SelectItem>
-              <SelectItem value="premium">Premium</SelectItem>
-            </SelectContent>
-          </Select>
+          {!hidePremiumUI && (
+            <Select value={filterType} onValueChange={(v: any) => setFilterType(v)}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Filtrer par type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tous</SelectItem>
+                <SelectItem value="free">Gratuit</SelectItem>
+                <SelectItem value="premium">Premium</SelectItem>
+              </SelectContent>
+            </Select>
+          )}
         </div>
 
         {/* Users Table */}
@@ -158,14 +179,18 @@ export default function AdminUsers() {
                 <TableRow>
                   <TableHead>Utilisateur</TableHead>
                   <TableHead>Email</TableHead>
-                  <TableHead>
-                    <div className="flex items-center gap-1">
-                      Type
-                      <ArrowUpDown className="h-3 w-3" />
-                    </div>
-                  </TableHead>
+                  {!hidePremiumUI && (
+                    <TableHead>
+                      <div className="flex items-center gap-1">
+                        Type
+                        <ArrowUpDown className="h-3 w-3" />
+                      </div>
+                    </TableHead>
+                  )}
                   <TableHead>Inscrit le</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  {!hidePremiumUI && (
+                    <TableHead className="text-right">Actions</TableHead>
+                  )}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -177,49 +202,53 @@ export default function AdminUsers() {
                     <TableCell className="text-muted-foreground">
                       {userProfile.email}
                     </TableCell>
-                    <TableCell>
-                      {userProfile.subscription_type === "premium" ? (
-                        <Badge className="bg-primary text-primary-foreground">
-                          <Crown className="h-3 w-3 mr-1" />
-                          Premium
-                        </Badge>
-                      ) : (
-                        <Badge variant="secondary">
-                          <Star className="h-3 w-3 mr-1" />
-                          Gratuit
-                        </Badge>
-                      )}
-                    </TableCell>
+                    {!hidePremiumUI && (
+                      <TableCell>
+                        {userProfile.subscription_type === "premium" ? (
+                          <Badge className="bg-primary text-primary-foreground">
+                            <Crown className="h-3 w-3 mr-1" />
+                            Premium
+                          </Badge>
+                        ) : (
+                          <Badge variant="secondary">
+                            <Star className="h-3 w-3 mr-1" />
+                            Gratuit
+                          </Badge>
+                        )}
+                      </TableCell>
+                    )}
                     <TableCell className="text-muted-foreground">
                       {format(new Date(userProfile.created_at), "d MMM yyyy", {
                         locale: fr,
                       })}
                     </TableCell>
-                    <TableCell className="text-right">
-                      {userProfile.subscription_type === "free" ? (
-                        <Button
-                          size="sm"
-                          onClick={() =>
-                            handleSubscriptionChange(userProfile.user_id, "premium")
-                          }
-                          disabled={updateSubscription.isPending}
-                        >
-                          <Crown className="h-3 w-3 mr-1" />
-                          Activer Premium
-                        </Button>
-                      ) : (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() =>
-                            handleSubscriptionChange(userProfile.user_id, "free")
-                          }
-                          disabled={updateSubscription.isPending}
-                        >
-                          Rétrograder
-                        </Button>
-                      )}
-                    </TableCell>
+                    {!hidePremiumUI && (
+                      <TableCell className="text-right">
+                        {userProfile.subscription_type === "free" ? (
+                          <Button
+                            size="sm"
+                            onClick={() =>
+                              handleSubscriptionChange(userProfile.user_id, "premium")
+                            }
+                            disabled={updateSubscription.isPending}
+                          >
+                            <Crown className="h-3 w-3 mr-1" />
+                            Activer Premium
+                          </Button>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() =>
+                              handleSubscriptionChange(userProfile.user_id, "free")
+                            }
+                            disabled={updateSubscription.isPending}
+                          >
+                            Rétrograder
+                          </Button>
+                        )}
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))}
               </TableBody>
