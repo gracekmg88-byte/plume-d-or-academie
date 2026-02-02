@@ -1,13 +1,13 @@
-import { useEffect, useCallback, useState } from "react";
+import { useEffect, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Book, FileText, GraduationCap, Newspaper, Eye, Calendar, User, Lock, Crown, Download } from "lucide-react";
+import { ArrowLeft, Book, FileText, GraduationCap, Newspaper, Eye, Calendar, User, Lock, Download } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { usePublication, useIncrementViews } from "@/hooks/usePublications";
-import { PremiumLockMessage } from "@/components/subscription/PremiumGate";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
+import { useBillingConfig } from "@/hooks/useBillingConfig";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -21,37 +21,16 @@ const categoryConfig: Record<Category, { label: string; icon: typeof Book; class
   article: { label: "Article", icon: Newspaper, className: "bg-muted text-muted-foreground" },
 };
 
-// Component for content preview limit for free users
-function ContentPreviewLimit({ onUpgrade }: { onUpgrade: () => void }) {
-  return (
-    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-background via-background/95 to-transparent pt-24 pb-8 px-6">
-      <div className="text-center max-w-md mx-auto">
-        <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-          <Lock className="h-6 w-6 text-primary" />
-        </div>
-        <h3 className="font-serif text-lg font-semibold text-foreground mb-2">
-          Aperçu limité (20%)
-        </h3>
-        <p className="text-sm text-muted-foreground mb-4">
-          Passez à Premium pour lire l'intégralité de ce document
-        </p>
-        <Link to="/abonnement">
-          <Button className="gap-2">
-            <Crown className="h-4 w-4" />
-            Devenir Premium - 5 $
-          </Button>
-        </Link>
-      </div>
-    </div>
-  );
-}
-
 export default function Publication() {
   const { id } = useParams<{ id: string }>();
   const { data: publication, isLoading, error } = usePublication(id || "");
   const incrementViews = useIncrementViews();
   const { user } = useAuth();
   const { isPremium, isLoading: subscriptionLoading } = useSubscription();
+  const { hidePremiumUI } = useBillingConfig();
+
+  // When billing is disabled, treat everyone as having full access
+  const hasFullAccess = hidePremiumUI || isPremium;
 
   // Prevent copy, right-click and keyboard shortcuts
   const preventCopy = useCallback((e: Event) => {
@@ -191,24 +170,15 @@ export default function Publication() {
                 )}
               </div>
 
-              {/* Actions - Download Button Premium Only */}
+              {/* Actions - Download Button */}
               <div className="mt-6 space-y-3">
-                {publication.file_url && (
-                  isPremium ? (
-                    <a href={publication.file_url} download>
-                      <Button className="w-full gap-2">
-                        <Download className="h-4 w-4" />
-                        Télécharger le document
-                      </Button>
-                    </a>
-                  ) : (
-                    <Link to="/abonnement">
-                      <Button variant="outline" className="w-full gap-2 opacity-60 cursor-not-allowed">
-                        <Lock className="h-4 w-4" />
-                        Télécharger (Premium uniquement)
-                      </Button>
-                    </Link>
-                  )
+                {publication.file_url && hasFullAccess && (
+                  <a href={publication.file_url} download>
+                    <Button className="w-full gap-2">
+                      <Download className="h-4 w-4" />
+                      Télécharger le document
+                    </Button>
+                  </a>
                 )}
               </div>
             </div>
@@ -221,12 +191,6 @@ export default function Publication() {
                 <Icon className="h-4 w-4 mr-1" />
                 {config.label}
               </Badge>
-              {isPremium && (
-                <Badge className="bg-primary/10 text-primary border-primary/20">
-                  <Crown className="h-3 w-3 mr-1" />
-                  Premium
-                </Badge>
-              )}
             </div>
 
             <h1 className="font-serif text-3xl md:text-4xl lg:text-5xl font-bold text-foreground leading-tight">
@@ -267,13 +231,10 @@ export default function Publication() {
             {publication.file_url && (
               <div className="mt-8">
                 <h2 className="font-serif text-xl font-semibold text-foreground mb-4">
-                  {isPremium ? "Document complet" : "Aperçu du document (20%)"}
+                  Document
                 </h2>
                 <div 
-                  className={cn(
-                    "rounded-xl overflow-hidden border border-border bg-muted relative select-none",
-                    isPremium ? "aspect-[4/3]" : "aspect-[4/2.5]"
-                  )}
+                  className="rounded-xl overflow-hidden border border-border bg-muted relative select-none aspect-[4/3]"
                   style={{ 
                     WebkitUserSelect: 'none',
                     MozUserSelect: 'none',
@@ -317,23 +278,11 @@ export default function Publication() {
                     <Lock className="h-3 w-3" />
                     Document protégé
                   </div>
-                  
-                  {/* Preview limit overlay for free users */}
-                  {!isPremium && (
-                    <ContentPreviewLimit onUpgrade={() => {}} />
-                  )}
                 </div>
                 <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
                   <Lock className="h-3 w-3" />
                   Ce document est protégé. La copie est interdite.
                 </p>
-              </div>
-            )}
-
-            {/* Premium CTA for non-premium users */}
-            {!isPremium && (
-              <div className="mt-8">
-                <PremiumLockMessage />
               </div>
             )}
           </div>

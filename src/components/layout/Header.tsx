@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
+import { useBillingConfig } from "@/hooks/useBillingConfig";
 
 const navLinks = [
   { href: "/", label: "Accueil" },
@@ -18,6 +19,7 @@ export function Header() {
   const location = useLocation();
   const { user, isAdmin } = useAuth();
   const { isPremium } = useSubscription();
+  const { hidePremiumUI } = useBillingConfig();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
@@ -66,7 +68,7 @@ export function Header() {
                 <Button variant="ghost" size="sm" className="gap-2">
                   <User className="h-4 w-4" />
                   Profil
-                  {isPremium && (
+                  {!hidePremiumUI && isPremium && (
                     <Crown className="h-3 w-3 text-primary" />
                   )}
                 </Button>
@@ -88,12 +90,7 @@ export function Header() {
                   Connexion
                 </Button>
               </Link>
-              <Link to="/abonnement">
-                <Button size="sm" className="gap-2">
-                  <Crown className="h-4 w-4" />
-                  Premium
-                </Button>
-              </Link>
+              {/* Hide Premium button when billing is disabled */}
             </>
           )}
         </div>
@@ -137,7 +134,7 @@ export function Header() {
                   >
                     <User className="h-4 w-4" />
                     Mon profil
-                    {isPremium && <Crown className="h-3 w-3 text-primary ml-auto" />}
+                    {!hidePremiumUI && isPremium && <Crown className="h-3 w-3 text-primary ml-auto" />}
                   </Link>
                   {isAdmin && (
                     <Link
@@ -160,14 +157,7 @@ export function Header() {
                     <LogIn className="h-4 w-4" />
                     Connexion
                   </Link>
-                  <Link
-                    to="/abonnement"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-2 px-4 py-3 rounded-lg text-base font-medium text-primary hover:bg-accent"
-                  >
-                    <Crown className="h-4 w-4" />
-                    Devenir Premium
-                  </Link>
+                  {/* Hide Premium link when billing is disabled */}
                 </>
               )}
             </div>

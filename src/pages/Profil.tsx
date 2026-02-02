@@ -1,18 +1,20 @@
 import { useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { User, Mail, Crown, Calendar, LogOut, Star } from "lucide-react";
+import { User, Mail, Crown, Calendar, LogOut, Star, BookOpen } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
+import { useBillingConfig } from "@/hooks/useBillingConfig";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
 export default function Profil() {
   const { user, loading, signOut } = useAuth();
   const { profile, isPremium, isLoading: profileLoading } = useSubscription();
+  const { hidePremiumUI } = useBillingConfig();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -52,7 +54,7 @@ export default function Profil() {
               Mon Profil
             </h1>
             <p className="text-muted-foreground">
-              Gérez votre compte et votre abonnement
+              Gérez votre compte
             </p>
           </div>
 
@@ -71,61 +73,82 @@ export default function Profil() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* Subscription Status */}
+              {/* Access Status */}
               <div className="bg-muted/50 rounded-xl p-6 text-center">
-                <div className="flex items-center justify-center gap-2 mb-4">
-                  {isPremium ? (
-                    <>
-                      <Crown className="h-6 w-6 text-primary" />
+                {hidePremiumUI ? (
+                  // When billing is disabled, show simple access status
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-center gap-2 mb-4">
+                      <BookOpen className="h-6 w-6 text-primary" />
                       <Badge className="bg-primary text-primary-foreground text-lg px-4 py-1">
-                        PREMIUM
+                        ACCÈS COMPLET
                       </Badge>
-                    </>
-                  ) : (
-                    <>
-                      <Star className="h-6 w-6 text-muted-foreground" />
-                      <Badge variant="secondary" className="text-lg px-4 py-1">
-                        GRATUIT
-                      </Badge>
-                    </>
-                  )}
-                </div>
-
-                {isPremium ? (
-                  <div className="space-y-2">
+                    </div>
                     <p className="text-foreground font-medium">
-                      Vous avez accès à tous les contenus premium !
+                      Vous avez accès à tous les contenus !
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      Téléchargement illimité et lecture complète de tous les documents
+                      Lecture et téléchargement de tous les documents
                     </p>
-                    {profile?.subscription_updated_at && (
-                      <p className="text-xs text-muted-foreground mt-4">
-                        <Calendar className="h-3 w-3 inline mr-1" />
-                        Activé le{" "}
-                        {format(new Date(profile.subscription_updated_at), "d MMMM yyyy", {
-                          locale: fr,
-                        })}
-                      </p>
-                    )}
                   </div>
                 ) : (
-                  <div className="space-y-4">
-                    <p className="text-muted-foreground">
-                      Passez à Premium pour accéder à tous les contenus !
-                    </p>
-                    <div className="text-sm text-muted-foreground space-y-1">
-                      <p>✓ Lecture complète de tous les documents</p>
-                      <p>✓ Téléchargement illimité</p>
-                      <p>✓ Accès à tous les contenus premium</p>
+                  // Original premium/free status when billing is enabled
+                  <>
+                    <div className="flex items-center justify-center gap-2 mb-4">
+                      {isPremium ? (
+                        <>
+                          <Crown className="h-6 w-6 text-primary" />
+                          <Badge className="bg-primary text-primary-foreground text-lg px-4 py-1">
+                            PREMIUM
+                          </Badge>
+                        </>
+                      ) : (
+                        <>
+                          <Star className="h-6 w-6 text-muted-foreground" />
+                          <Badge variant="secondary" className="text-lg px-4 py-1">
+                            GRATUIT
+                          </Badge>
+                        </>
+                      )}
                     </div>
-                    <Link to="/abonnement">
-                      <Button className="w-full gap-2 mt-4">
-                        <Crown className="h-4 w-4" />
-                        Passer à Premium - 5 $
-                      </Button>
-                    </Link>
-                  </div>
+
+                    {isPremium ? (
+                      <div className="space-y-2">
+                        <p className="text-foreground font-medium">
+                          Vous avez accès à tous les contenus premium !
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          Téléchargement illimité et lecture complète de tous les documents
+                        </p>
+                        {profile?.subscription_updated_at && (
+                          <p className="text-xs text-muted-foreground mt-4">
+                            <Calendar className="h-3 w-3 inline mr-1" />
+                            Activé le{" "}
+                            {format(new Date(profile.subscription_updated_at), "d MMMM yyyy", {
+                              locale: fr,
+                            })}
+                          </p>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        <p className="text-muted-foreground">
+                          Passez à Premium pour accéder à tous les contenus !
+                        </p>
+                        <div className="text-sm text-muted-foreground space-y-1">
+                          <p>✓ Lecture complète de tous les documents</p>
+                          <p>✓ Téléchargement illimité</p>
+                          <p>✓ Accès à tous les contenus premium</p>
+                        </div>
+                        <Link to="/abonnement">
+                          <Button className="w-full gap-2 mt-4">
+                            <Crown className="h-4 w-4" />
+                            Voir les options
+                          </Button>
+                        </Link>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
 
@@ -139,12 +162,6 @@ export default function Profil() {
                       {profile?.created_at
                         ? format(new Date(profile.created_at), "d MMMM yyyy", { locale: fr })
                         : "-"}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Type de compte</span>
-                    <span className="text-foreground capitalize">
-                      {profile?.subscription_type || "gratuit"}
                     </span>
                   </div>
                 </div>

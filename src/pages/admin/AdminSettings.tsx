@@ -6,12 +6,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
+import { useBillingConfig } from "@/hooks/useBillingConfig";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { PaymentSettingsForm } from "@/components/admin/PaymentSettingsForm";
 
 export default function AdminSettings() {
   const { user, isAdmin, loading, signOut } = useAuth();
+  const { hidePremiumUI } = useBillingConfig();
   const navigate = useNavigate();
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -126,19 +128,10 @@ export default function AdminSettings() {
           Paramètres
         </h1>
 
-        <Tabs defaultValue="account" className="max-w-2xl">
-          <TabsList className="mb-6">
-            <TabsTrigger value="account" className="gap-2">
-              <Settings className="h-4 w-4" />
-              Compte
-            </TabsTrigger>
-            <TabsTrigger value="payment" className="gap-2">
-              <CreditCard className="h-4 w-4" />
-              Paiement
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="account" className="space-y-6">
+        {/* Only show payment tab when billing is enabled */}
+        {hidePremiumUI ? (
+          // Simple account settings only when billing is disabled
+          <div className="max-w-2xl space-y-6">
             {/* Account Info */}
             <div className="bg-card rounded-xl border border-border p-6">
               <div className="flex items-center gap-4 mb-4">
@@ -213,12 +206,103 @@ export default function AdminSettings() {
                 </Button>
               </form>
             </div>
-          </TabsContent>
+          </div>
+        ) : (
+          // Full settings with payment tab when billing is enabled
+          <Tabs defaultValue="account" className="max-w-2xl">
+            <TabsList className="mb-6">
+              <TabsTrigger value="account" className="gap-2">
+                <Settings className="h-4 w-4" />
+                Compte
+              </TabsTrigger>
+              <TabsTrigger value="payment" className="gap-2">
+                <CreditCard className="h-4 w-4" />
+                Paiement
+              </TabsTrigger>
+            </TabsList>
 
-          <TabsContent value="payment">
-            <PaymentSettingsForm />
-          </TabsContent>
-        </Tabs>
+            <TabsContent value="account" className="space-y-6">
+              {/* Account Info */}
+              <div className="bg-card rounded-xl border border-border p-6">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <Settings className="h-6 w-6 text-primary" />
+                  </div>
+                  <div>
+                    <h2 className="font-semibold text-foreground">Informations du compte</h2>
+                    <p className="text-muted-foreground text-sm">{user.email}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Change Password */}
+              <div className="bg-card rounded-xl border border-border p-6">
+                <div className="flex items-center gap-3 mb-6">
+                  <Lock className="h-5 w-5 text-primary" />
+                  <h2 className="font-semibold text-foreground">Changer le mot de passe</h2>
+                </div>
+
+                <form onSubmit={handleChangePassword} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="newPassword">Nouveau mot de passe</Label>
+                    <div className="relative">
+                      <Input
+                        id="newPassword"
+                        type={showNewPassword ? "text" : "password"}
+                        value={formData.newPassword}
+                        onChange={(e) => setFormData({ ...formData, newPassword: e.target.value })}
+                        placeholder="••••••••"
+                        required
+                        minLength={6}
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-0 top-0 h-full px-3"
+                        onClick={() => setShowNewPassword(!showNewPassword)}
+                      >
+                        {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="confirmPassword">Confirmer le mot de passe</Label>
+                    <div className="relative">
+                      <Input
+                        id="confirmPassword"
+                        type={showConfirmPassword ? "text" : "password"}
+                        value={formData.confirmPassword}
+                        onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                        placeholder="••••••••"
+                        required
+                        minLength={6}
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-0 top-0 h-full px-3"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      >
+                        {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </Button>
+                    </div>
+                  </div>
+
+                  <Button type="submit" className="w-full" disabled={isSubmitting}>
+                    {isSubmitting ? "Mise à jour..." : "Mettre à jour le mot de passe"}
+                  </Button>
+                </form>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="payment">
+              <PaymentSettingsForm />
+            </TabsContent>
+          </Tabs>
+        )}
       </div>
     </div>
   );

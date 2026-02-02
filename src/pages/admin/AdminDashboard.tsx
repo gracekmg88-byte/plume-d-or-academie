@@ -3,9 +3,10 @@ import { useNavigate, Link } from "react-router-dom";
 import { 
   Feather, LogOut, Plus, Book, FileText, GraduationCap, Newspaper, 
   Eye, LayoutDashboard, Settings, Trash2, Edit, ToggleLeft, ToggleRight,
-  MessageSquare, Mail, Copy, Download
+  MessageSquare, Mail, Copy, Download, Users
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useBillingConfig } from "@/hooks/useBillingConfig";
 import { Badge } from "@/components/ui/badge";
 import {
   Tooltip,
@@ -53,6 +54,7 @@ export default function AdminDashboard() {
   const { data: publications, isLoading } = useAdminPublications();
   const deletePublication = useDeletePublication();
   const updatePublication = useUpdatePublication();
+  const { hidePremiumUI } = useBillingConfig();
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
@@ -193,12 +195,14 @@ export default function AdminDashboard() {
           <Link to="/admin/users" className="block">
             <div className="bg-card rounded-xl border border-border p-6 hover:shadow-elegant transition-all">
               <div className="flex items-center gap-4">
-                <div className="h-12 w-12 rounded-lg bg-blue-500/10 flex items-center justify-center">
-                  <Mail className="h-6 w-6 text-blue-600" />
+                <div className="h-12 w-12 rounded-lg bg-secondary flex items-center justify-center">
+                  <Users className="h-6 w-6 text-secondary-foreground" />
                 </div>
                 <div>
                   <div className="font-semibold text-foreground">Utilisateurs</div>
-                  <div className="text-sm text-muted-foreground">Gérer les abonnements</div>
+                  <div className="text-sm text-muted-foreground">
+                    {hidePremiumUI ? "Consulter les inscrits" : "Gérer les abonnements"}
+                  </div>
                 </div>
               </div>
             </div>
