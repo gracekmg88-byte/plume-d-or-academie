@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { BookOpen } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
@@ -6,6 +6,7 @@ import { PublicationCard } from "@/components/publications/PublicationCard";
 import { CategoryFilter } from "@/components/publications/CategoryFilter";
 import { SearchBar } from "@/components/publications/SearchBar";
 import { usePublications } from "@/hooks/usePublications";
+import { preloadImages } from "@/components/ui/cached-image";
 
 type Category = "all" | "livre" | "memoire" | "tfc" | "article";
 
@@ -17,6 +18,16 @@ export default function Bibliotheque() {
   const [search, setSearch] = useState("");
 
   const { data: publications, isLoading } = usePublications(category === "all" ? undefined : category);
+
+  // Preload cover images as soon as data arrives
+  useEffect(() => {
+    if (publications) {
+      const urls = publications
+        .map((p) => p.cover_image_url)
+        .filter((url): url is string => !!url);
+      preloadImages(urls);
+    }
+  }, [publications]);
 
   const filteredPublications = useMemo(() => {
     if (!publications) return [];

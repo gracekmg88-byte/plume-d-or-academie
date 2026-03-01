@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Book, FileText, GraduationCap, Newspaper, Eye } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { CachedImage } from "@/components/ui/cached-image";
 import { cn } from "@/lib/utils";
 
 type Category = "livre" | "memoire" | "tfc" | "article";
@@ -41,17 +42,19 @@ export function PublicationCard({
         {/* Cover Image */}
         <div className="relative aspect-[3/4] overflow-hidden bg-muted">
           {coverImageUrl ? (
-            <img
+            <CachedImage
               src={coverImageUrl}
               alt={title}
               className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+              containerClassName="h-full w-full"
+              fallbackIcon={<Icon className="h-16 w-16 text-muted-foreground/30" />}
             />
           ) : (
             <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-muted to-accent">
               <Icon className="h-16 w-16 text-muted-foreground/30" />
             </div>
           )}
-          <Badge className={cn("absolute top-3 left-3", config.className)}>
+          <Badge className={cn("absolute top-3 left-3 z-10", config.className)}>
             <Icon className="h-3 w-3 mr-1" />
             {config.label}
           </Badge>
