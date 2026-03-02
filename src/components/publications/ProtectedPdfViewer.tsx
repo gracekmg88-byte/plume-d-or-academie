@@ -17,7 +17,7 @@ interface ProtectedPdfViewerProps {
 export function ProtectedPdfViewer({ fileUrl, title }: ProtectedPdfViewerProps) {
   const [numPages, setNumPages] = useState<number>(0);
   const [currentPage, setCurrentPage] = useState(1);
-  const [scale, setScale] = useState(1.0);
+  const [scale, setScale] = useState(0.65);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
