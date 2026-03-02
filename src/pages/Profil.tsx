@@ -1,6 +1,6 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { User, Mail, Crown, Calendar, LogOut, Star, BookOpen } from "lucide-react";
+import { User, Mail, Crown, Calendar, LogOut, Star, BookOpen, Trash2, WifiOff, HardDrive } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,20 +8,46 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useBillingConfig } from "@/hooks/useBillingConfig";
+import { getAllOfflinePublications, removeOfflinePublication, type OfflinePublication } from "@/lib/offline-storage";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { toast } from "sonner";
 
 export default function Profil() {
   const { user, loading, signOut } = useAuth();
   const { profile, isPremium, isLoading: profileLoading } = useSubscription();
   const { hidePremiumUI } = useBillingConfig();
   const navigate = useNavigate();
+  const [cachedPubs, setCachedPubs] = useState<OfflinePublication[]>([]);
+  const [cacheLoading, setCacheLoading] = useState(true);
 
   useEffect(() => {
     if (!loading && !user) {
       navigate("/auth");
     }
   }, [user, loading, navigate]);
+
+  // Load cached publications
+  useEffect(() => {
+    getAllOfflinePublications().then((pubs) => {
+      setCachedPubs(pubs);
+      setCacheLoading(false);
+    });
+  }, []);
+
+  const handleRemoveCached = async (id: string, title: string) => {
+    await removeOfflinePublication(id);
+    setCachedPubs((prev) => prev.filter((p) => p.id !== id));
+    toast.success(`"${title}" supprimé du cache`);
+  };
+
+  const handleClearAll = async () => {
+    for (const pub of cachedPubs) {
+      await removeOfflinePublication(pub.id);
+    }
+    setCachedPubs([]);
+    toast.success("Cache hors ligne vidé");
+  };
 
   const handleSignOut = async () => {
     await signOut();
@@ -166,8 +192,74 @@ export default function Profil() {
                   </div>
                 </div>
               </div>
+              {/* Offline Cache Management */}
+              <div className="border-t border-border pt-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-semibold text-foreground flex items-center gap-2">
+                    <HardDrive className="h-4 w-4" />
+                    Cache hors ligne
+                  </h3>
+                  {cachedPubs.length > 0 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-destructive hover:text-destructive hover:bg-destructive/10 text-xs"
+                      onClick={handleClearAll}
+                    >
+                      <Trash2 className="h-3 w-3 mr-1" />
+                      Tout supprimer
+                    </Button>
+                  )}
+                </div>
 
-              {/* Sign Out */}
+                {cacheLoading ? (
+                  <div className="animate-pulse space-y-2">
+                    <div className="h-10 bg-muted rounded" />
+                    <div className="h-10 bg-muted rounded" />
+                  </div>
+                ) : cachedPubs.length === 0 ? (
+                  <div className="text-center py-6">
+                    <WifiOff className="h-8 w-8 mx-auto mb-2 text-muted-foreground/30" />
+                    <p className="text-sm text-muted-foreground">
+                      Aucune publication en cache.
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Les publications consultées seront automatiquement mises en cache.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <p className="text-xs text-muted-foreground mb-3">
+                      {cachedPubs.length} publication{cachedPubs.length > 1 ? "s" : ""} disponible{cachedPubs.length > 1 ? "s" : ""} hors ligne
+                    </p>
+                    {cachedPubs.map((pub) => (
+                      <div
+                        key={pub.id}
+                        className="flex items-center justify-between bg-muted/50 rounded-lg px-3 py-2.5"
+                      >
+                        <div className="min-w-0 flex-1 mr-3">
+                          <p className="text-sm font-medium text-foreground truncate">
+                            {pub.title}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {pub.author}
+                          </p>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                          onClick={() => handleRemoveCached(pub.id, pub.title)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+
               <Button
                 variant="outline"
                 className="w-full gap-2"
