@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { BookOpen } from "lucide-react";
+import { BookOpen, WifiOff } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { PublicationCard } from "@/components/publications/PublicationCard";
 import { CategoryFilter } from "@/components/publications/CategoryFilter";
@@ -8,6 +8,8 @@ import { SearchBar } from "@/components/publications/SearchBar";
 import { usePublications } from "@/hooks/usePublications";
 import { preloadImages } from "@/components/ui/cached-image";
 import { preloadAndCacheImages } from "@/lib/image-cache";
+import { useOnlineStatus } from "@/hooks/useOffline";
+import { getAllOfflinePublications, type OfflinePublication } from "@/lib/offline-storage";
 
 type Category = "all" | "livre" | "memoire" | "tfc" | "article";
 
@@ -17,8 +19,22 @@ export default function Bibliotheque() {
   
   const [category, setCategory] = useState<Category>(initialCategory);
   const [search, setSearch] = useState("");
+  const isOnline = useOnlineStatus();
 
   const { data: publications, isLoading } = usePublications(category === "all" ? undefined : category);
+
+  // Offline cached publications
+  const [offlinePubs, setOfflinePubs] = useState<OfflinePublication[]>([]);
+  const [offlineLoading, setOfflineLoading] = useState(!isOnline);
+
+  useEffect(() => {
+    if (!isOnline) {
+      getAllOfflinePublications().then((pubs) => {
+        setOfflinePubs(pubs);
+        setOfflineLoading(false);
+      });
+    }
+  }, [isOnline]);
 
   // Preload cover images as soon as data arrives
   useEffect(() => {
@@ -31,17 +47,29 @@ export default function Bibliotheque() {
     }
   }, [publications]);
 
+  // Choose data source
+  const sourceData = isOnline ? publications : offlinePubs;
+  const actualLoading = isOnline ? isLoading : offlineLoading;
+
   const filteredPublications = useMemo(() => {
-    if (!publications) return [];
-    if (!search.trim()) return publications;
+    const data = sourceData as Array<{ id: string; title: string; author: string; description: string | null; category: string; cover_image_url: string | null; views_count: number }>;
+    if (!data) return [];
+    let filtered = data;
+    
+    // Apply category filter for offline
+    if (!isOnline && category !== "all") {
+      filtered = filtered.filter((p) => p.category === category);
+    }
+
+    if (!search.trim()) return filtered;
     
     const searchLower = search.toLowerCase();
-    return publications.filter(
+    return filtered.filter(
       (pub) =>
         pub.title.toLowerCase().includes(searchLower) ||
         pub.author.toLowerCase().includes(searchLower)
     );
-  }, [publications, search]);
+  }, [sourceData, search, category, isOnline]);
 
   const handleCategoryChange = (newCategory: Category) => {
     setCategory(newCategory);
@@ -69,6 +97,16 @@ export default function Bibliotheque() {
         </div>
       </section>
 
+      {/* Offline banner */}
+      {!isOnline && (
+        <div className="container mt-4">
+          <div className="flex items-center gap-2 bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-400 rounded-lg px-4 py-2 text-sm">
+            <WifiOff className="h-4 w-4 shrink-0" />
+            <span>Mode hors ligne — Affichage des publications déjà consultées</span>
+          </div>
+        </div>
+      )}
+
       {/* Filters */}
       <section className="py-8 bg-card border-b border-border sticky top-16 md:top-20 z-40">
         <div className="container">
@@ -82,7 +120,7 @@ export default function Bibliotheque() {
       {/* Publications Grid */}
       <section className="py-12 md:py-16 bg-background">
         <div className="container">
-          {isLoading ? (
+          {actualLoading ? (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {[...Array(8)].map((_, i) => (
                 <div key={i} className="animate-pulse">
@@ -119,9 +157,11 @@ export default function Bibliotheque() {
                 Aucune publication trouvée
               </h2>
               <p className="text-muted-foreground max-w-md mx-auto">
-                {search
-                  ? `Aucun résultat pour "${search}". Essayez avec d'autres termes.`
-                  : "Aucune publication disponible dans cette catégorie."}
+                {!isOnline
+                  ? "Consultez des publications en ligne pour les rendre disponibles hors connexion."
+                  : search
+                    ? `Aucun résultat pour "${search}". Essayez avec d'autres termes.`
+                    : "Aucune publication disponible dans cette catégorie."}
               </p>
             </div>
           )}
