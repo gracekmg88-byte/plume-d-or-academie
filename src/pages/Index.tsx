@@ -9,7 +9,7 @@ import { usePublications } from "@/hooks/usePublications";
 import { preloadImages } from "@/components/ui/cached-image";
 import { preloadAndCacheImages } from "@/lib/image-cache";
 import { useLanguage } from "@/contexts/LanguageContext";
-import heroImage from "@/assets/hero-library.jpg";
+import heroImage from "@/assets/hero-library.webp";
 
 export default function Index() {
   const { data: publications, isLoading } = usePublications();
