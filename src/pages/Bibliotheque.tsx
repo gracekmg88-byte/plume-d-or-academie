@@ -12,7 +12,7 @@ import { preloadAndCacheImages } from "@/lib/image-cache";
 import { useOnlineStatus } from "@/hooks/useOffline";
 import { getAllOfflinePublications, type OfflinePublication } from "@/lib/offline-storage";
 import { useLanguage } from "@/contexts/LanguageContext";
-import heroBiblioImage from "@/assets/hero-bibliotheque.jpg";
+import heroBiblioImage from "@/assets/hero-bibliotheque.webp";
 
 type Category = "all" | "livre" | "memoire" | "tfc" | "article";
 

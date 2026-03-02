@@ -9,7 +9,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { useSubmitContactMessage } from "@/hooks/useContactMessages";
 import { useLanguage } from "@/contexts/LanguageContext";
-import heroContactImage from "@/assets/hero-contact.jpg";
+import heroContactImage from "@/assets/hero-contact.webp";
 
 export default function Contact() {
   const { t } = useLanguage();
