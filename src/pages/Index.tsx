@@ -42,7 +42,7 @@ export default function Index() {
       <section className="relative overflow-hidden">
         <div className="absolute inset-0">
           <img src={heroImage} alt="Bibliothèque académique" className="h-full w-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-r from-secondary/95 via-secondary/80 to-secondary/60" />
+          <div className="absolute inset-0 bg-gradient-to-r from-secondary/95 via-secondary/80 to-secondary/60 dark:from-background/95 dark:via-background/85 dark:to-background/70" />
         </div>
         <div className="relative container py-20 md:py-32 lg:py-40">
           <div className="max-w-2xl space-y-6 animate-slide-up">
