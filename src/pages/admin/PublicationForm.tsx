@@ -17,6 +17,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { usePublication, useCreatePublication, useUpdatePublication } from "@/hooks/usePublications";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { compressImage } from "@/lib/compress-image";
 
 const categories = [
   { value: "livre", label: "Livre" },
@@ -96,7 +97,8 @@ export default function PublicationForm() {
       let fileUrl = existingPublication?.file_url || null;
 
       if (coverFile) {
-        coverImageUrl = await uploadFile(coverFile, "covers");
+        const compressed = await compressImage(coverFile, { maxWidth: 800, maxHeight: 1200, quality: 0.75 });
+        coverImageUrl = await uploadFile(compressed, "covers");
       }
 
       if (pdfFile) {
