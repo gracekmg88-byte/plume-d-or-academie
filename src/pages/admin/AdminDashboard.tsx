@@ -3,7 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { 
   Feather, LogOut, Plus, Book, FileText, GraduationCap, Newspaper, 
   Eye, LayoutDashboard, Settings, Trash2, Edit, ToggleLeft, ToggleRight,
-  MessageSquare, Mail, Copy, Download, Users
+  MessageSquare, Mail, Copy, Download, Users, Smartphone
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useBillingConfig } from "@/hooks/useBillingConfig";
@@ -178,7 +178,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Quick Links */}
-        <div className="grid sm:grid-cols-3 gap-4 mb-8">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <Link to="/admin/messages" className="block">
             <div className="bg-card rounded-xl border border-border p-6 hover:shadow-elegant transition-all">
               <div className="flex items-center gap-4">
@@ -203,6 +203,19 @@ export default function AdminDashboard() {
                   <div className="text-sm text-muted-foreground">
                     {hidePremiumUI ? "Consulter les inscrits" : "Gérer les abonnements"}
                   </div>
+                </div>
+              </div>
+            </div>
+          </Link>
+          <Link to="/admin/devices" className="block">
+            <div className="bg-card rounded-xl border border-border p-6 hover:shadow-elegant transition-all">
+              <div className="flex items-center gap-4">
+                <div className="h-12 w-12 rounded-lg bg-green-500/10 flex items-center justify-center">
+                  <Smartphone className="h-6 w-6 text-green-600" />
+                </div>
+                <div>
+                  <div className="font-semibold text-foreground">Appareils</div>
+                  <div className="text-sm text-muted-foreground">Notifications push</div>
                 </div>
               </div>
             </div>

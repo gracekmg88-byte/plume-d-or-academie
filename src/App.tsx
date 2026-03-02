@@ -19,6 +19,7 @@ import AdminMessages from "./pages/admin/AdminMessages";
 import AdminSettings from "./pages/admin/AdminSettings";
 import AdminUsers from "./pages/admin/AdminUsers";
 import PublicationForm from "./pages/admin/PublicationForm";
+import AdminDevices from "./pages/admin/AdminDevices";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -48,6 +49,7 @@ const App = () => (
           <Route path="/admin/settings" element={<AdminSettings />} />
           <Route path="/admin/users" element={<AdminUsers />} />
           <Route path="/admin/publication/:id" element={<PublicationForm />} />
+          <Route path="/admin/devices" element={<AdminDevices />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
