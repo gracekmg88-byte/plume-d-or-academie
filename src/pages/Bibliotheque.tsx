@@ -10,6 +10,8 @@ import { preloadImages } from "@/components/ui/cached-image";
 import { preloadAndCacheImages } from "@/lib/image-cache";
 import { useOnlineStatus } from "@/hooks/useOffline";
 import { getAllOfflinePublications, type OfflinePublication } from "@/lib/offline-storage";
+import { useLanguage } from "@/contexts/LanguageContext";
+import heroBiblioImage from "@/assets/hero-bibliotheque.jpg";
 
 type Category = "all" | "livre" | "memoire" | "tfc" | "article";
 
@@ -20,6 +22,7 @@ export default function Bibliotheque() {
   const [category, setCategory] = useState<Category>(initialCategory);
   const [search, setSearch] = useState("");
   const isOnline = useOnlineStatus();
+  const { t } = useLanguage();
 
   const { data: publications, isLoading } = usePublications(category === "all" ? undefined : category);
 
@@ -36,18 +39,14 @@ export default function Bibliotheque() {
     }
   }, [isOnline]);
 
-  // Preload cover images as soon as data arrives
   useEffect(() => {
     if (publications) {
-      const urls = publications
-        .map((p) => p.cover_image_url)
-        .filter((url): url is string => !!url);
+      const urls = publications.map((p) => p.cover_image_url).filter((url): url is string => !!url);
       preloadImages(urls);
       preloadAndCacheImages(urls);
     }
   }, [publications]);
 
-  // Choose data source
   const sourceData = isOnline ? publications : offlinePubs;
   const actualLoading = isOnline ? isLoading : offlineLoading;
 
@@ -55,19 +54,13 @@ export default function Bibliotheque() {
     const data = sourceData as Array<{ id: string; title: string; author: string; description: string | null; category: string; cover_image_url: string | null; views_count: number }>;
     if (!data) return [];
     let filtered = data;
-    
-    // Apply category filter for offline
     if (!isOnline && category !== "all") {
       filtered = filtered.filter((p) => p.category === category);
     }
-
     if (!search.trim()) return filtered;
-    
     const searchLower = search.toLowerCase();
     return filtered.filter(
-      (pub) =>
-        pub.title.toLowerCase().includes(searchLower) ||
-        pub.author.toLowerCase().includes(searchLower)
+      (pub) => pub.title.toLowerCase().includes(searchLower) || pub.author.toLowerCase().includes(searchLower)
     );
   }, [sourceData, search, category, isOnline]);
 
@@ -83,15 +76,19 @@ export default function Bibliotheque() {
 
   return (
     <Layout>
-      {/* Header */}
-      <section className="bg-secondary py-12 md:py-16">
-        <div className="container">
+      {/* Header with background image */}
+      <section className="relative overflow-hidden py-12 md:py-16">
+        <div className="absolute inset-0">
+          <img src={heroBiblioImage} alt="" className="h-full w-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-r from-secondary/95 via-secondary/85 to-secondary/70" />
+        </div>
+        <div className="relative container">
           <div className="max-w-2xl animate-slide-up">
             <h1 className="font-serif text-3xl md:text-4xl lg:text-5xl font-bold text-secondary-foreground mb-4">
-              Bibliothèque
+              {t("library.title")}
             </h1>
             <p className="text-secondary-foreground/80 text-lg leading-relaxed">
-              Explorez notre collection de livres, mémoires, TFC et articles académiques.
+              {t("library.description")}
             </p>
           </div>
         </div>
@@ -102,7 +99,7 @@ export default function Bibliotheque() {
         <div className="container mt-4">
           <div className="flex items-center gap-2 bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-400 rounded-lg px-4 py-2 text-sm">
             <WifiOff className="h-4 w-4 shrink-0" />
-            <span>Mode hors ligne — Affichage des publications déjà consultées</span>
+            <span>{t("library.offline")}</span>
           </div>
         </div>
       )}
@@ -133,7 +130,7 @@ export default function Bibliotheque() {
           ) : filteredPublications.length > 0 ? (
             <>
               <p className="text-muted-foreground mb-6">
-                {filteredPublications.length} publication{filteredPublications.length > 1 ? "s" : ""} trouvée{filteredPublications.length > 1 ? "s" : ""}
+                {filteredPublications.length} {filteredPublications.length > 1 ? t("library.found_many") : t("library.found_one")}
               </p>
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {filteredPublications.map((pub) => (
@@ -154,14 +151,14 @@ export default function Bibliotheque() {
             <div className="text-center py-16">
               <BookOpen className="h-16 w-16 mx-auto mb-4 text-muted-foreground/30" />
               <h2 className="font-serif text-2xl font-semibold text-foreground mb-2">
-                Aucune publication trouvée
+                {t("library.noResults")}
               </h2>
               <p className="text-muted-foreground max-w-md mx-auto">
                 {!isOnline
-                  ? "Consultez des publications en ligne pour les rendre disponibles hors connexion."
+                  ? t("library.noResultsOffline")
                   : search
-                    ? `Aucun résultat pour "${search}". Essayez avec d'autres termes.`
-                    : "Aucune publication disponible dans cette catégorie."}
+                    ? t("library.noResultsSearch", { search })
+                    : t("library.noResultsCategory")}
               </p>
             </div>
           )}

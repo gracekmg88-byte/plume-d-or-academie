@@ -1,18 +1,13 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, BookOpen, Feather, User, LogIn, Crown } from "lucide-react";
+import { Menu, X, BookOpen, Feather, User, LogIn, Crown, Sun, Moon, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useBillingConfig } from "@/hooks/useBillingConfig";
-
-const navLinks = [
-  { href: "/", label: "Accueil" },
-  { href: "/bibliotheque", label: "Bibliothèque" },
-  { href: "/a-propos", label: "À propos" },
-  { href: "/contact", label: "Contact" },
-];
+import { useTheme } from "@/contexts/ThemeContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -20,6 +15,15 @@ export function Header() {
   const { user, isAdmin } = useAuth();
   const { isPremium } = useSubscription();
   const { hidePremiumUI } = useBillingConfig();
+  const { theme, toggleTheme } = useTheme();
+  const { language, setLanguage, t } = useLanguage();
+
+  const navLinks = [
+    { href: "/", label: t("nav.home") },
+    { href: "/bibliotheque", label: t("nav.library") },
+    { href: "/a-propos", label: t("nav.about") },
+    { href: "/contact", label: t("nav.contact") },
+  ];
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
@@ -61,13 +65,37 @@ export function Header() {
         </nav>
 
         {/* User Actions */}
-        <div className="hidden md:flex items-center gap-3">
+        <div className="hidden md:flex items-center gap-2">
+          {/* Language Toggle */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setLanguage(language === "fr" ? "en" : "fr")}
+            className="h-9 w-9"
+            title={language === "fr" ? "Switch to English" : "Passer en français"}
+          >
+            <Globe className="h-4 w-4" />
+            <span className="sr-only">{language === "fr" ? "EN" : "FR"}</span>
+          </Button>
+          <span className="text-xs font-medium text-muted-foreground uppercase">{language}</span>
+
+          {/* Theme Toggle */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleTheme}
+            className="h-9 w-9"
+            title={theme === "dark" ? "Mode clair" : "Mode sombre"}
+          >
+            {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          </Button>
+
           {user ? (
             <>
               <Link to="/profil">
                 <Button variant="ghost" size="sm" className="gap-2">
                   <User className="h-4 w-4" />
-                  Profil
+                  {t("nav.profile")}
                   {!hidePremiumUI && isPremium && (
                     <Crown className="h-3 w-3 text-primary" />
                   )}
@@ -77,32 +105,37 @@ export function Header() {
                 <Link to="/admin/dashboard">
                   <Button variant="outline" size="sm" className="gap-2">
                     <BookOpen className="h-4 w-4" />
-                    Admin
+                    {t("nav.admin")}
                   </Button>
                 </Link>
               )}
             </>
           ) : (
-            <>
-              <Link to="/auth">
-                <Button variant="ghost" size="sm" className="gap-2">
-                  <LogIn className="h-4 w-4" />
-                  Connexion
-                </Button>
-              </Link>
-              {/* Hide Premium button when billing is disabled */}
-            </>
+            <Link to="/auth">
+              <Button variant="ghost" size="sm" className="gap-2">
+                <LogIn className="h-4 w-4" />
+                {t("nav.login")}
+              </Button>
+            </Link>
           )}
         </div>
 
         {/* Mobile Menu Button */}
-        <button
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="md:hidden p-2 text-foreground"
-          aria-label="Toggle menu"
-        >
-          {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-        </button>
+        <div className="flex md:hidden items-center gap-1">
+          <Button variant="ghost" size="icon" onClick={() => setLanguage(language === "fr" ? "en" : "fr")} className="h-9 w-9">
+            <Globe className="h-4 w-4" />
+          </Button>
+          <Button variant="ghost" size="icon" onClick={toggleTheme} className="h-9 w-9">
+            {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          </Button>
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="p-2 text-foreground"
+            aria-label="Toggle menu"
+          >
+            {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile Menu */}
@@ -133,7 +166,7 @@ export function Header() {
                     className="flex items-center gap-2 px-4 py-3 rounded-lg text-base font-medium text-muted-foreground hover:bg-accent hover:text-foreground"
                   >
                     <User className="h-4 w-4" />
-                    Mon profil
+                    {t("nav.myProfile")}
                     {!hidePremiumUI && isPremium && <Crown className="h-3 w-3 text-primary ml-auto" />}
                   </Link>
                   {isAdmin && (
@@ -143,22 +176,19 @@ export function Header() {
                       className="flex items-center gap-2 px-4 py-3 rounded-lg text-base font-medium text-muted-foreground hover:bg-accent hover:text-foreground"
                     >
                       <BookOpen className="h-4 w-4" />
-                      Administration
+                      {t("nav.administration")}
                     </Link>
                   )}
                 </>
               ) : (
-                <>
-                  <Link
-                    to="/auth"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-2 px-4 py-3 rounded-lg text-base font-medium text-muted-foreground hover:bg-accent hover:text-foreground"
-                  >
-                    <LogIn className="h-4 w-4" />
-                    Connexion
-                  </Link>
-                  {/* Hide Premium link when billing is disabled */}
-                </>
+                <Link
+                  to="/auth"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center gap-2 px-4 py-3 rounded-lg text-base font-medium text-muted-foreground hover:bg-accent hover:text-foreground"
+                >
+                  <LogIn className="h-4 w-4" />
+                  {t("nav.login")}
+                </Link>
               )}
             </div>
           </nav>

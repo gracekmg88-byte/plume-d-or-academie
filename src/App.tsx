@@ -5,6 +5,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { warmUpCache } from "@/lib/image-cache";
 import { PushNotificationInit } from "@/components/PushNotificationInit";
+import { ThemeProvider } from "@/contexts/ThemeContext";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 import Index from "./pages/Index";
 import Bibliotheque from "./pages/Bibliotheque";
 import Publication from "./pages/Publication";
@@ -29,32 +31,36 @@ warmUpCache().catch(() => {});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <PushNotificationInit />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/bibliotheque" element={<Bibliotheque />} />
-          <Route path="/publication/:id" element={<Publication />} />
-          <Route path="/a-propos" element={<APropos />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/profil" element={<Profil />} />
-          <Route path="/abonnement" element={<Abonnement />} />
-          <Route path="/admin" element={<AdminLogin />} />
-          <Route path="/admin/dashboard" element={<AdminDashboard />} />
-          <Route path="/admin/messages" element={<AdminMessages />} />
-          <Route path="/admin/settings" element={<AdminSettings />} />
-          <Route path="/admin/users" element={<AdminUsers />} />
-          <Route path="/admin/publication/:id" element={<PublicationForm />} />
-          <Route path="/admin/devices" element={<AdminDevices />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+    <ThemeProvider>
+      <LanguageProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <PushNotificationInit />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/bibliotheque" element={<Bibliotheque />} />
+              <Route path="/publication/:id" element={<Publication />} />
+              <Route path="/a-propos" element={<APropos />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/profil" element={<Profil />} />
+              <Route path="/abonnement" element={<Abonnement />} />
+              <Route path="/admin" element={<AdminLogin />} />
+              <Route path="/admin/dashboard" element={<AdminDashboard />} />
+              <Route path="/admin/messages" element={<AdminMessages />} />
+              <Route path="/admin/settings" element={<AdminSettings />} />
+              <Route path="/admin/users" element={<AdminUsers />} />
+              <Route path="/admin/publication/:id" element={<PublicationForm />} />
+              <Route path="/admin/devices" element={<AdminDevices />} />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </LanguageProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 
