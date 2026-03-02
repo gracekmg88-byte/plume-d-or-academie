@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useParallax } from "@/hooks/useParallax";
+
 import { Link } from "react-router-dom";
 import { ArrowRight, Book, FileText, GraduationCap, Newspaper, Users, Award, BookOpen } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
