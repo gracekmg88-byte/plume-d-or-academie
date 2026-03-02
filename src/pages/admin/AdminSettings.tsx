@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Feather, LogOut, ArrowLeft, Lock, Eye, EyeOff, Settings, CreditCard } from "lucide-react";
+import { Feather, LogOut, ArrowLeft, Lock, Eye, EyeOff, Settings, CreditCard, ImageDown, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,6 +10,7 @@ import { useBillingConfig } from "@/hooks/useBillingConfig";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { PaymentSettingsForm } from "@/components/admin/PaymentSettingsForm";
+import { compressImage } from "@/lib/compress-image";
 
 export default function AdminSettings() {
   const { user, isAdmin, loading, signOut } = useAuth();
@@ -18,6 +19,7 @@ export default function AdminSettings() {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isCompressing, setIsCompressing] = useState(false);
   const [formData, setFormData] = useState({
     currentPassword: "",
     newPassword: "",
@@ -57,6 +59,87 @@ export default function AdminSettings() {
       toast.error(error.message || "Erreur lors de la mise à jour du mot de passe");
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const [compressionProgress, setCompressionProgress] = useState("");
+
+  const handleCompressCovers = async () => {
+    setIsCompressing(true);
+    setCompressionProgress("Récupération de la liste...");
+    try {
+      // Get list of covers from edge function
+      const { data, error } = await supabase.functions.invoke("compress-covers");
+      if (error) throw error;
+      const covers = (data as { covers: { id: string; url: string }[] }).covers;
+
+      if (!covers.length) {
+        toast.info("Aucune couverture à compresser");
+        return;
+      }
+
+      let compressed = 0;
+      let skipped = 0;
+      let totalSaved = 0;
+
+      for (let i = 0; i < covers.length; i++) {
+        const cover = covers[i];
+        setCompressionProgress(`${i + 1}/${covers.length} — ${cover.id.slice(0, 8)}...`);
+
+        try {
+          // Download original
+          const response = await fetch(cover.url);
+          if (!response.ok) { skipped++; continue; }
+          const blob = await response.blob();
+          const oldSize = blob.size;
+
+          // Skip if already small
+          if (oldSize < 150 * 1024) { skipped++; continue; }
+
+          // Compress client-side
+          const file = new File([blob], "cover.jpg", { type: blob.type });
+          const compressedFile = await compressImage(file, { maxWidth: 800, maxHeight: 1200, quality: 0.75 });
+          const newSize = compressedFile.size;
+
+          if (newSize >= oldSize) { skipped++; continue; }
+
+          // Upload compressed version
+          const ext = compressedFile.name.split(".").pop() || "webp";
+          const fileName = `covers/compressed_${cover.id}.${ext}`;
+
+          const { error: uploadError } = await supabase.storage
+            .from("publications")
+            .upload(fileName, compressedFile, { upsert: true, contentType: compressedFile.type });
+
+          if (uploadError) { skipped++; continue; }
+
+          const { data: urlData } = supabase.storage
+            .from("publications")
+            .getPublicUrl(fileName);
+
+          // Update publication
+          await supabase
+            .from("publications")
+            .update({ cover_image_url: urlData.publicUrl })
+            .eq("id", cover.id);
+
+          totalSaved += oldSize - newSize;
+          compressed++;
+        } catch {
+          skipped++;
+        }
+      }
+
+      if (compressed > 0) {
+        toast.success(`${compressed} image(s) compressée(s), ${Math.round(totalSaved / 1024)} KB économisés`);
+      } else {
+        toast.info("Toutes les images sont déjà optimisées");
+      }
+    } catch (error: any) {
+      toast.error(error.message || "Erreur lors de la compression");
+    } finally {
+      setIsCompressing(false);
+      setCompressionProgress("");
     }
   };
 
@@ -206,6 +289,35 @@ export default function AdminSettings() {
                 </Button>
               </form>
             </div>
+
+            {/* Compress Covers */}
+            <div className="bg-card rounded-xl border border-border p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <ImageDown className="h-5 w-5 text-primary" />
+                <h2 className="font-semibold text-foreground">Optimisation des images</h2>
+              </div>
+              <p className="text-sm text-muted-foreground mb-4">
+                Compresse toutes les images de couverture existantes pour réduire leur taille et accélérer le chargement.
+              </p>
+              <Button
+                onClick={handleCompressCovers}
+                disabled={isCompressing}
+                variant="outline"
+                className="w-full gap-2"
+              >
+                {isCompressing ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    {compressionProgress || "Compression en cours..."}
+                  </>
+                ) : (
+                  <>
+                    <ImageDown className="h-4 w-4" />
+                    Compresser les couvertures existantes
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
         ) : (
           // Full settings with payment tab when billing is enabled
@@ -295,6 +407,35 @@ export default function AdminSettings() {
                     {isSubmitting ? "Mise à jour..." : "Mettre à jour le mot de passe"}
                   </Button>
                 </form>
+              </div>
+
+              {/* Compress Covers */}
+              <div className="bg-card rounded-xl border border-border p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <ImageDown className="h-5 w-5 text-primary" />
+                  <h2 className="font-semibold text-foreground">Optimisation des images</h2>
+                </div>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Compresse toutes les images de couverture existantes pour réduire leur taille et accélérer le chargement.
+                </p>
+                <Button
+                  onClick={handleCompressCovers}
+                  disabled={isCompressing}
+                  variant="outline"
+                  className="w-full gap-2"
+                >
+                  {isCompressing ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      {compressionProgress || "Compression en cours..."}
+                    </>
+                  ) : (
+                    <>
+                      <ImageDown className="h-4 w-4" />
+                      Compresser les couvertures existantes
+                    </>
+                  )}
+                </Button>
               </div>
             </TabsContent>
 
