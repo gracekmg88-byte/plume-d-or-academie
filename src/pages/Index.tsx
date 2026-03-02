@@ -1,9 +1,11 @@
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, Book, FileText, GraduationCap, Newspaper, Users, Award, BookOpen } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { PublicationCard } from "@/components/publications/PublicationCard";
 import { usePublications } from "@/hooks/usePublications";
+import { preloadImages } from "@/components/ui/cached-image";
 import heroImage from "@/assets/hero-library.jpg";
 
 const stats = [
@@ -35,6 +37,15 @@ export default function Index() {
   const { data: publications, isLoading } = usePublications();
   const recentPublications = publications?.slice(0, 4) || [];
 
+  // Preload cover images on the home page immediately
+  useEffect(() => {
+    if (publications) {
+      const urls = publications
+        .map((p) => p.cover_image_url)
+        .filter((url): url is string => !!url);
+      preloadImages(urls);
+    }
+  }, [publications]);
   return (
     <Layout>
       {/* Hero Section */}

@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, Book, FileText, GraduationCap, Newspaper, Eye, Calendar, User, Lock, Download } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
@@ -60,6 +60,9 @@ export default function Publication() {
   }, []);
 
   useEffect(() => {
+    // Scroll to top when opening the publication
+    window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
+
     if (id) incrementViews.mutate(id);
 
     document.addEventListener('copy', preventCopy);
@@ -213,7 +216,7 @@ export default function Publication() {
 
             {/* PDF Viewer */}
             {publication.file_url && (
-              <div className="mt-8">
+              <div className="mt-8" id="document-viewer">
                 <h2 className="font-serif text-xl font-semibold text-foreground mb-4">Document</h2>
                 <ProtectedPdfViewer fileUrl={publication.file_url} title={publication.title} />
                 <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
