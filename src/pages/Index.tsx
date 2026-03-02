@@ -10,10 +10,10 @@ import { preloadAndCacheImages } from "@/lib/image-cache";
 import heroImage from "@/assets/hero-library.jpg";
 
 const stats = [
-  { icon: Book, label: "Livres", value: "50+" },
-  { icon: GraduationCap, label: "Mémoires", value: "100+" },
-  { icon: FileText, label: "TFC", value: "200+" },
-  { icon: Newspaper, label: "Articles", value: "150+" },
+  { icon: Book, label: "Livres", value: "50.000+" },
+  { icon: GraduationCap, label: "Mémoires", value: "10.000+" },
+  { icon: FileText, label: "TFC", value: "20.000+" },
+  { icon: Newspaper, label: "Articles", value: "150.000+" },
 ];
 
 const features = [
