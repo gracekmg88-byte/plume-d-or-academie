@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, memo } from "react";
 import { cn } from "@/lib/utils";
+import { Book } from "lucide-react";
 
 interface CachedImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   src: string;
@@ -33,7 +34,7 @@ export function preloadImages(urls: string[]): void {
   });
 }
 
-export function CachedImage({
+export const CachedImage = memo(function CachedImage({
   src,
   alt,
   fallbackIcon,
@@ -66,7 +67,7 @@ export function CachedImage({
           observerRef.current?.disconnect();
         }
       },
-      { rootMargin: "200px" }
+      { rootMargin: "400px" }
     );
     observerRef.current.observe(el);
 
@@ -82,29 +83,36 @@ export function CachedImage({
     setError(true);
   }, []);
 
+  const defaultFallback = fallbackIcon || (
+    <Book className="h-16 w-16 text-muted-foreground/40" />
+  );
+
+  // Error state — show fallback
   if (error) {
     return (
       <div className={cn("flex items-center justify-center bg-gradient-to-br from-muted to-accent", containerClassName)}>
-        {fallbackIcon || (
-          <div className="text-muted-foreground/30 text-sm">Image non disponible</div>
-        )}
+        {defaultFallback}
       </div>
     );
   }
 
   return (
     <div className={cn("relative overflow-hidden", containerClassName)}>
-      {/* Shimmer placeholder */}
+      {/* Always-visible placeholder with icon — never a white blank */}
       {!loaded && (
         <div
           className={cn(
-            "absolute inset-0 bg-muted animate-pulse",
+            "absolute inset-0 flex items-center justify-center bg-gradient-to-br from-muted to-accent",
             placeholderClassName
           )}
         >
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-background/20 to-transparent shimmer-animation" />
+          {defaultFallback}
+          {/* Shimmer overlay */}
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-background/15 to-transparent shimmer-animation" />
         </div>
       )}
+      {/* Hidden ref anchor for IntersectionObserver when not yet in view */}
+      {!inView && <span ref={imgRef} className="absolute inset-0" aria-hidden />}
       {/* Actual image */}
       {inView && (
         <img
@@ -125,4 +133,4 @@ export function CachedImage({
       )}
     </div>
   );
-}
+});
