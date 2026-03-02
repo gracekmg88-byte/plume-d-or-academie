@@ -129,17 +129,19 @@ export const CachedImage = memo(function CachedImage({
 
   return (
     <div className={cn("relative overflow-hidden", containerClassName)}>
-      {!loaded && (
-        <div
-          className={cn(
-            "absolute inset-0 flex items-center justify-center bg-gradient-to-br from-muted to-accent",
-            placeholderClassName
-          )}
-        >
-          {defaultFallback}
+      {/* Always show placeholder until image is fully loaded */}
+      <div
+        className={cn(
+          "absolute inset-0 flex items-center justify-center bg-gradient-to-br from-muted to-accent transition-opacity duration-300",
+          loaded ? "opacity-0 pointer-events-none" : "opacity-100",
+          placeholderClassName
+        )}
+      >
+        {defaultFallback}
+        {!loaded && (
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-background/15 to-transparent shimmer-animation" />
-        </div>
-      )}
+        )}
+      </div>
       {!inView && <span ref={imgRef} className="absolute inset-0" aria-hidden />}
       {inView && resolvedSrc && (
         <img
