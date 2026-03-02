@@ -1,12 +1,12 @@
 import { BookOpen, Target, Users, Award, Heart, Lightbulb } from "lucide-react";
-import { useParallax } from "@/hooks/useParallax";
+
 import { Layout } from "@/components/layout/Layout";
 import { useLanguage } from "@/contexts/LanguageContext";
-import heroAProposImage from "@/assets/hero-apropos.jpg";
+import heroAProposImage from "@/assets/hero-apropos.webp";
 
 export default function APropos() {
   const { t } = useLanguage();
-  const { sectionRef, imgStyle } = useParallax();
+  
 
   const values = [
     { icon: BookOpen, titleKey: "about.val1Title" as const, descKey: "about.val1Desc" as const },
@@ -17,9 +17,9 @@ export default function APropos() {
 
   return (
     <Layout>
-      <section ref={sectionRef} className="relative overflow-hidden py-12 md:py-16">
+      <section className="relative overflow-hidden py-12 md:py-16">
         <div className="absolute inset-0">
-          <img src={heroAProposImage} alt="" className="h-full w-full object-cover" style={imgStyle} loading="eager" fetchPriority="high" decoding="sync" />
+          <img src={heroAProposImage} alt="" className="h-full w-full object-cover" loading="eager" fetchPriority="high" decoding="sync" />
           <div className="absolute inset-0 bg-gradient-to-r from-secondary/95 via-secondary/85 to-secondary/70" />
         </div>
         <div className="relative container">

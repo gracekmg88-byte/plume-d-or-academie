@@ -1,5 +1,5 @@
 import { Phone, Mail, MessageSquare, Clock, Send } from "lucide-react";
-import { useParallax } from "@/hooks/useParallax";
+
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,11 +9,11 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { useSubmitContactMessage } from "@/hooks/useContactMessages";
 import { useLanguage } from "@/contexts/LanguageContext";
-import heroContactImage from "@/assets/hero-contact.jpg";
+import heroContactImage from "@/assets/hero-contact.webp";
 
 export default function Contact() {
   const { t } = useLanguage();
-  const { sectionRef, imgStyle } = useParallax();
+  
   const [formData, setFormData] = useState({ name: "", email: "", subject: "", message: "" });
   const submitMessage = useSubmitContactMessage();
 
@@ -36,9 +36,9 @@ export default function Contact() {
 
   return (
     <Layout>
-      <section ref={sectionRef} className="relative overflow-hidden py-12 md:py-16">
+      <section className="relative overflow-hidden py-12 md:py-16">
         <div className="absolute inset-0">
-          <img src={heroContactImage} alt="" className="h-full w-full object-cover" style={imgStyle} loading="eager" fetchPriority="high" decoding="sync" />
+          <img src={heroContactImage} alt="" className="h-full w-full object-cover" loading="eager" fetchPriority="high" decoding="sync" />
           <div className="absolute inset-0 bg-gradient-to-r from-secondary/95 via-secondary/85 to-secondary/70" />
         </div>
         <div className="relative container">
