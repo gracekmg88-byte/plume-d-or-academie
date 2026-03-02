@@ -7,6 +7,7 @@ import { CategoryFilter } from "@/components/publications/CategoryFilter";
 import { SearchBar } from "@/components/publications/SearchBar";
 import { usePublications } from "@/hooks/usePublications";
 import { preloadImages } from "@/components/ui/cached-image";
+import { preloadAndCacheImages } from "@/lib/image-cache";
 
 type Category = "all" | "livre" | "memoire" | "tfc" | "article";
 
@@ -26,6 +27,7 @@ export default function Bibliotheque() {
         .map((p) => p.cover_image_url)
         .filter((url): url is string => !!url);
       preloadImages(urls);
+      preloadAndCacheImages(urls);
     }
   }, [publications]);
 

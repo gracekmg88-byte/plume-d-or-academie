@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef, useCallback, memo } from "react";
 import { cn } from "@/lib/utils";
 import { Book } from "lucide-react";
+import { getCachedUri, cacheImage } from "@/lib/image-cache";
+import { Capacitor } from "@capacitor/core";
 
 interface CachedImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   src: string;
@@ -10,7 +12,7 @@ interface CachedImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   containerClassName?: string;
 }
 
-// In-memory cache for loaded image URLs
+// In-memory cache for loaded image URLs (web only)
 const imageCache = new Set<string>();
 
 // Preload an image and cache it
@@ -43,16 +45,45 @@ export const CachedImage = memo(function CachedImage({
   containerClassName,
   ...props
 }: CachedImageProps) {
+  const isNative = Capacitor.isNativePlatform();
   const isCached = imageCache.has(src);
   const [loaded, setLoaded] = useState(isCached);
   const [error, setError] = useState(false);
+  const [resolvedSrc, setResolvedSrc] = useState<string>(isCached ? src : "");
   const imgRef = useRef<HTMLImageElement>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
   const [inView, setInView] = useState(isCached);
 
-  // Lazy load with IntersectionObserver
+  // On native: resolve cached local URI or download & cache
   useEffect(() => {
+    if (!isNative || !src) return;
+    let cancelled = false;
+
+    (async () => {
+      // Try local cache first
+      const cached = await getCachedUri(src);
+      if (cached && !cancelled) {
+        setResolvedSrc(cached);
+        setInView(true);
+        return;
+      }
+      // Not cached yet — start download in background, use remote URL for now
+      if (!cancelled) {
+        setResolvedSrc(src);
+        setInView(true);
+      }
+      // Cache for next time
+      cacheImage(src).catch(() => {});
+    })();
+
+    return () => { cancelled = true; };
+  }, [src, isNative]);
+
+  // Web: lazy load with IntersectionObserver
+  useEffect(() => {
+    if (isNative) return; // handled above
     if (isCached) {
+      setResolvedSrc(src);
       setInView(true);
       return;
     }
@@ -63,6 +94,7 @@ export const CachedImage = memo(function CachedImage({
     observerRef.current = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
+          setResolvedSrc(src);
           setInView(true);
           observerRef.current?.disconnect();
         }
@@ -72,7 +104,7 @@ export const CachedImage = memo(function CachedImage({
     observerRef.current.observe(el);
 
     return () => observerRef.current?.disconnect();
-  }, [src, isCached]);
+  }, [src, isCached, isNative]);
 
   const handleLoad = useCallback(() => {
     imageCache.add(src);
@@ -87,7 +119,6 @@ export const CachedImage = memo(function CachedImage({
     <Book className="h-16 w-16 text-muted-foreground/40" />
   );
 
-  // Error state — show fallback
   if (error) {
     return (
       <div className={cn("flex items-center justify-center bg-gradient-to-br from-muted to-accent", containerClassName)}>
@@ -98,7 +129,6 @@ export const CachedImage = memo(function CachedImage({
 
   return (
     <div className={cn("relative overflow-hidden", containerClassName)}>
-      {/* Always-visible placeholder with icon — never a white blank */}
       {!loaded && (
         <div
           className={cn(
@@ -107,17 +137,14 @@ export const CachedImage = memo(function CachedImage({
           )}
         >
           {defaultFallback}
-          {/* Shimmer overlay */}
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-background/15 to-transparent shimmer-animation" />
         </div>
       )}
-      {/* Hidden ref anchor for IntersectionObserver when not yet in view */}
       {!inView && <span ref={imgRef} className="absolute inset-0" aria-hidden />}
-      {/* Actual image */}
-      {inView && (
+      {inView && resolvedSrc && (
         <img
           ref={imgRef}
-          src={src}
+          src={resolvedSrc}
           alt={alt}
           loading="lazy"
           decoding="async"

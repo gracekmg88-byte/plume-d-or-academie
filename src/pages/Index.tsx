@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { PublicationCard } from "@/components/publications/PublicationCard";
 import { usePublications } from "@/hooks/usePublications";
 import { preloadImages } from "@/components/ui/cached-image";
+import { preloadAndCacheImages } from "@/lib/image-cache";
 import heroImage from "@/assets/hero-library.jpg";
 
 const stats = [
@@ -44,6 +45,7 @@ export default function Index() {
         .map((p) => p.cover_image_url)
         .filter((url): url is string => !!url);
       preloadImages(urls);
+      preloadAndCacheImages(urls);
     }
   }, [publications]);
   return (
