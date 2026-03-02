@@ -2,7 +2,7 @@ import { BookOpen, Target, Users, Award, Heart, Lightbulb } from "lucide-react";
 
 import { Layout } from "@/components/layout/Layout";
 import { useLanguage } from "@/contexts/LanguageContext";
-import heroAProposImage from "@/assets/hero-apropos.jpg";
+import heroAProposImage from "@/assets/hero-apropos.webp";
 
 export default function APropos() {
   const { t } = useLanguage();
