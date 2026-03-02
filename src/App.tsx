@@ -4,6 +4,11 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { warmUpCache } from "@/lib/image-cache";
+import { preloadImage } from "@/components/ui/cached-image";
+import heroImage from "@/assets/hero-library.jpg";
+import heroBiblioImage from "@/assets/hero-bibliotheque.jpg";
+import heroContactImage from "@/assets/hero-contact.jpg";
+import heroAProposImage from "@/assets/hero-apropos.jpg";
 import { PushNotificationInit } from "@/components/PushNotificationInit";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
@@ -28,6 +33,11 @@ const queryClient = new QueryClient();
 
 // Pre-load image cache index at startup for instant lookups on native
 warmUpCache().catch(() => {});
+
+// Preload all hero images at startup for instant display
+[heroImage, heroBiblioImage, heroContactImage, heroAProposImage].forEach(src => {
+  preloadImage(src).catch(() => {});
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>

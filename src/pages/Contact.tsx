@@ -8,6 +8,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { useSubmitContactMessage } from "@/hooks/useContactMessages";
 import { useLanguage } from "@/contexts/LanguageContext";
+import heroContactImage from "@/assets/hero-contact.jpg";
 
 export default function Contact() {
   const { t } = useLanguage();
@@ -33,8 +34,12 @@ export default function Contact() {
 
   return (
     <Layout>
-      <section className="bg-secondary py-12 md:py-20">
-        <div className="container">
+      <section className="relative overflow-hidden py-12 md:py-16">
+        <div className="absolute inset-0">
+          <img src={heroContactImage} alt="" className="h-full w-full object-cover" loading="eager" fetchPriority="high" decoding="sync" />
+          <div className="absolute inset-0 bg-gradient-to-r from-secondary/95 via-secondary/85 to-secondary/70" />
+        </div>
+        <div className="relative container">
           <div className="max-w-3xl animate-slide-up">
             <h1 className="font-serif text-3xl md:text-4xl lg:text-5xl font-bold text-secondary-foreground mb-6">
               {t("contact.title")}
