@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { warmUpCache } from "@/lib/image-cache";
+import { PushNotificationInit } from "@/components/PushNotificationInit";
 import Index from "./pages/Index";
 import Bibliotheque from "./pages/Bibliotheque";
 import Publication from "./pages/Publication";
@@ -30,6 +31,7 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
+      <PushNotificationInit />
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
