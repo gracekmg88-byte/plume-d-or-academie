@@ -8,14 +8,16 @@ const CACHE_INDEX_KEY = "image_cache_index";
 // In-memory fast lookup (survives only the session)
 const memoryCache = new Map<string, string>();
 
-// Whether we're running on a native platform
+// Persistent index loaded once at startup
+let indexCache: Record<string, string> | null = null;
+let indexLoadPromise: Promise<Record<string, string>> | null = null;
+
+// Dedup in-flight downloads
+const inflightDownloads = new Map<string, Promise<string | null>>();
+
 const isNative = Capacitor.isNativePlatform();
 
-/**
- * Generate a safe filename from a URL
- */
 function urlToFilename(url: string): string {
-  // Use a simple hash to avoid filesystem-unsafe characters
   let hash = 0;
   for (let i = 0; i < url.length; i++) {
     const char = url.charCodeAt(i);
@@ -26,41 +28,66 @@ function urlToFilename(url: string): string {
 }
 
 /**
- * Load the cache index from Preferences
+ * Load index once, then keep in memory
  */
-async function loadIndex(): Promise<Record<string, string>> {
-  try {
-    const { value } = await Preferences.get({ key: CACHE_INDEX_KEY });
-    return value ? JSON.parse(value) : {};
-  } catch {
-    return {};
+async function getIndex(): Promise<Record<string, string>> {
+  if (indexCache) return indexCache;
+  if (indexLoadPromise) return indexLoadPromise;
+  indexLoadPromise = (async () => {
+    try {
+      const { value } = await Preferences.get({ key: CACHE_INDEX_KEY });
+      indexCache = value ? JSON.parse(value) : {};
+    } catch {
+      indexCache = {};
+    }
+    return indexCache!;
+  })();
+  return indexLoadPromise;
+}
+
+async function saveIndex(): Promise<void> {
+  if (indexCache) {
+    await Preferences.set({ key: CACHE_INDEX_KEY, value: JSON.stringify(indexCache) });
   }
 }
 
-/**
- * Save the cache index to Preferences
- */
-async function saveIndex(index: Record<string, string>): Promise<void> {
-  await Preferences.set({ key: CACHE_INDEX_KEY, value: JSON.stringify(index) });
-}
-
-/**
- * Ensure the cache directory exists (no-op if it does)
- */
 let dirCreated = false;
 async function ensureDir(): Promise<void> {
   if (dirCreated) return;
   try {
     await Filesystem.mkdir({ path: CACHE_DIR, directory: Directory.Cache, recursive: true });
-  } catch {
-    // already exists
-  }
+  } catch { /* already exists */ }
   dirCreated = true;
 }
 
 /**
+ * Warm up cache index at app startup for instant lookups
+ */
+export async function warmUpCache(): Promise<void> {
+  if (!isNative) return;
+  const index = await getIndex();
+  // Resolve all cached URIs into memory for instant access
+  const entries = Object.entries(index);
+  await Promise.all(
+    entries.map(async ([remoteUrl, filename]) => {
+      if (memoryCache.has(remoteUrl)) return;
+      try {
+        const result = await Filesystem.getUri({
+          path: `${CACHE_DIR}/${filename}`,
+          directory: Directory.Cache,
+        });
+        memoryCache.set(remoteUrl, Capacitor.convertFileSrc(result.uri));
+      } catch {
+        // File was deleted, clean up index
+        delete index[remoteUrl];
+      }
+    })
+  );
+  await saveIndex();
+}
+
+/**
  * Get a cached local URI for a remote image URL.
- * Returns the local URI if cached, or null.
  */
 export async function getCachedUri(remoteUrl: string): Promise<string | null> {
   if (!isNative) return null;
@@ -71,7 +98,7 @@ export async function getCachedUri(remoteUrl: string): Promise<string | null> {
   }
 
   try {
-    const index = await loadIndex();
+    const index = await getIndex();
     const filename = index[remoteUrl];
     if (!filename) return null;
 
@@ -80,7 +107,6 @@ export async function getCachedUri(remoteUrl: string): Promise<string | null> {
       directory: Directory.Cache,
     });
 
-    // Store in memory for instant subsequent access
     const uri = Capacitor.convertFileSrc(result.uri);
     memoryCache.set(remoteUrl, uri);
     return uri;
@@ -90,67 +116,76 @@ export async function getCachedUri(remoteUrl: string): Promise<string | null> {
 }
 
 /**
- * Download a remote image and cache it locally.
- * Returns the local URI.
+ * Download and cache with deduplication
  */
 export async function cacheImage(remoteUrl: string): Promise<string | null> {
   if (!isNative) return null;
 
-  // Already cached?
-  const existing = await getCachedUri(remoteUrl);
-  if (existing) return existing;
+  // Already in memory
+  if (memoryCache.has(remoteUrl)) return memoryCache.get(remoteUrl)!;
 
-  try {
-    await ensureDir();
-    const filename = urlToFilename(remoteUrl);
+  // Already downloading
+  if (inflightDownloads.has(remoteUrl)) return inflightDownloads.get(remoteUrl)!;
 
-    // Fetch the image as a blob, then write as base64
-    const response = await fetch(remoteUrl);
-    if (!response.ok) return null;
-    const blob = await response.blob();
+  const downloadPromise = (async (): Promise<string | null> => {
+    // Check disk cache
+    const existing = await getCachedUri(remoteUrl);
+    if (existing) return existing;
 
-    const base64 = await new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const result = reader.result as string;
-        resolve(result.split(",")[1]); // strip data:... prefix
-      };
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
-    });
+    try {
+      await ensureDir();
+      const filename = urlToFilename(remoteUrl);
 
-    await Filesystem.writeFile({
-      path: `${CACHE_DIR}/${filename}`,
-      data: base64,
-      directory: Directory.Cache,
-    });
+      const response = await fetch(remoteUrl);
+      if (!response.ok) return null;
+      const blob = await response.blob();
 
-    // Update index
-    const index = await loadIndex();
-    index[remoteUrl] = filename;
-    await saveIndex(index);
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const result = reader.result as string;
+          resolve(result.split(",")[1]);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
 
-    // Get local URI
-    const result = await Filesystem.getUri({
-      path: `${CACHE_DIR}/${filename}`,
-      directory: Directory.Cache,
-    });
+      await Filesystem.writeFile({
+        path: `${CACHE_DIR}/${filename}`,
+        data: base64,
+        directory: Directory.Cache,
+      });
 
-    const uri = Capacitor.convertFileSrc(result.uri);
-    memoryCache.set(remoteUrl, uri);
-    return uri;
-  } catch (e) {
-    console.warn("Image cache write failed:", e);
-    return null;
-  }
+      const index = await getIndex();
+      index[remoteUrl] = filename;
+      await saveIndex();
+
+      const result = await Filesystem.getUri({
+        path: `${CACHE_DIR}/${filename}`,
+        directory: Directory.Cache,
+      });
+
+      const uri = Capacitor.convertFileSrc(result.uri);
+      memoryCache.set(remoteUrl, uri);
+      return uri;
+    } catch (e) {
+      console.warn("Image cache write failed:", e);
+      return null;
+    } finally {
+      inflightDownloads.delete(remoteUrl);
+    }
+  })();
+
+  inflightDownloads.set(remoteUrl, downloadPromise);
+  return downloadPromise;
 }
 
 /**
- * Preload and cache multiple images (fire-and-forget).
+ * Preload and cache multiple images concurrently
  */
 export function preloadAndCacheImages(urls: string[]): void {
   if (!isNative) return;
-  urls.forEach((url) => {
-    if (url) cacheImage(url).catch(() => {});
-  });
+  // Process up to 4 at a time for speed
+  const batch = urls.filter((url) => url && !memoryCache.has(url));
+  batch.forEach((url) => cacheImage(url).catch(() => {}));
 }

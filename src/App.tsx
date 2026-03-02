@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { warmUpCache } from "@/lib/image-cache";
 import Index from "./pages/Index";
 import Bibliotheque from "./pages/Bibliotheque";
 import Publication from "./pages/Publication";
@@ -20,6 +21,9 @@ import PublicationForm from "./pages/admin/PublicationForm";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
+
+// Pre-load image cache index at startup for instant lookups on native
+warmUpCache().catch(() => {});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
