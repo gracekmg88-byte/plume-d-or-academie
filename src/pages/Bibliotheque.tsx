@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import { useParallax } from "@/hooks/useParallax";
+
 import { useSearchParams } from "react-router-dom";
 import { BookOpen, WifiOff } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
@@ -24,7 +24,7 @@ export default function Bibliotheque() {
   const [search, setSearch] = useState("");
   const isOnline = useOnlineStatus();
   const { t } = useLanguage();
-  const { sectionRef, imgStyle } = useParallax();
+  
 
   const { data: publications, isLoading } = usePublications(category === "all" ? undefined : category);
 
@@ -79,9 +79,9 @@ export default function Bibliotheque() {
   return (
     <Layout>
       {/* Header with background image */}
-      <section ref={sectionRef} className="relative overflow-hidden py-12 md:py-16">
+      <section className="relative overflow-hidden py-12 md:py-16">
         <div className="absolute inset-0">
-          <img src={heroBiblioImage} alt="" className="h-full w-full object-cover" style={imgStyle} loading="eager" fetchPriority="high" decoding="sync" />
+          <img src={heroBiblioImage} alt="" className="h-full w-full object-cover" loading="eager" fetchPriority="high" decoding="sync" />
           <div className="absolute inset-0 bg-gradient-to-r from-secondary/95 via-secondary/85 to-secondary/70" />
         </div>
         <div className="relative container">

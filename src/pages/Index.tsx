@@ -15,7 +15,7 @@ export default function Index() {
   const { data: publications, isLoading } = usePublications();
   const recentPublications = publications?.slice(0, 4) || [];
   const { t } = useLanguage();
-  const { sectionRef, imgStyle } = useParallax();
+  
 
   const stats = [
     { icon: Book, label: t("stats.books"), value: "50.000+" },
@@ -41,9 +41,9 @@ export default function Index() {
   return (
     <Layout>
       {/* Hero Section */}
-      <section ref={sectionRef} className="relative overflow-hidden">
+      <section className="relative overflow-hidden">
         <div className="absolute inset-0">
-          <img src={heroImage} alt="Bibliothèque académique" className="h-full w-full object-cover" style={imgStyle} />
+          <img src={heroImage} alt="Bibliothèque académique" className="h-full w-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-r from-secondary/95 via-secondary/80 to-secondary/60" />
         </div>
         <div className="relative container py-20 md:py-32 lg:py-40">
