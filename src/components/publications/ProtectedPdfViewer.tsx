@@ -2,7 +2,7 @@ import { useState, useCallback } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
 import "react-pdf/dist/esm/Page/TextLayer.css";
-import { Lock, ZoomIn, ZoomOut, ChevronLeft, ChevronRight, Loader2, AlertCircle } from "lucide-react";
+import { Lock, ZoomIn, ZoomOut, ChevronLeft, ChevronRight, Loader2, AlertCircle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -36,12 +36,21 @@ export function ProtectedPdfViewer({ fileUrl, title }: ProtectedPdfViewerProps) 
   const zoomIn = () => setScale((s) => Math.min(2.5, s + 0.25));
   const zoomOut = () => setScale((s) => Math.max(0.5, s - 0.25));
 
+  const retry = () => {
+    setError(false);
+    setLoading(true);
+  };
+
   if (error) {
     return (
       <div className="rounded-xl border border-border bg-muted p-8 text-center">
         <AlertCircle className="h-12 w-12 mx-auto mb-4 text-destructive/60" />
         <p className="text-muted-foreground mb-2">Impossible de charger le document.</p>
-        <p className="text-xs text-muted-foreground">Vérifiez votre connexion et réessayez.</p>
+        <p className="text-xs text-muted-foreground mb-4">Vérifiez votre connexion et réessayez.</p>
+        <Button variant="outline" onClick={retry} className="gap-2">
+          <RefreshCw className="h-4 w-4" />
+          Réessayer
+        </Button>
       </div>
     );
   }
