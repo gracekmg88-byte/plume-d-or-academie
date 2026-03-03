@@ -61,6 +61,7 @@ export function Footer() {
           <p className="text-center text-sm opacity-60">
             © {new Date().getFullYear()} Plume d'Or KMG. {t("footer.rights")}
           </p>
+          <p className="text-center text-xs opacity-40 mt-1">v1.0.9</p>
         </div>
       </div>
     </footer>
