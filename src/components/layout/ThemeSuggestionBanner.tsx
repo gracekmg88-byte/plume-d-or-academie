@@ -2,11 +2,13 @@ import { useState, useEffect } from "react";
 import { X, Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { cn } from "@/lib/utils";
 
 const STORAGE_KEY = "plume-theme-suggestion-date";
 
 export function ThemeSuggestionBanner() {
+  const { t } = useLanguage();
   const { theme, toggleTheme } = useTheme();
   const [visible, setVisible] = useState(false);
   const [show, setShow] = useState(false);
@@ -62,16 +64,14 @@ export function ThemeSuggestionBanner() {
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm text-foreground leading-snug">
-            {isNight
-              ? "🌙 Il fait nuit. Activez le mode sombre pour un meilleur confort de lecture."
-              : "☀️ Il fait jour. Essayez le mode clair pour une meilleure visibilité."}
+            {isNight ? t("theme.nightSuggestion") : t("theme.daySuggestion")}
           </p>
           <div className="flex gap-2 mt-3">
             <Button size="sm" onClick={activate} className="h-7 text-xs px-3">
-              Activer
+              {t("theme.activate")}
             </Button>
             <Button size="sm" variant="ghost" onClick={dismiss} className="h-7 text-xs px-3 text-muted-foreground">
-              Non merci
+              {t("theme.dismiss")}
             </Button>
           </div>
         </div>
