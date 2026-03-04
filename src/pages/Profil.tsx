@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { User, Mail, Crown, Calendar, LogOut, Star, BookOpen, Trash2, WifiOff, HardDrive } from "lucide-react";
+import { ReadingStatsCard } from "@/components/profile/ReadingStatsCard";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -270,6 +271,9 @@ export default function Profil() {
               </Button>
             </CardContent>
           </Card>
+
+          {/* Reading Statistics */}
+          <ReadingStatsCard />
         </div>
       </div>
     </Layout>
