@@ -134,6 +134,12 @@ const translations = {
     "footer.memoirs": "Mémoires",
     "footer.tfc": "TFC",
     "footer.articles": "Articles",
+
+    // Theme suggestion banner
+    "theme.nightSuggestion": "🌙 Il fait nuit. Activez le mode sombre pour un meilleur confort de lecture.",
+    "theme.daySuggestion": "☀️ Il fait jour. Essayez le mode clair pour une meilleure visibilité.",
+    "theme.activate": "Activer",
+    "theme.dismiss": "Non merci",
   },
   en: {
     // Nav
@@ -266,6 +272,12 @@ const translations = {
     "footer.memoirs": "Theses",
     "footer.tfc": "Papers",
     "footer.articles": "Articles",
+
+    // Theme suggestion banner
+    "theme.nightSuggestion": "🌙 It's nighttime. Switch to dark mode for a more comfortable reading experience.",
+    "theme.daySuggestion": "☀️ It's daytime. Try light mode for better visibility.",
+    "theme.activate": "Activate",
+    "theme.dismiss": "No thanks",
   },
 } as const;
 
