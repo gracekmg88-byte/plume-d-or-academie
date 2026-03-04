@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useState } from "react";
+import { useEffect, useCallback, useState, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, Book, FileText, GraduationCap, Newspaper, Eye, Calendar, User, Lock, Download, WifiOff, CheckCircle } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
@@ -13,6 +13,7 @@ import { useBillingConfig } from "@/hooks/useBillingConfig";
 import { useOnlineStatus } from "@/hooks/useOffline";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { savePublicationOffline, getOfflinePublication, isPublicationCached, type OfflinePublication } from "@/lib/offline-storage";
+import { useTrackReading } from "@/hooks/useReadingHistory";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { fr, enUS } from "date-fns/locale";
@@ -39,6 +40,9 @@ export default function Publication() {
   const [offlineData, setOfflineData] = useState<OfflinePublication | null>(null);
   const [offlineLoading, setOfflineLoading] = useState(!isOnline);
   const [isCached, setIsCached] = useState(false);
+  const { startReading, updateDuration } = useTrackReading();
+  const readingRecordId = useRef<string | null>(null);
+  const readingStart = useRef<number>(Date.now());
 
   const hasFullAccess = hidePremiumUI || isPremium;
   const dateLocale = language === "fr" ? fr : enUS;
@@ -88,6 +92,24 @@ export default function Publication() {
     e.preventDefault();
     return false;
   }, []);
+
+  // Track reading time
+  useEffect(() => {
+    if (!id || !user || !isOnline) return;
+    readingStart.current = Date.now();
+    startReading.mutateAsync(id).then((recordId) => {
+      if (recordId) readingRecordId.current = recordId;
+    });
+    return () => {
+      if (readingRecordId.current) {
+        const seconds = Math.floor((Date.now() - readingStart.current) / 1000);
+        if (seconds > 2) {
+          updateDuration.mutate({ recordId: readingRecordId.current, seconds });
+        }
+        readingRecordId.current = null;
+      }
+    };
+  }, [id, user, isOnline]);
 
   useEffect(() => {
     // Scroll to top when opening the publication

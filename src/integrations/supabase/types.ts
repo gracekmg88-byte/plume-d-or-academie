@@ -113,6 +113,41 @@ export type Database = {
         }
         Relationships: []
       }
+      reading_history: {
+        Row: {
+          created_at: string
+          id: string
+          publication_id: string
+          reading_duration_seconds: number
+          started_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          publication_id: string
+          reading_duration_seconds?: number
+          started_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          publication_id?: string
+          reading_duration_seconds?: number
+          started_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reading_history_publication_id_fkey"
+            columns: ["publication_id"]
+            isOneToOne: false
+            referencedRelation: "publications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       site_settings: {
         Row: {
           category: string
