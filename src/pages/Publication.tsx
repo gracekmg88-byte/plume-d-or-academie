@@ -1,6 +1,6 @@
 import { useEffect, useCallback, useState, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Book, FileText, GraduationCap, Newspaper, Eye, Calendar, User, Lock, Download, WifiOff, CheckCircle } from "lucide-react";
+import { ArrowLeft, Book, FileText, GraduationCap, Newspaper, Eye, Calendar, User, Lock, Download, WifiOff, CheckCircle, Heart } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +14,7 @@ import { useOnlineStatus } from "@/hooks/useOffline";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { savePublicationOffline, getOfflinePublication, isPublicationCached, type OfflinePublication } from "@/lib/offline-storage";
 import { useTrackReading } from "@/hooks/useReadingHistory";
+import { FavoriteButton } from "@/components/publications/FavoriteButton";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { fr, enUS } from "date-fns/locale";
@@ -263,6 +264,7 @@ export default function Publication() {
                 <Icon className="h-4 w-4 mr-1" />
                 {config.label}
               </Badge>
+              <FavoriteButton publicationId={id!} size="sm" />
             </div>
 
             <h1 className="font-serif text-3xl md:text-4xl lg:text-5xl font-bold text-foreground leading-tight">

@@ -6,6 +6,7 @@ import { Layout } from "@/components/layout/Layout";
 import { PublicationCard } from "@/components/publications/PublicationCard";
 import { CategoryFilter } from "@/components/publications/CategoryFilter";
 import { SearchBar } from "@/components/publications/SearchBar";
+import { AdvancedFilters, type SortOption, type AdvancedFilterValues } from "@/components/publications/AdvancedFilters";
 import { usePublications } from "@/hooks/usePublications";
 import { preloadImages } from "@/components/ui/cached-image";
 import { preloadAndCacheImages } from "@/lib/image-cache";
@@ -22,6 +23,7 @@ export default function Bibliotheque() {
   
   const [category, setCategory] = useState<Category>(initialCategory);
   const [search, setSearch] = useState("");
+  const [filters, setFilters] = useState<AdvancedFilterValues>({ author: "", sortBy: "date_desc" });
   const isOnline = useOnlineStatus();
   const { t } = useLanguage();
   
@@ -52,19 +54,50 @@ export default function Bibliotheque() {
   const sourceData = isOnline ? publications : offlinePubs;
   const actualLoading = isOnline ? isLoading : offlineLoading;
 
-  const filteredPublications = useMemo(() => {
-    const data = sourceData as Array<{ id: string; title: string; author: string; description: string | null; category: string; cover_image_url: string | null; views_count: number }>;
+  // Extract unique authors for filter dropdown
+  const authors = useMemo(() => {
+    const data = sourceData as Array<{ author: string }> | undefined;
     if (!data) return [];
-    let filtered = data;
+    return [...new Set(data.map((p) => p.author))].sort();
+  }, [sourceData]);
+
+  const filteredPublications = useMemo(() => {
+    const data = sourceData as Array<{ id: string; title: string; author: string; description: string | null; category: string; cover_image_url: string | null; views_count: number; created_at?: string }>;
+    if (!data) return [];
+    let filtered = [...data];
     if (!isOnline && category !== "all") {
       filtered = filtered.filter((p) => p.category === category);
     }
-    if (!search.trim()) return filtered;
-    const searchLower = search.toLowerCase();
-    return filtered.filter(
-      (pub) => pub.title.toLowerCase().includes(searchLower) || pub.author.toLowerCase().includes(searchLower)
-    );
-  }, [sourceData, search, category, isOnline]);
+    if (search.trim()) {
+      const searchLower = search.toLowerCase();
+      filtered = filtered.filter(
+        (pub) => pub.title.toLowerCase().includes(searchLower) || pub.author.toLowerCase().includes(searchLower)
+      );
+    }
+    // Author filter
+    if (filters.author) {
+      filtered = filtered.filter((p) => p.author === filters.author);
+    }
+    // Sorting
+    filtered.sort((a, b) => {
+      switch (filters.sortBy) {
+        case "date_asc":
+          return (a.created_at || "").localeCompare(b.created_at || "");
+        case "views_desc":
+          return b.views_count - a.views_count;
+        case "views_asc":
+          return a.views_count - b.views_count;
+        case "title_asc":
+          return a.title.localeCompare(b.title);
+        case "title_desc":
+          return b.title.localeCompare(a.title);
+        case "date_desc":
+        default:
+          return (b.created_at || "").localeCompare(a.created_at || "");
+      }
+    });
+    return filtered;
+  }, [sourceData, search, category, isOnline, filters]);
 
   const handleCategoryChange = (newCategory: Category) => {
     setCategory(newCategory);
@@ -112,6 +145,9 @@ export default function Bibliotheque() {
           <div className="flex flex-col md:flex-row md:items-center gap-4 justify-between">
             <CategoryFilter selected={category} onChange={handleCategoryChange} />
             <SearchBar value={search} onChange={setSearch} />
+          </div>
+          <div className="mt-3">
+            <AdvancedFilters values={filters} onChange={setFilters} authors={authors} />
           </div>
         </div>
       </section>
