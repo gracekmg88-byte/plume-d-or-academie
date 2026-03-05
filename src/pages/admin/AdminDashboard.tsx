@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useBillingConfig } from "@/hooks/useBillingConfig";
+import { AdminReadingStatsCard } from "@/components/admin/AdminReadingStatsCard";
 import { Badge } from "@/components/ui/badge";
 import {
   Tooltip,
@@ -233,6 +234,11 @@ export default function AdminDashboard() {
               </div>
             </div>
           </Link>
+        </div>
+
+        {/* Reading Statistics */}
+        <div className="mb-8">
+          <AdminReadingStatsCard />
         </div>
 
         {/* Actions */}
