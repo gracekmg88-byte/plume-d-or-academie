@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { User, Mail, Crown, Calendar, LogOut, Star, BookOpen, Trash2, WifiOff, HardDrive } from "lucide-react";
+import { FavoritesSection } from "@/components/profile/FavoritesSection";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -192,6 +193,9 @@ export default function Profil() {
                   </div>
                 </div>
               </div>
+              {/* Favorites */}
+              <FavoritesSection />
+
               {/* Offline Cache Management */}
               <div className="border-t border-border pt-6">
                 <div className="flex items-center justify-between mb-4">

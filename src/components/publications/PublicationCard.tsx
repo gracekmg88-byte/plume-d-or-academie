@@ -3,6 +3,7 @@ import { Book, FileText, GraduationCap, Newspaper, Eye } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CachedImage } from "@/components/ui/cached-image";
+import { FavoriteButton } from "@/components/publications/FavoriteButton";
 import { cn } from "@/lib/utils";
 
 type Category = "livre" | "memoire" | "tfc" | "article";
@@ -58,6 +59,12 @@ export function PublicationCard({
             <Icon className="h-3 w-3 mr-1" />
             {config.label}
           </Badge>
+          <div className="absolute top-3 right-3 z-10">
+            <FavoriteButton
+              publicationId={id}
+              className="h-8 w-8 bg-background/80 backdrop-blur-sm shadow-sm hover:bg-background"
+            />
+          </div>
         </div>
 
         {/* Content */}
