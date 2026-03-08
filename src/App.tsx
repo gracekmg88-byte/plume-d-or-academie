@@ -43,6 +43,17 @@ warmUpCache().catch(() => {});
   preloadImage(src).catch(() => {});
 });
 
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  const navType = useNavigationType();
+  useEffect(() => {
+    if (navType !== "POP") {
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    }
+  }, [pathname, navType]);
+  return null;
+}
+
 function AnimatedRoutes() {
   const location = useLocation();
   return (
