@@ -1,39 +1,31 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { GraduationCap, Upload, ArrowLeft, FileText, CheckCircle, ImagePlus } from "lucide-react";
+import { Link } from "react-router-dom";
+import { GraduationCap, ArrowLeft, ArrowRight, CheckCircle } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { useCreateSubmission, useMySubmissions } from "@/hooks/useSubmissions";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { format } from "date-fns";
-import { fr } from "date-fns/locale";
-import { cn } from "@/lib/utils";
 
-const statusLabels: Record<string, { label: string; className: string }> = {
-  pending: { label: "En attente", className: "bg-amber-500/10 text-amber-600" },
-  approved: { label: "Approuvé", className: "bg-green-500/10 text-green-600" },
-  rejected: { label: "Refusé", className: "bg-destructive/10 text-destructive" },
-};
+import { SubmissionStepper } from "@/components/submissions/SubmissionStepper";
+import { SubmissionStepPersonal } from "@/components/submissions/SubmissionStepPersonal";
+import { SubmissionStepDetails } from "@/components/submissions/SubmissionStepDetails";
+import { SubmissionStepFiles } from "@/components/submissions/SubmissionStepFiles";
+import { SubmissionsList } from "@/components/submissions/SubmissionsList";
+
+const STEPS = [
+  { label: "Identité", description: "Vos informations" },
+  { label: "Travail", description: "Titre & description" },
+  { label: "Fichiers", description: "PDF & couverture" },
+];
 
 export default function DepotMemoire() {
   const { user, loading } = useAuth();
-  const navigate = useNavigate();
   const createSubmission = useCreateSubmission();
-  const { data: mySubmissions = [], isLoading: loadingSubs } = useMySubmissions();
+  const { data: mySubmissions = [] } = useMySubmissions();
 
+  const [step, setStep] = useState(0);
   const [form, setForm] = useState({
     student_name: "",
     university: "",
@@ -49,6 +41,10 @@ export default function DepotMemoire() {
   const [coverUrl, setCoverUrl] = useState("");
   const [coverPreview, setCoverPreview] = useState("");
   const [submitted, setSubmitted] = useState(false);
+
+  const updateForm = (updates: Partial<typeof form>) => {
+    setForm((prev) => ({ ...prev, ...updates }));
+  };
 
   if (loading) {
     return (
@@ -79,6 +75,16 @@ export default function DepotMemoire() {
     );
   }
 
+  const canGoNext = () => {
+    if (step === 0) {
+      return form.student_name && form.university && form.faculty && form.academic_year;
+    }
+    if (step === 1) {
+      return form.title && form.category;
+    }
+    return true;
+  };
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -93,9 +99,7 @@ export default function DepotMemoire() {
 
     setUploading(true);
     const fileName = `submissions/${user.id}/${Date.now()}-${file.name}`;
-    const { error } = await supabase.storage
-      .from("publications")
-      .upload(fileName, file);
+    const { error } = await supabase.storage.from("publications").upload(fileName, file);
 
     if (error) {
       toast.error("Erreur lors du téléversement.");
@@ -103,10 +107,7 @@ export default function DepotMemoire() {
       return;
     }
 
-    const { data: urlData } = supabase.storage
-      .from("publications")
-      .getPublicUrl(fileName);
-
+    const { data: urlData } = supabase.storage.from("publications").getPublicUrl(fileName);
     setFileUrl(urlData.publicUrl);
     setUploading(false);
     toast.success("Fichier téléversé !");
@@ -126,9 +127,7 @@ export default function DepotMemoire() {
 
     setCoverUploading(true);
     const fileName = `submissions/${user.id}/covers/${Date.now()}-${file.name}`;
-    const { error } = await supabase.storage
-      .from("publications")
-      .upload(fileName, file);
+    const { error } = await supabase.storage.from("publications").upload(fileName, file);
 
     if (error) {
       toast.error("Erreur lors du téléversement de la couverture.");
@@ -136,24 +135,24 @@ export default function DepotMemoire() {
       return;
     }
 
-    const { data: urlData } = supabase.storage
-      .from("publications")
-      .getPublicUrl(fileName);
-
+    const { data: urlData } = supabase.storage.from("publications").getPublicUrl(fileName);
     setCoverUrl(urlData.publicUrl);
     setCoverPreview(URL.createObjectURL(file));
     setCoverUploading(false);
     toast.success("Page de couverture téléversée !");
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     if (!fileUrl) {
       toast.error("Veuillez téléverser votre fichier PDF.");
       return;
     }
     try {
-      await createSubmission.mutateAsync({ ...form, file_url: fileUrl, cover_url: coverUrl || undefined });
+      await createSubmission.mutateAsync({
+        ...form,
+        file_url: fileUrl,
+        cover_url: coverUrl || undefined,
+      });
       setSubmitted(true);
       toast.success("Soumission envoyée avec succès !");
     } catch {
@@ -174,7 +173,7 @@ export default function DepotMemoire() {
             Vous serez notifié de la décision.
           </p>
           <div className="flex gap-3 justify-center">
-            <Button variant="outline" onClick={() => setSubmitted(false)}>
+            <Button variant="outline" onClick={() => { setSubmitted(false); setStep(0); setFileUrl(""); setCoverUrl(""); setCoverPreview(""); }}>
               Soumettre un autre
             </Button>
             <Link to="/bibliotheque">
@@ -197,7 +196,7 @@ export default function DepotMemoire() {
           Retour
         </Link>
 
-        <div className="mb-8">
+        <div className="mb-6">
           <h1 className="font-serif text-3xl font-bold text-foreground flex items-center gap-3">
             <GraduationCap className="h-8 w-8 text-primary" />
             Déposer un mémoire
@@ -207,218 +206,60 @@ export default function DepotMemoire() {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div className="grid sm:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="student_name">Nom complet *</Label>
-              <Input
-                id="student_name"
-                required
-                maxLength={100}
-                value={form.student_name}
-                onChange={(e) => setForm({ ...form, student_name: e.target.value })}
-                placeholder="Jean Mukadi"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="university">Université *</Label>
-              <Input
-                id="university"
-                required
-                maxLength={200}
-                value={form.university}
-                onChange={(e) => setForm({ ...form, university: e.target.value })}
-                placeholder="Université de Kinshasa"
-              />
-            </div>
-          </div>
+        <SubmissionStepper steps={STEPS} currentStep={step} />
 
-          <div className="grid sm:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="faculty">Faculté *</Label>
-              <Input
-                id="faculty"
-                required
-                maxLength={200}
-                value={form.faculty}
-                onChange={(e) => setForm({ ...form, faculty: e.target.value })}
-                placeholder="Sciences Informatiques"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="academic_year">Année académique *</Label>
-              <Input
-                id="academic_year"
-                required
-                maxLength={20}
-                value={form.academic_year}
-                onChange={(e) => setForm({ ...form, academic_year: e.target.value })}
-                placeholder="2025-2026"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="title">Titre du mémoire *</Label>
-            <Input
-              id="title"
-              required
-              maxLength={300}
-              value={form.title}
-              onChange={(e) => setForm({ ...form, title: e.target.value })}
-              placeholder="Étude sur l'impact de l'IA..."
+        <div className="min-h-[280px]">
+          {step === 0 && <SubmissionStepPersonal form={form} onChange={updateForm} />}
+          {step === 1 && <SubmissionStepDetails form={form} onChange={updateForm} />}
+          {step === 2 && (
+            <SubmissionStepFiles
+              fileUrl={fileUrl}
+              uploading={uploading}
+              coverPreview={coverPreview}
+              coverUploading={coverUploading}
+              onFileUpload={handleFileUpload}
+              onCoverUpload={handleCoverUpload}
             />
-          </div>
+          )}
+        </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="category">Catégorie *</Label>
-            <Select
-              value={form.category}
-              onValueChange={(val) => setForm({ ...form, category: val })}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="memoire">Mémoire</SelectItem>
-                <SelectItem value="tfc">TFC</SelectItem>
-                <SelectItem value="article">Article</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
-            <Textarea
-              id="description"
-              maxLength={2000}
-              rows={4}
-              value={form.description}
-              onChange={(e) => setForm({ ...form, description: e.target.value })}
-              placeholder="Décrivez brièvement votre travail..."
-            />
-          </div>
-
-          {/* Page de couverture */}
-          <div className="space-y-2">
-            <Label>Page de couverture (max 5 Mo)</Label>
-            <div className="border-2 border-dashed border-border rounded-lg p-6 text-center">
-              {coverPreview ? (
-                <div className="flex flex-col items-center gap-3">
-                  <img
-                    src={coverPreview}
-                    alt="Aperçu couverture"
-                    className="max-h-40 rounded-lg border border-border object-contain"
-                  />
-                  <span className="text-sm font-medium text-primary">Couverture téléversée</span>
-                  <label className="cursor-pointer">
-                    <span className="text-xs text-muted-foreground hover:text-foreground underline">
-                      Changer l'image
-                    </span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={handleCoverUpload}
-                      disabled={coverUploading}
-                    />
-                  </label>
-                </div>
-              ) : (
-                <>
-                  <ImagePlus className="mx-auto h-8 w-8 text-muted-foreground/40 mb-2" />
-                  <label className="cursor-pointer">
-                    <span className="text-sm text-primary font-medium hover:underline">
-                      {coverUploading ? "Téléversement..." : "Ajouter une page de couverture"}
-                    </span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={handleCoverUpload}
-                      disabled={coverUploading}
-                    />
-                  </label>
-                  <p className="text-xs text-muted-foreground mt-1">JPG, PNG ou WebP</p>
-                </>
-              )}
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label>Fichier PDF * (max 20 Mo)</Label>
-            <div className="border-2 border-dashed border-border rounded-lg p-6 text-center">
-              {fileUrl ? (
-                <div className="flex items-center justify-center gap-2 text-green-600">
-                  <FileText className="h-5 w-5" />
-                  <span className="text-sm font-medium">Fichier téléversé</span>
-                </div>
-              ) : (
-                <>
-                  <Upload className="mx-auto h-8 w-8 text-muted-foreground/40 mb-2" />
-                  <label className="cursor-pointer">
-                    <span className="text-sm text-primary font-medium hover:underline">
-                      {uploading ? "Téléversement..." : "Choisir un fichier"}
-                    </span>
-                    <input
-                      type="file"
-                      accept=".pdf"
-                      className="hidden"
-                      onChange={handleFileUpload}
-                      disabled={uploading}
-                    />
-                  </label>
-                </>
-              )}
-            </div>
-          </div>
-
+        {/* Navigation buttons */}
+        <div className="flex justify-between mt-8 gap-3">
           <Button
-            type="submit"
-            className="w-full gap-2"
-            disabled={createSubmission.isPending || !fileUrl}
+            type="button"
+            variant="outline"
+            onClick={() => setStep((s) => s - 1)}
+            disabled={step === 0}
+            className="gap-2"
           >
-            <GraduationCap className="h-4 w-4" />
-            {createSubmission.isPending ? "Envoi en cours..." : "Soumettre"}
+            <ArrowLeft className="h-4 w-4" />
+            Précédent
           </Button>
-        </form>
 
-        {/* Previous submissions */}
-        {mySubmissions.length > 0 && (
-          <div className="mt-12">
-            <h2 className="font-serif text-xl font-semibold text-foreground mb-4">
-              Mes soumissions
-            </h2>
-            <div className="space-y-3">
-              {mySubmissions.map((sub) => {
-                const st = statusLabels[sub.status] || statusLabels.pending;
-                return (
-                  <div
-                    key={sub.id}
-                    className="bg-card border border-border rounded-lg p-4"
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0 flex-1">
-                        <p className="font-medium text-foreground truncate">{sub.title}</p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {format(new Date(sub.created_at), "d MMMM yyyy", { locale: fr })}
-                        </p>
-                      </div>
-                      <Badge className={cn("shrink-0", st.className)}>
-                        {st.label}
-                      </Badge>
-                    </div>
-                    {sub.admin_note && (
-                      <p className="mt-2 text-sm text-muted-foreground bg-muted/50 rounded px-3 py-2">
-                        Note admin : {sub.admin_note}
-                      </p>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
+          {step < 2 ? (
+            <Button
+              type="button"
+              onClick={() => setStep((s) => s + 1)}
+              disabled={!canGoNext()}
+              className="gap-2"
+            >
+              Suivant
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+          ) : (
+            <Button
+              type="button"
+              onClick={handleSubmit}
+              disabled={createSubmission.isPending || !fileUrl}
+              className="gap-2"
+            >
+              <GraduationCap className="h-4 w-4" />
+              {createSubmission.isPending ? "Envoi en cours..." : "Soumettre"}
+            </Button>
+          )}
+        </div>
+
+        <SubmissionsList submissions={mySubmissions} />
       </div>
     </Layout>
   );
