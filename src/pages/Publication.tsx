@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CachedImage } from "@/components/ui/cached-image";
 import { ProtectedPdfViewer } from "@/components/publications/ProtectedPdfViewer";
+import { AnnotationsPanel } from "@/components/publications/AnnotationsPanel";
+import { AISummary } from "@/components/publications/AISummary";
 import { usePublication, useIncrementViews } from "@/hooks/usePublications";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
@@ -47,6 +49,7 @@ export default function Publication() {
   const [offlineLoading, setOfflineLoading] = useState(!isOnline);
   const [isCached, setIsCached] = useState(false);
   const [resumePage, setResumePage] = useState<number>(pageFromUrl || 1);
+  const [currentViewPage, setCurrentViewPage] = useState<number>(pageFromUrl || 1);
   const { startReading, updateDuration, savePageProgress } = useTrackReading();
   const readingRecordId = useRef<string | null>(null);
   const readingStart = useRef<number>(Date.now());
@@ -169,6 +172,7 @@ export default function Publication() {
   // Save page progress on every page change (debounced)
   const handlePageChange = useCallback((page: number) => {
     currentPageRef.current = page;
+    setCurrentViewPage(page);
     if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
     saveTimeoutRef.current = setTimeout(() => {
       if (readingRecordId.current && page > 0) {
@@ -365,20 +369,38 @@ export default function Publication() {
               </div>
             )}
 
-            {/* PDF Viewer */}
+            {/* AI Summary */}
+            <AISummary
+              publicationId={id!}
+              title={displayPub.title}
+              author={displayPub.author}
+              category={displayPub.category}
+              description={displayPub.description || undefined}
+              existingSummary={(displayPub as any).summary || null}
+              isAdmin={false}
+            />
+
+            {/* PDF Viewer + Annotations */}
             {pdfUrl && (
               <div className="mt-8" id="document-viewer">
                 <h2 className="font-serif text-xl font-semibold text-foreground mb-4">{t("pub.document")}</h2>
-                <ProtectedPdfViewer
-                  fileUrl={pdfUrl}
-                  title={displayPub.title}
-                  initialPage={resumePage}
-                  onPageChange={handlePageChange}
-                />
-                <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
-                  <Lock className="h-3 w-3" />
-                  {t("pub.protected")}
-                </p>
+                <div className="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-4">
+                  <div>
+                    <ProtectedPdfViewer
+                      fileUrl={pdfUrl}
+                      title={displayPub.title}
+                      initialPage={resumePage}
+                      onPageChange={handlePageChange}
+                    />
+                    <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
+                      <Lock className="h-3 w-3" />
+                      {t("pub.protected")}
+                    </p>
+                  </div>
+                  {user && (
+                    <AnnotationsPanel publicationId={id!} currentPage={currentViewPage} />
+                  )}
+                </div>
               </div>
             )}
 

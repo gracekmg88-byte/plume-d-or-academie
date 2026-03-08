@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.generate-cover]
 verify_jwt = false
+
+[functions.summarize-publication]
+verify_jwt = false
