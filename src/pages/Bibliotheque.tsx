@@ -1,7 +1,7 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { BookOpen, WifiOff, RefreshCw, FolderDown } from "lucide-react";
+import { BookOpen, WifiOff, RefreshCw, FolderDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Layout } from "@/components/layout/Layout";
 import { PublicationCard } from "@/components/publications/PublicationCard";
@@ -26,6 +26,8 @@ export default function Bibliotheque() {
   const [category, setCategory] = useState<Category>(initialCategory);
   const [search, setSearch] = useState("");
   const [filters, setFilters] = useState<AdvancedFilterValues>({ author: "", sortBy: "date_desc" });
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 12;
   const isOnline = useOnlineStatus();
   const { t } = useLanguage();
   
@@ -104,8 +106,20 @@ export default function Bibliotheque() {
     return filtered;
   }, [sourceData, search, category, isOnline, filters]);
 
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, category, filters]);
+
+  const totalPages = Math.ceil(filteredPublications.length / ITEMS_PER_PAGE);
+  const paginatedPublications = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filteredPublications.slice(start, start + ITEMS_PER_PAGE);
+  }, [filteredPublications, currentPage, ITEMS_PER_PAGE]);
+
   const handleCategoryChange = (newCategory: Category) => {
     setCategory(newCategory);
+    setCurrentPage(1);
     if (newCategory === "all") {
       searchParams.delete("categorie");
     } else {
@@ -113,6 +127,10 @@ export default function Bibliotheque() {
     }
     setSearchParams(searchParams);
   };
+
+  const scrollToGrid = useCallback(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
 
   return (
     <Layout>
@@ -207,9 +225,14 @@ export default function Bibliotheque() {
               <>
                 <p className="text-muted-foreground mb-6">
                   {filteredPublications.length} {filteredPublications.length > 1 ? t("library.found_many") : t("library.found_one")}
+                  {totalPages > 1 && (
+                    <span className="ml-2 text-sm">
+                      — Page {currentPage}/{totalPages}
+                    </span>
+                  )}
                 </p>
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {filteredPublications.map((pub) => (
+                  {paginatedPublications.map((pub) => (
                     <PublicationCard
                       key={pub.id}
                       id={pub.id}
@@ -222,6 +245,61 @@ export default function Bibliotheque() {
                     />
                   ))}
                 </div>
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-center gap-2 mt-10">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      disabled={currentPage === 1}
+                      onClick={() => { setCurrentPage((p) => p - 1); scrollToGrid(); }}
+                      aria-label="Page précédente"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+
+                    {Array.from({ length: totalPages }, (_, i) => i + 1)
+                      .filter((page) => {
+                        if (totalPages <= 7) return true;
+                        if (page === 1 || page === totalPages) return true;
+                        if (Math.abs(page - currentPage) <= 1) return true;
+                        return false;
+                      })
+                      .reduce<(number | "ellipsis")[]>((acc, page, idx, arr) => {
+                        if (idx > 0 && page - (arr[idx - 1] as number) > 1) {
+                          acc.push("ellipsis");
+                        }
+                        acc.push(page);
+                        return acc;
+                      }, [])
+                      .map((item, idx) =>
+                        item === "ellipsis" ? (
+                          <span key={`e-${idx}`} className="px-2 text-muted-foreground">…</span>
+                        ) : (
+                          <Button
+                            key={item}
+                            variant={currentPage === item ? "default" : "outline"}
+                            size="icon"
+                            className="h-9 w-9"
+                            onClick={() => { setCurrentPage(item); scrollToGrid(); }}
+                          >
+                            {item}
+                          </Button>
+                        )
+                      )}
+
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      disabled={currentPage === totalPages}
+                      onClick={() => { setCurrentPage((p) => p + 1); scrollToGrid(); }}
+                      aria-label="Page suivante"
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
               </>
             ) : (
               <div className="text-center py-16">
