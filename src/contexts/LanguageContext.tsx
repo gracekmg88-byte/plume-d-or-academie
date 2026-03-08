@@ -305,6 +305,23 @@ const translations = {
     "theme.daySuggestion": "☀️ It's daytime. Try light mode for better visibility.",
     "theme.activate": "Activate",
     "theme.dismiss": "No thanks",
+
+    // Share
+    "share.button": "Share",
+    "share.copied": "Link copied!",
+    "share.copyError": "Could not copy link",
+    "share.copyLink": "Copy link",
+
+    // Chat
+    "chat.title": "Community Chat",
+    "chat.subtitle": "Chat with the Plume d'Or community",
+    "chat.placeholder": "Write a message...",
+    "chat.send": "Send",
+    "chat.login": "Sign in to join the chat",
+    "chat.loginBtn": "Sign in",
+    "chat.empty": "No messages yet. Be the first to write!",
+    "chat.deleted": "Message deleted",
+    "chat.error": "Error sending message",
   },
 } as const;
 
