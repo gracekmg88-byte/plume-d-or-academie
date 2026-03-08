@@ -1,6 +1,6 @@
 import { useEffect } from "react";
-import { Link } from "react-router-dom";
-import { ArrowRight, Book, FileText, GraduationCap, Newspaper, Users, Award, BookOpen } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { ArrowRight, Book, FileText, GraduationCap, Newspaper, Users, Award, BookOpen, WifiOff, RefreshCw, FolderDown } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { PublicationCard } from "@/components/publications/PublicationCard";
@@ -9,6 +9,7 @@ import { preloadImages } from "@/components/ui/cached-image";
 import { preloadAndCacheImages } from "@/lib/image-cache";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
+import { useOnlineStatus } from "@/hooks/useOffline";
 import { ContinueReadingSection } from "@/components/home/ContinueReadingSection";
 import { RecommendationsSection } from "@/components/home/RecommendationsSection";
 import heroImage from "@/assets/hero-library.webp";
