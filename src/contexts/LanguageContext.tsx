@@ -14,6 +14,7 @@ const translations = {
     "nav.login": "Connexion",
     "nav.myProfile": "Mon profil",
     "nav.administration": "Administration",
+    "nav.chat": "Chat",
 
     // Index hero
     "hero.badge": "Bibliothèque Académique Numérique",
