@@ -130,6 +130,7 @@ export function Header() {
           <Button variant="ghost" size="icon" onClick={toggleTheme} className="h-9 w-9">
             {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </Button>
+          {user && <NotificationCenter />}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="p-2 text-foreground"
