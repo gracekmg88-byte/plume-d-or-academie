@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { GraduationCap, Upload, ArrowLeft, FileText, CheckCircle } from "lucide-react";
+import { GraduationCap, Upload, ArrowLeft, FileText, CheckCircle, ImagePlus } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -45,6 +45,9 @@ export default function DepotMemoire() {
   });
   const [uploading, setUploading] = useState(false);
   const [fileUrl, setFileUrl] = useState("");
+  const [coverUploading, setCoverUploading] = useState(false);
+  const [coverUrl, setCoverUrl] = useState("");
+  const [coverPreview, setCoverPreview] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
   if (!user) {
@@ -99,6 +102,40 @@ export default function DepotMemoire() {
     toast.success("Fichier téléversé !");
   };
 
+  const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("Seuls les fichiers image sont acceptés.");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("L'image ne doit pas dépasser 5 Mo.");
+      return;
+    }
+
+    setCoverUploading(true);
+    const fileName = `submissions/${user.id}/covers/${Date.now()}-${file.name}`;
+    const { error } = await supabase.storage
+      .from("publications")
+      .upload(fileName, file);
+
+    if (error) {
+      toast.error("Erreur lors du téléversement de la couverture.");
+      setCoverUploading(false);
+      return;
+    }
+
+    const { data: urlData } = supabase.storage
+      .from("publications")
+      .getPublicUrl(fileName);
+
+    setCoverUrl(urlData.publicUrl);
+    setCoverPreview(URL.createObjectURL(file));
+    setCoverUploading(false);
+    toast.success("Page de couverture téléversée !");
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!fileUrl) {
@@ -106,7 +143,7 @@ export default function DepotMemoire() {
       return;
     }
     try {
-      await createSubmission.mutateAsync({ ...form, file_url: fileUrl });
+      await createSubmission.mutateAsync({ ...form, file_url: fileUrl, cover_url: coverUrl || undefined });
       setSubmitted(true);
       toast.success("Soumission envoyée avec succès !");
     } catch {
@@ -250,6 +287,52 @@ export default function DepotMemoire() {
               onChange={(e) => setForm({ ...form, description: e.target.value })}
               placeholder="Décrivez brièvement votre travail..."
             />
+          </div>
+
+          {/* Page de couverture */}
+          <div className="space-y-2">
+            <Label>Page de couverture (max 5 Mo)</Label>
+            <div className="border-2 border-dashed border-border rounded-lg p-6 text-center">
+              {coverPreview ? (
+                <div className="flex flex-col items-center gap-3">
+                  <img
+                    src={coverPreview}
+                    alt="Aperçu couverture"
+                    className="max-h-40 rounded-lg border border-border object-contain"
+                  />
+                  <span className="text-sm font-medium text-primary">Couverture téléversée</span>
+                  <label className="cursor-pointer">
+                    <span className="text-xs text-muted-foreground hover:text-foreground underline">
+                      Changer l'image
+                    </span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleCoverUpload}
+                      disabled={coverUploading}
+                    />
+                  </label>
+                </div>
+              ) : (
+                <>
+                  <ImagePlus className="mx-auto h-8 w-8 text-muted-foreground/40 mb-2" />
+                  <label className="cursor-pointer">
+                    <span className="text-sm text-primary font-medium hover:underline">
+                      {coverUploading ? "Téléversement..." : "Ajouter une page de couverture"}
+                    </span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleCoverUpload}
+                      disabled={coverUploading}
+                    />
+                  </label>
+                  <p className="text-xs text-muted-foreground mt-1">JPG, PNG ou WebP</p>
+                </>
+              )}
+            </div>
           </div>
 
           <div className="space-y-2">

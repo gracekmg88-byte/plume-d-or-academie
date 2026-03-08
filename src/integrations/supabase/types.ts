@@ -307,6 +307,7 @@ export type Database = {
           academic_year: string
           admin_note: string | null
           category: string
+          cover_url: string | null
           created_at: string
           description: string | null
           faculty: string
@@ -323,6 +324,7 @@ export type Database = {
           academic_year: string
           admin_note?: string | null
           category?: string
+          cover_url?: string | null
           created_at?: string
           description?: string | null
           faculty: string
@@ -339,6 +341,7 @@ export type Database = {
           academic_year?: string
           admin_note?: string | null
           category?: string
+          cover_url?: string | null
           created_at?: string
           description?: string | null
           faculty?: string
