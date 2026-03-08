@@ -50,6 +50,9 @@
     --cream: 40 30% 97%;
     --parchment: 38 25% 93%;
 
+    /* Validation */
+    --success: 142 60% 40%;
+    --success-foreground: 142 60% 95%;
     /* Sidebar */
     --sidebar-background: 220 40% 20%;
     --sidebar-foreground: 40 30% 95%;
