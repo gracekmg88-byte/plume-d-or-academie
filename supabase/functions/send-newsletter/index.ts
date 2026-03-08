@@ -155,7 +155,7 @@ Deno.serve(async (req) => {
       const batch = subscribers.slice(i, i + batchSize);
 
       const emails = batch.map((sub) => ({
-        from: "Plume d'Or KMG <onboarding@resend.dev>",
+        from: "Plume d'Or KMG <kmgmultiservices98@gmail.com>",
         to: sub.email,
         subject: `📚 ${publications.length} nouvelle${publications.length > 1 ? "s" : ""} publication${publications.length > 1 ? "s" : ""} cette semaine - Plume d'Or`,
         html: emailHtml,
