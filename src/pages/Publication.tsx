@@ -1,6 +1,5 @@
 import { useEffect, useCallback, useState, useRef } from "react";
-import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Book, FileText, GraduationCap, Newspaper, Eye, Calendar, User, Lock, Download, WifiOff, CheckCircle, Heart } from "lucide-react";
+import { useParams, Link, useSearchParams } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";

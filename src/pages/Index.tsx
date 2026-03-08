@@ -1,5 +1,4 @@
 import { useEffect } from "react";
-
 import { Link } from "react-router-dom";
 import { ArrowRight, Book, FileText, GraduationCap, Newspaper, Users, Award, BookOpen } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
@@ -9,6 +8,9 @@ import { usePublications } from "@/hooks/usePublications";
 import { preloadImages } from "@/components/ui/cached-image";
 import { preloadAndCacheImages } from "@/lib/image-cache";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useAuth } from "@/hooks/useAuth";
+import { ContinueReadingSection } from "@/components/home/ContinueReadingSection";
+import { RecommendationsSection } from "@/components/home/RecommendationsSection";
 import heroImage from "@/assets/hero-library.webp";
 
 export default function Index() {

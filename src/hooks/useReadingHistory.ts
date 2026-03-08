@@ -144,10 +144,14 @@ export function useTrackReading() {
   });
 
   const updateDuration = useMutation({
-    mutationFn: async ({ recordId, seconds }: { recordId: string; seconds: number }) => {
+    mutationFn: async ({ recordId, seconds, lastPage }: { recordId: string; seconds: number; lastPage?: number }) => {
+      const updateData: any = { reading_duration_seconds: seconds };
+      if (lastPage && lastPage > 0) {
+        updateData.last_page_read = lastPage;
+      }
       const { error } = await supabase
         .from("reading_history")
-        .update({ reading_duration_seconds: seconds })
+        .update(updateData)
         .eq("id", recordId);
       if (error) throw error;
     },
