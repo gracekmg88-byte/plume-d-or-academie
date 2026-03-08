@@ -76,6 +76,11 @@ export default function Index() {
             </div>
           </div>
         </div>
+        <div className="relative bg-secondary/90 py-3 text-center">
+          <span className="text-sm md:text-base tracking-[0.25em] uppercase font-serif text-secondary-foreground/70">
+            {t("hero.badge")}
+          </span>
+        </div>
       </section>
 
       {/* Stats Section */}
