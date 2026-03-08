@@ -60,6 +60,11 @@ const translations = {
     "library.noResultsOffline": "Consultez des publications en ligne pour les rendre disponibles hors connexion.",
     "library.noResultsSearch": "Aucun résultat pour \"{search}\". Essayez avec d'autres termes.",
     "library.noResultsCategory": "Aucune publication disponible dans cette catégorie.",
+    "library.noConnection": "Aucune connexion internet.",
+    "library.noConnectionDesc": "Veuillez vérifier votre connexion et réessayer.",
+    "library.noConnectionHint": "Vous pouvez également consulter vos documents téléchargés hors ligne depuis votre profil.",
+    "library.retry": "Réessayer",
+    "library.viewOfflineDocs": "Voir mes documents hors ligne",
 
     // About
     "about.title": "À propos de Plume d'Or KMG",
@@ -198,6 +203,11 @@ const translations = {
     "library.noResultsOffline": "View publications online to make them available offline.",
     "library.noResultsSearch": "No results for \"{search}\". Try different terms.",
     "library.noResultsCategory": "No publications available in this category.",
+    "library.noConnection": "No internet connection.",
+    "library.noConnectionDesc": "Please check your connection and try again.",
+    "library.noConnectionHint": "You can also view your downloaded documents offline from your profile.",
+    "library.retry": "Retry",
+    "library.viewOfflineDocs": "View my offline documents",
 
     // About
     "about.title": "About Plume d'Or KMG",
