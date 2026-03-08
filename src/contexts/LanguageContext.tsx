@@ -175,6 +175,7 @@ const translations = {
     "nav.login": "Sign In",
     "nav.myProfile": "My Profile",
     "nav.administration": "Administration",
+    "nav.chat": "Chat",
 
     // Index hero
     "hero.badge": "Academic Digital Library",
