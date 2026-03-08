@@ -175,6 +175,7 @@ export default function Publication() {
   // Save page progress on every page change (debounced)
   const handlePageChange = useCallback((page: number) => {
     currentPageRef.current = page;
+    setCurrentViewPage(page);
     if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
     saveTimeoutRef.current = setTimeout(() => {
       if (readingRecordId.current && page > 0) {
