@@ -3,8 +3,9 @@ import { useNavigate, Link } from "react-router-dom";
 import { 
   Feather, LogOut, Plus, Book, FileText, GraduationCap, Newspaper, 
   Eye, LayoutDashboard, Settings, Trash2, Edit, ToggleLeft, ToggleRight,
-  MessageSquare, Mail, Copy, Download, Users, Smartphone
+  MessageSquare, Mail, Copy, Download, Users, Smartphone, Send, Loader2
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useBillingConfig } from "@/hooks/useBillingConfig";
 import { AdminReadingStatsCard } from "@/components/admin/AdminReadingStatsCard";
