@@ -32,7 +32,7 @@ const categoryConfig: Record<Category, { label: string; icon: typeof Book; class
 export default function Publication() {
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
-  const initialPage = parseInt(searchParams.get("page") || "1", 10);
+  const pageFromUrl = parseInt(searchParams.get("page") || "0", 10);
   const isOnline = useOnlineStatus();
   const { data: publication, isLoading, error } = usePublication(id || "");
   const incrementViews = useIncrementViews();
@@ -43,11 +43,33 @@ export default function Publication() {
   const [offlineData, setOfflineData] = useState<OfflinePublication | null>(null);
   const [offlineLoading, setOfflineLoading] = useState(!isOnline);
   const [isCached, setIsCached] = useState(false);
+  const [resumePage, setResumePage] = useState<number>(pageFromUrl || 1);
   const { startReading, updateDuration, savePageProgress } = useTrackReading();
   const readingRecordId = useRef<string | null>(null);
   const readingStart = useRef<number>(Date.now());
-  const currentPageRef = useRef<number>(initialPage);
+  const currentPageRef = useRef<number>(resumePage);
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Fetch last read page from DB if not provided in URL
+  useEffect(() => {
+    if (!id || !user || pageFromUrl > 0) return;
+    supabase
+      .from("reading_history")
+      .select("last_page_read")
+      .eq("user_id", user.id)
+      .eq("publication_id", id)
+      .not("last_page_read", "is", null)
+      .gt("last_page_read", 1)
+      .order("started_at", { ascending: false })
+      .limit(1)
+      .then(({ data }) => {
+        if (data && data.length > 0 && data[0].last_page_read) {
+          const page = data[0].last_page_read;
+          setResumePage(page);
+          currentPageRef.current = page;
+        }
+      });
+  }, [id, user, pageFromUrl]);
 
   const hasFullAccess = hidePremiumUI || isPremium;
   const dateLocale = language === "fr" ? fr : enUS;
