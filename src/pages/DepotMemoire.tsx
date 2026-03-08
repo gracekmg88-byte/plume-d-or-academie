@@ -29,7 +29,7 @@ const statusLabels: Record<string, { label: string; className: string }> = {
 };
 
 export default function DepotMemoire() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const navigate = useNavigate();
   const createSubmission = useCreateSubmission();
   const { data: mySubmissions = [], isLoading: loadingSubs } = useMySubmissions();
@@ -49,6 +49,16 @@ export default function DepotMemoire() {
   const [coverUrl, setCoverUrl] = useState("");
   const [coverPreview, setCoverPreview] = useState("");
   const [submitted, setSubmitted] = useState(false);
+
+  if (loading) {
+    return (
+      <Layout>
+        <div className="container py-16 text-center">
+          <div className="h-8 w-8 mx-auto animate-spin rounded-full border-2 border-primary border-t-transparent" />
+        </div>
+      </Layout>
+    );
+  }
 
   if (!user) {
     return (
