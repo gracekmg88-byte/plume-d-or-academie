@@ -33,7 +33,7 @@ Deno.serve(async (req) => {
 
     if (!roleData) throw new Error("Accès réservé aux administrateurs");
 
-    const { title, author, category } = await req.json();
+    const { title, author, category, style } = await req.json();
     if (!title || !author) throw new Error("Titre et auteur requis");
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
@@ -46,14 +46,21 @@ Deno.serve(async (req) => {
       article: "Academic Article",
     };
 
-    const catLabel = categoryLabels[category] || "Book";
+    const stylePrompts: Record<string, string> = {
+      minimaliste: "Minimalist design with lots of whitespace, single accent color, clean sans-serif typography, geometric simplicity. Very clean and modern.",
+      colore: "Vibrant and colorful design with bold gradients, rich saturated hues, energetic composition, eye-catching color combinations. Lively and dynamic.",
+      classique: "Elegant academic design with rich colors (deep navy blue, gold accents), classic serif typography, refined borders and ornamental details. Traditional and prestigious.",
+      futuriste: "Futuristic sci-fi inspired design with neon accents, dark background, holographic effects, sleek lines, tech-inspired patterns. Modern and innovative.",
+    };
 
-    const prompt = `Generate a professional, modern book cover design for a ${catLabel}. 
+    const catLabel = categoryLabels[category] || "Book";
+    const styleDesc = stylePrompts[style] || stylePrompts["classique"];
+
+    const prompt = `Generate a professional book cover design for a ${catLabel}. 
 Title: "${title}" by ${author}.
-Style: Elegant academic design with rich colors (deep navy blue, gold accents), clean typography.
+Style: ${styleDesc}
 The title "${title}" must be prominently displayed in large, readable text.
 The author name "${author}" should appear at the bottom in smaller text.
-Include subtle decorative elements like geometric patterns or abstract shapes.
 Portrait/vertical format. Professional publishing quality.
 On a clean background with no extra text or watermarks.`;
 
