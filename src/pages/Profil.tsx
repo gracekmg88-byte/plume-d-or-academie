@@ -197,6 +197,9 @@ export default function Profil() {
               {/* Favorites */}
               <FavoritesSection />
 
+              {/* Notification Preferences */}
+              <NotificationPreferencesCard />
+
               {/* Offline Cache Management */}
               <div className="border-t border-border pt-6">
                 <div className="flex items-center justify-between mb-4">
