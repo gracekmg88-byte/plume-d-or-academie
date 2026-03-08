@@ -180,6 +180,16 @@ const translations = {
     "install.feature2": "📱 Comme une app native",
     "install.feature3": "🔔 Notifications",
     "nav.install": "Installer",
+
+    // Newsletter
+    "newsletter.title": "Newsletter",
+    "newsletter.subtitle": "Recevez les nouvelles publications chaque semaine",
+    "newsletter.namePlaceholder": "Votre nom (optionnel)",
+    "newsletter.emailPlaceholder": "Votre email",
+    "newsletter.subscribe": "S'abonner",
+    "newsletter.success": "Vous êtes abonné ! Merci 🎉",
+    "newsletter.alreadySubscribed": "Vous êtes déjà abonné à la newsletter",
+    "newsletter.error": "Erreur lors de l'inscription",
   },
   en: {
     // Nav
@@ -358,6 +368,16 @@ const translations = {
     "install.feature2": "📱 Native-like experience",
     "install.feature3": "🔔 Notifications",
     "nav.install": "Install",
+
+    // Newsletter
+    "newsletter.title": "Newsletter",
+    "newsletter.subtitle": "Get new publications delivered weekly",
+    "newsletter.namePlaceholder": "Your name (optional)",
+    "newsletter.emailPlaceholder": "Your email",
+    "newsletter.subscribe": "Subscribe",
+    "newsletter.success": "You're subscribed! Thank you 🎉",
+    "newsletter.alreadySubscribed": "You're already subscribed to the newsletter",
+    "newsletter.error": "Subscription error",
   },
 } as const;
 

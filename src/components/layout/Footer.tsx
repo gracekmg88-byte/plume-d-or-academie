@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Feather, Mail, Phone } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { NewsletterForm } from "@/components/layout/NewsletterForm";
 
 export function Footer() {
   const { t } = useLanguage();
@@ -54,6 +55,15 @@ export function Footer() {
                 <a href="mailto:kmgmultiservices98@gmail.com" className="hover:text-primary transition-colors">kmgmultiservices98@gmail.com</a>
               </li>
             </ul>
+          </div>
+        </div>
+
+        {/* Newsletter Section */}
+        <div className="mt-10 pt-8 border-t border-secondary-foreground/10">
+          <div className="max-w-md mx-auto text-center space-y-3">
+            <h3 className="font-serif text-lg font-semibold">{t("newsletter.title")}</h3>
+            <p className="text-sm opacity-80">{t("newsletter.subtitle")}</p>
+            <NewsletterForm />
           </div>
         </div>
 
