@@ -17,7 +17,7 @@ export default function Index() {
   const { data: publications, isLoading } = usePublications();
   const recentPublications = publications?.slice(0, 4) || [];
   const { t } = useLanguage();
-  
+  const { user } = useAuth();
 
   const stats = [
     { icon: Book, label: t("stats.books"), value: "50.000+" },
