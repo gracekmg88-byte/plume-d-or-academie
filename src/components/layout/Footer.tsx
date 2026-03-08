@@ -58,6 +58,15 @@ export function Footer() {
           </div>
         </div>
 
+        {/* Newsletter Section */}
+        <div className="mt-10 pt-8 border-t border-secondary-foreground/10">
+          <div className="max-w-md mx-auto text-center space-y-3">
+            <h3 className="font-serif text-lg font-semibold">{t("newsletter.title")}</h3>
+            <p className="text-sm opacity-80">{t("newsletter.subtitle")}</p>
+            <NewsletterForm />
+          </div>
+        </div>
+
         <div className="mt-12 pt-8 border-t border-secondary-foreground/10">
           <p className="text-center text-sm opacity-60">
             © {new Date().getFullYear()} Plume d'Or KMG. {t("footer.rights")}
