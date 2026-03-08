@@ -170,6 +170,7 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          last_page_read: number | null
           publication_id: string
           reading_duration_seconds: number
           started_at: string
@@ -178,6 +179,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          last_page_read?: number | null
           publication_id: string
           reading_duration_seconds?: number
           started_at?: string
@@ -186,6 +188,7 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          last_page_read?: number | null
           publication_id?: string
           reading_duration_seconds?: number
           started_at?: string

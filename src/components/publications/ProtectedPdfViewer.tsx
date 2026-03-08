@@ -12,11 +12,13 @@ pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.vers
 interface ProtectedPdfViewerProps {
   fileUrl: string;
   title: string;
+  initialPage?: number;
+  onPageChange?: (page: number) => void;
 }
 
-export function ProtectedPdfViewer({ fileUrl, title }: ProtectedPdfViewerProps) {
+export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }: ProtectedPdfViewerProps) {
   const [numPages, setNumPages] = useState<number>(0);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(initialPage || 1);
   const [scale, setScale] = useState(0.5);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -31,8 +33,8 @@ export function ProtectedPdfViewer({ fileUrl, title }: ProtectedPdfViewerProps) 
     setLoading(false);
   }, []);
 
-  const goToPrev = () => setCurrentPage((p) => Math.max(1, p - 1));
-  const goToNext = () => setCurrentPage((p) => Math.min(numPages, p + 1));
+  const goToPrev = () => setCurrentPage((p) => { const next = Math.max(1, p - 1); onPageChange?.(next); return next; });
+  const goToNext = () => setCurrentPage((p) => { const next = Math.min(numPages, p + 1); onPageChange?.(next); return next; });
   const zoomIn = () => setScale((s) => Math.min(2.5, s + 0.25));
   const zoomOut = () => setScale((s) => Math.max(0.5, s - 0.25));
 

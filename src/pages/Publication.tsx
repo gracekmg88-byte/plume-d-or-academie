@@ -1,5 +1,5 @@
 import { useEffect, useCallback, useState, useRef } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useSearchParams } from "react-router-dom";
 import { ArrowLeft, Book, FileText, GraduationCap, Newspaper, Eye, Calendar, User, Lock, Download, WifiOff, CheckCircle, Heart } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
@@ -31,6 +31,8 @@ const categoryConfig: Record<Category, { label: string; icon: typeof Book; class
 
 export default function Publication() {
   const { id } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
+  const initialPage = parseInt(searchParams.get("page") || "1", 10);
   const isOnline = useOnlineStatus();
   const { data: publication, isLoading, error } = usePublication(id || "");
   const incrementViews = useIncrementViews();
@@ -44,6 +46,7 @@ export default function Publication() {
   const { startReading, updateDuration } = useTrackReading();
   const readingRecordId = useRef<string | null>(null);
   const readingStart = useRef<number>(Date.now());
+  const currentPageRef = useRef<number>(initialPage);
 
   const hasFullAccess = hidePremiumUI || isPremium;
   const dateLocale = language === "fr" ? fr : enUS;
@@ -105,7 +108,11 @@ export default function Publication() {
       if (readingRecordId.current) {
         const seconds = Math.floor((Date.now() - readingStart.current) / 1000);
         if (seconds > 2) {
-          updateDuration.mutate({ recordId: readingRecordId.current, seconds });
+          updateDuration.mutate({
+            recordId: readingRecordId.current,
+            seconds,
+            lastPage: currentPageRef.current,
+          });
         }
         readingRecordId.current = null;
       }
@@ -299,7 +306,12 @@ export default function Publication() {
             {pdfUrl && (
               <div className="mt-8" id="document-viewer">
                 <h2 className="font-serif text-xl font-semibold text-foreground mb-4">{t("pub.document")}</h2>
-                <ProtectedPdfViewer fileUrl={pdfUrl} title={displayPub.title} />
+                <ProtectedPdfViewer
+                  fileUrl={pdfUrl}
+                  title={displayPub.title}
+                  initialPage={initialPage}
+                  onPageChange={(page) => { currentPageRef.current = page; }}
+                />
                 <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
                   <Lock className="h-3 w-3" />
                   {t("pub.protected")}
