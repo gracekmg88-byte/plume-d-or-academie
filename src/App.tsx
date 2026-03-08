@@ -91,6 +91,7 @@ const App = () => (
           <Sonner />
           <PushNotificationInit />
           <BrowserRouter>
+            <ScrollToTop />
             <AnimatedRoutes />
           </BrowserRouter>
         </TooltipProvider>
