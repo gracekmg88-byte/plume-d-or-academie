@@ -1,6 +1,6 @@
 import { useEffect } from "react";
-import { Link } from "react-router-dom";
-import { ArrowRight, Book, FileText, GraduationCap, Newspaper, Users, Award, BookOpen } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { ArrowRight, Book, FileText, GraduationCap, Newspaper, Users, Award, BookOpen, WifiOff, RefreshCw, FolderDown } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { PublicationCard } from "@/components/publications/PublicationCard";
@@ -9,11 +9,14 @@ import { preloadImages } from "@/components/ui/cached-image";
 import { preloadAndCacheImages } from "@/lib/image-cache";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
+import { useOnlineStatus } from "@/hooks/useOffline";
 import { ContinueReadingSection } from "@/components/home/ContinueReadingSection";
 import { RecommendationsSection } from "@/components/home/RecommendationsSection";
 import heroImage from "@/assets/hero-library.webp";
 
 export default function Index() {
+  const isOnline = useOnlineStatus();
+  const navigate = useNavigate();
   const { data: publications, isLoading } = usePublications();
   const recentPublications = publications?.slice(0, 4) || [];
   const { t } = useLanguage();
@@ -93,11 +96,45 @@ export default function Index() {
         </div>
       </section>
 
-      {/* Continue Reading - only for logged-in users */}
-      {user && <ContinueReadingSection />}
+      {/* Continue Reading - only for logged-in users & online */}
+      {isOnline && user && <ContinueReadingSection />}
 
-      {/* Recommendations */}
-      <RecommendationsSection />
+      {/* Recommendations - only online */}
+      {isOnline && <RecommendationsSection />}
+
+      {/* Offline notice */}
+      {!isOnline && (
+        <section className="relative py-16 md:py-24 overflow-hidden">
+          <div className="absolute inset-0">
+            <img src={heroImage} alt="" className="h-full w-full object-cover" />
+            <div className="absolute inset-0 bg-background/90 dark:bg-background/95 backdrop-blur-sm" />
+          </div>
+          <div className="relative container">
+            <div className="text-center py-8 max-w-md mx-auto">
+              <WifiOff className="h-16 w-16 mx-auto mb-4 text-destructive/50" />
+              <h2 className="font-serif text-2xl font-semibold text-foreground mb-2">
+                ⚠️ {t("library.noConnection")}
+              </h2>
+              <p className="text-muted-foreground mb-2">
+                {t("library.noConnectionDesc")}
+              </p>
+              <p className="text-muted-foreground text-sm mb-6">
+                {t("library.noConnectionHint")}
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Button onClick={() => window.location.reload()} variant="default">
+                  <RefreshCw className="h-4 w-4" />
+                  {t("library.retry")}
+                </Button>
+                <Button onClick={() => navigate("/profil")} variant="outline">
+                  <FolderDown className="h-4 w-4" />
+                  {t("library.viewOfflineDocs")}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Features Section */}
       <section className="py-16 md:py-24 bg-background">
@@ -123,54 +160,56 @@ export default function Index() {
         </div>
       </section>
 
-      {/* Recent Publications */}
-      <section className="py-16 md:py-24 bg-parchment">
-        <div className="container">
-          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-12">
-            <div>
-              <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-2">{t("recent.title")}</h2>
-              <p className="text-muted-foreground">{t("recent.subtitle")}</p>
+      {/* Recent Publications - only online */}
+      {isOnline && (
+        <section className="py-16 md:py-24 bg-parchment">
+          <div className="container">
+            <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-12">
+              <div>
+                <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-2">{t("recent.title")}</h2>
+                <p className="text-muted-foreground">{t("recent.subtitle")}</p>
+              </div>
+              <Link to="/bibliotheque">
+                <Button variant="outline" className="gap-2">
+                  {t("recent.viewAll")}
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+              </Link>
             </div>
-            <Link to="/bibliotheque">
-              <Button variant="outline" className="gap-2">
-                {t("recent.viewAll")}
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-            </Link>
+            {isLoading ? (
+              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="animate-pulse">
+                    <div className="aspect-[3/4] bg-muted rounded-lg mb-4" />
+                    <div className="h-4 bg-muted rounded w-3/4 mb-2" />
+                    <div className="h-3 bg-muted rounded w-1/2" />
+                  </div>
+                ))}
+              </div>
+            ) : recentPublications.length > 0 ? (
+              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {recentPublications.map((pub) => (
+                  <PublicationCard
+                    key={pub.id}
+                    id={pub.id}
+                    title={pub.title}
+                    author={pub.author}
+                    description={pub.description || undefined}
+                    category={pub.category as "livre" | "memoire" | "tfc" | "article"}
+                    coverImageUrl={pub.cover_image_url || undefined}
+                    viewsCount={pub.views_count}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12 text-muted-foreground">
+                <BookOpen className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>{t("recent.empty")}</p>
+              </div>
+            )}
           </div>
-          {isLoading ? (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {[...Array(4)].map((_, i) => (
-                <div key={i} className="animate-pulse">
-                  <div className="aspect-[3/4] bg-muted rounded-lg mb-4" />
-                  <div className="h-4 bg-muted rounded w-3/4 mb-2" />
-                  <div className="h-3 bg-muted rounded w-1/2" />
-                </div>
-              ))}
-            </div>
-          ) : recentPublications.length > 0 ? (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {recentPublications.map((pub) => (
-                <PublicationCard
-                  key={pub.id}
-                  id={pub.id}
-                  title={pub.title}
-                  author={pub.author}
-                  description={pub.description || undefined}
-                  category={pub.category as "livre" | "memoire" | "tfc" | "article"}
-                  coverImageUrl={pub.cover_image_url || undefined}
-                  viewsCount={pub.views_count}
-                />
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-12 text-muted-foreground">
-              <BookOpen className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>{t("recent.empty")}</p>
-            </div>
-          )}
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* CTA Section */}
       <section className="py-16 md:py-24 bg-secondary">
