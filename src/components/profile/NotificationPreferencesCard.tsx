@@ -12,6 +12,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   memoire: "📝 Mémoires",
   tfc: "🎓 TFC",
   article: "📰 Articles",
+  chat: "💬 Chat communautaire",
 };
 
 export function NotificationPreferencesCard() {
