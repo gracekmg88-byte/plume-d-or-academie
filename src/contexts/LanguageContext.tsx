@@ -341,6 +341,23 @@ const translations = {
     "chat.empty": "No messages yet. Be the first to write!",
     "chat.deleted": "Message deleted",
     "chat.error": "Error sending message",
+
+    // Install PWA
+    "install.title": "Install Plume d'Or",
+    "install.description": "Install the app on your device for quick access, even offline.",
+    "install.alreadyInstalled": "The app is already installed!",
+    "install.installButton": "Install the app",
+    "install.iosTitle": "How to install on iPhone / iPad:",
+    "install.iosStep1": "Tap the Share button",
+    "install.iosStep2": "Select 'Add to Home Screen'",
+    "install.iosStep3": "Tap 'Add'",
+    "install.androidTitle": "How to install on Android:",
+    "install.androidStep1": "Tap the menu button",
+    "install.androidStep2": "Select 'Install app'",
+    "install.feature1": "⚡ Fast loading",
+    "install.feature2": "📱 Native-like experience",
+    "install.feature3": "🔔 Notifications",
+    "nav.install": "Install",
   },
 } as const;
 
