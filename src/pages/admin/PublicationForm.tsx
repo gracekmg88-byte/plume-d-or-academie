@@ -49,6 +49,14 @@ export default function PublicationForm() {
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const [isGeneratingCover, setIsGeneratingCover] = useState(false);
   const [aiCoverUrl, setAiCoverUrl] = useState<string | null>(null);
+  const [coverStyle, setCoverStyle] = useState("classique");
+
+  const coverStyles = [
+    { value: "minimaliste", label: "Minimaliste", desc: "Épuré et sobre" },
+    { value: "colore", label: "Coloré", desc: "Vif et attractif" },
+    { value: "classique", label: "Classique", desc: "Académique élégant" },
+    { value: "futuriste", label: "Futuriste", desc: "Moderne et tech" },
+  ];
 
   useEffect(() => {
     if (existingPublication) {
