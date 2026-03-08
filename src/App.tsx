@@ -28,6 +28,8 @@ import AdminSettings from "./pages/admin/AdminSettings";
 import AdminUsers from "./pages/admin/AdminUsers";
 import PublicationForm from "./pages/admin/PublicationForm";
 import AdminDevices from "./pages/admin/AdminDevices";
+import AdminSubmissions from "./pages/admin/AdminSubmissions";
+import DepotMemoire from "./pages/DepotMemoire";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
