@@ -157,5 +157,16 @@ export function useTrackReading() {
     },
   });
 
-  return { startReading, updateDuration };
+  const savePageProgress = useMutation({
+    mutationFn: async ({ recordId, lastPage }: { recordId: string; lastPage: number }) => {
+      if (!recordId || lastPage < 1) return;
+      const { error } = await supabase
+        .from("reading_history")
+        .update({ last_page_read: lastPage })
+        .eq("id", recordId);
+      if (error) throw error;
+    },
+  });
+
+  return { startReading, updateDuration, savePageProgress };
 }
