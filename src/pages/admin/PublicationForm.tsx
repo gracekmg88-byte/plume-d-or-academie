@@ -47,6 +47,8 @@ export default function PublicationForm() {
   const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
+  const [isGeneratingCover, setIsGeneratingCover] = useState(false);
+  const [aiCoverUrl, setAiCoverUrl] = useState<string | null>(null);
 
   useEffect(() => {
     if (existingPublication) {
