@@ -164,7 +164,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Quick Links */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-6 gap-4 mb-8">
           <Link to="/admin/submissions" className="block">
             <div className="bg-card rounded-xl border border-border p-6 hover:shadow-elegant transition-all">
               <div className="flex items-center gap-4">
