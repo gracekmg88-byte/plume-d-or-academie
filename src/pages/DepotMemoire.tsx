@@ -102,6 +102,40 @@ export default function DepotMemoire() {
     toast.success("Fichier téléversé !");
   };
 
+  const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("Seuls les fichiers image sont acceptés.");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("L'image ne doit pas dépasser 5 Mo.");
+      return;
+    }
+
+    setCoverUploading(true);
+    const fileName = `submissions/${user.id}/covers/${Date.now()}-${file.name}`;
+    const { error } = await supabase.storage
+      .from("publications")
+      .upload(fileName, file);
+
+    if (error) {
+      toast.error("Erreur lors du téléversement de la couverture.");
+      setCoverUploading(false);
+      return;
+    }
+
+    const { data: urlData } = supabase.storage
+      .from("publications")
+      .getPublicUrl(fileName);
+
+    setCoverUrl(urlData.publicUrl);
+    setCoverPreview(URL.createObjectURL(file));
+    setCoverUploading(false);
+    toast.success("Page de couverture téléversée !");
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!fileUrl) {
