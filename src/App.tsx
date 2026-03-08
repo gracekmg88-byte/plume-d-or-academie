@@ -62,6 +62,8 @@ function AnimatedRoutes() {
         <Route path="/admin/users" element={<AdminUsers />} />
         <Route path="/admin/publication/:id" element={<PublicationForm />} />
         <Route path="/admin/devices" element={<AdminDevices />} />
+        <Route path="/admin/submissions" element={<AdminSubmissions />} />
+        <Route path="/depot-memoire" element={<DepotMemoire />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </AnimatePresence>
