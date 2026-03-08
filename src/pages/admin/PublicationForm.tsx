@@ -275,34 +275,76 @@ export default function PublicationForm() {
             </h2>
 
             {/* Cover Image */}
-            <div className="space-y-2">
+            <div className="space-y-3">
               <Label>Image de couverture</Label>
-              <div className="flex items-start gap-4">
-                {coverPreview && (
-                  <div className="w-24 h-32 rounded-lg overflow-hidden bg-muted shrink-0">
+              
+              {coverPreview && (
+                <div className="flex items-start gap-4">
+                  <div className="w-32 h-44 rounded-lg overflow-hidden bg-muted shrink-0 border border-border shadow-sm">
                     <img src={coverPreview} alt="Couverture" className="w-full h-full object-cover" />
                   </div>
-                )}
-                <div className="flex-1">
-                  <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-border rounded-lg cursor-pointer hover:bg-accent transition-colors">
-                    <div className="flex flex-col items-center justify-center py-4">
-                      <Upload className="h-8 w-8 text-muted-foreground mb-2" />
-                      <p className="text-sm text-muted-foreground">
-                        Cliquer pour téléverser
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        PNG, JPG (max 5MB)
-                      </p>
-                    </div>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={handleCoverChange}
-                    />
-                  </label>
+                  <div className="flex flex-col gap-2 pt-1">
+                    <p className="text-xs text-muted-foreground">
+                      {aiCoverUrl ? "✨ Générée par IA" : "📁 Image téléversée"}
+                    </p>
+                    {aiCoverUrl && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={handleGenerateCover}
+                        disabled={isGeneratingCover}
+                        className="gap-1.5"
+                      >
+                        <RefreshCw className={`h-3.5 w-3.5 ${isGeneratingCover ? "animate-spin" : ""}`} />
+                        Régénérer
+                      </Button>
+                    )}
+                  </div>
                 </div>
+              )}
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {/* Option 1: Upload manual */}
+                <label className="flex flex-col items-center justify-center w-full h-28 border-2 border-dashed border-border rounded-lg cursor-pointer hover:bg-accent transition-colors">
+                  <Upload className="h-6 w-6 text-muted-foreground mb-1.5" />
+                  <p className="text-sm font-medium text-muted-foreground">Téléverser</p>
+                  <p className="text-xs text-muted-foreground">PNG, JPG (max 5MB)</p>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleCoverChange}
+                  />
+                </label>
+
+                {/* Option 2: AI Generation */}
+                <button
+                  type="button"
+                  onClick={handleGenerateCover}
+                  disabled={isGeneratingCover || !formData.title || !formData.author}
+                  className="flex flex-col items-center justify-center w-full h-28 border-2 border-dashed border-primary/40 rounded-lg hover:bg-primary/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isGeneratingCover ? (
+                    <>
+                      <Loader2 className="h-6 w-6 text-primary animate-spin mb-1.5" />
+                      <p className="text-sm font-medium text-primary">Génération en cours...</p>
+                      <p className="text-xs text-muted-foreground">~15-30 secondes</p>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="h-6 w-6 text-primary mb-1.5" />
+                      <p className="text-sm font-medium text-primary">Générer avec l'IA</p>
+                      <p className="text-xs text-muted-foreground">Couverture automatique</p>
+                    </>
+                  )}
+                </button>
               </div>
+              {(!formData.title || !formData.author) && (
+                <p className="text-xs text-muted-foreground italic">
+                  💡 Remplissez le titre et l'auteur pour activer la génération IA
+                </p>
+              )}
             </div>
 
             {/* PDF File */}
