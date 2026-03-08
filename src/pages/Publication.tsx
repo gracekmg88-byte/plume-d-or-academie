@@ -14,6 +14,7 @@ import { useOnlineStatus } from "@/hooks/useOffline";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { savePublicationOffline, getOfflinePublication, isPublicationCached, type OfflinePublication } from "@/lib/offline-storage";
 import { useTrackReading } from "@/hooks/useReadingHistory";
+import { supabase } from "@/integrations/supabase/client";
 import { FavoriteButton } from "@/components/publications/FavoriteButton";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
