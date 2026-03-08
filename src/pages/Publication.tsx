@@ -24,9 +24,6 @@ import { CommentsList } from "@/components/publications/CommentsList";
 import { format } from "date-fns";
 import { fr, enUS } from "date-fns/locale";
 import { toast } from "sonner";
-import { format } from "date-fns";
-import { fr, enUS } from "date-fns/locale";
-import { toast } from "sonner";
 
 type Category = "livre" | "memoire" | "tfc" | "article";
 
