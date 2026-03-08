@@ -143,7 +143,7 @@ export default function DepotMemoire() {
       return;
     }
     try {
-      await createSubmission.mutateAsync({ ...form, file_url: fileUrl });
+      await createSubmission.mutateAsync({ ...form, file_url: fileUrl, cover_url: coverUrl || undefined });
       setSubmitted(true);
       toast.success("Soumission envoyée avec succès !");
     } catch {
