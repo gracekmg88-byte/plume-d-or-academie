@@ -41,9 +41,14 @@ export default function DepotMemoire() {
   const [coverUrl, setCoverUrl] = useState("");
   const [coverPreview, setCoverPreview] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
 
   const updateForm = (updates: Partial<typeof form>) => {
     setForm((prev) => ({ ...prev, ...updates }));
+  };
+
+  const handleBlur = (field: string) => {
+    setTouched((prev) => ({ ...prev, [field]: true }));
   };
 
   if (loading) {
@@ -209,8 +214,8 @@ export default function DepotMemoire() {
         <SubmissionStepper steps={STEPS} currentStep={step} />
 
         <div className="min-h-[280px]">
-          {step === 0 && <SubmissionStepPersonal form={form} onChange={updateForm} />}
-          {step === 1 && <SubmissionStepDetails form={form} onChange={updateForm} />}
+          {step === 0 && <SubmissionStepPersonal form={form} onChange={updateForm} touched={touched} onBlur={handleBlur} />}
+          {step === 1 && <SubmissionStepDetails form={form} onChange={updateForm} touched={touched} onBlur={handleBlur} />}
           {step === 2 && (
             <SubmissionStepFiles
               fileUrl={fileUrl}

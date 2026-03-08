@@ -1,5 +1,6 @@
-import { Upload, FileText, ImagePlus } from "lucide-react";
+import { Upload, FileText, ImagePlus, CheckCircle2 } from "lucide-react";
 import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
 
 interface Props {
   fileUrl: string;
@@ -22,8 +23,13 @@ export function SubmissionStepFiles({
     <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-300">
       {/* Page de couverture */}
       <div className="space-y-2">
-        <Label>Page de couverture (optionnel, max 5 Mo)</Label>
-        <div className="border-2 border-dashed border-border rounded-lg p-6 text-center">
+        <Label>Page de couverture <span className="text-muted-foreground text-xs">(optionnel, max 5 Mo)</span></Label>
+        <div
+          className={cn(
+            "border-2 border-dashed rounded-lg p-6 text-center transition-colors",
+            coverPreview ? "border-[hsl(var(--success))] bg-[hsl(var(--success)/0.05)]" : "border-border"
+          )}
+        >
           {coverPreview ? (
             <div className="flex flex-col items-center gap-3">
               <img
@@ -31,7 +37,10 @@ export function SubmissionStepFiles({
                 alt="Aperçu couverture"
                 className="max-h-40 rounded-lg border border-border object-contain"
               />
-              <span className="text-sm font-medium text-primary">Couverture téléversée</span>
+              <div className="flex items-center gap-1.5 text-sm font-medium text-[hsl(var(--success))]">
+                <CheckCircle2 className="h-4 w-4" />
+                Couverture téléversée
+              </div>
               <label className="cursor-pointer">
                 <span className="text-xs text-muted-foreground hover:text-foreground underline">
                   Changer l'image
@@ -69,9 +78,14 @@ export function SubmissionStepFiles({
       {/* Fichier PDF */}
       <div className="space-y-2">
         <Label>Fichier PDF * (max 20 Mo)</Label>
-        <div className="border-2 border-dashed border-border rounded-lg p-6 text-center">
+        <div
+          className={cn(
+            "border-2 border-dashed rounded-lg p-6 text-center transition-colors",
+            fileUrl ? "border-[hsl(var(--success))] bg-[hsl(var(--success)/0.05)]" : "border-border"
+          )}
+        >
           {fileUrl ? (
-            <div className="flex items-center justify-center gap-2 text-green-600">
+            <div className="flex items-center justify-center gap-2 text-[hsl(var(--success))]">
               <FileText className="h-5 w-5" />
               <span className="text-sm font-medium">Fichier téléversé ✓</span>
             </div>
@@ -93,6 +107,11 @@ export function SubmissionStepFiles({
             </>
           )}
         </div>
+        {!fileUrl && (
+          <p className="text-xs text-destructive animate-in fade-in duration-200">
+            Le fichier PDF est obligatoire pour soumettre
+          </p>
+        )}
       </div>
     </div>
   );
