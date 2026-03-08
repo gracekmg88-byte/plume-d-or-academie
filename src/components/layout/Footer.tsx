@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Feather, Mail, Phone } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { NewsletterForm } from "@/components/layout/NewsletterForm";
 
 export function Footer() {
   const { t } = useLanguage();
