@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { GraduationCap, Upload, ArrowLeft, FileText, CheckCircle } from "lucide-react";
+import { GraduationCap, Upload, ArrowLeft, FileText, CheckCircle, ImagePlus } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
