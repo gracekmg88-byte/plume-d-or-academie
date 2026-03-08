@@ -31,6 +31,8 @@ const categoryConfig: Record<Category, { label: string; icon: typeof Book; class
 
 export default function Publication() {
   const { id } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
+  const initialPage = parseInt(searchParams.get("page") || "1", 10);
   const isOnline = useOnlineStatus();
   const { data: publication, isLoading, error } = usePublication(id || "");
   const incrementViews = useIncrementViews();
@@ -44,6 +46,7 @@ export default function Publication() {
   const { startReading, updateDuration } = useTrackReading();
   const readingRecordId = useRef<string | null>(null);
   const readingStart = useRef<number>(Date.now());
+  const currentPageRef = useRef<number>(initialPage);
 
   const hasFullAccess = hidePremiumUI || isPremium;
   const dateLocale = language === "fr" ? fr : enUS;
