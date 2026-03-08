@@ -227,7 +227,7 @@ export default function Bibliotheque() {
                   {filteredPublications.length} {filteredPublications.length > 1 ? t("library.found_many") : t("library.found_one")}
                   {totalPages > 1 && (
                     <span className="ml-2 text-sm">
-                      — {t("library.page") || "Page"} {currentPage}/{totalPages}
+                      — Page {currentPage}/{totalPages}
                     </span>
                   )}
                 </p>
