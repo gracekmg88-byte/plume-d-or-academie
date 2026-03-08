@@ -29,7 +29,7 @@ const statusLabels: Record<string, { label: string; className: string }> = {
 };
 
 export default function DepotMemoire() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const navigate = useNavigate();
   const createSubmission = useCreateSubmission();
   const { data: mySubmissions = [], isLoading: loadingSubs } = useMySubmissions();
