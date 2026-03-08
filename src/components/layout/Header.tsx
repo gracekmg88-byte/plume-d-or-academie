@@ -23,6 +23,7 @@ export function Header() {
     { href: "/", label: t("nav.home") },
     { href: "/bibliotheque", label: t("nav.library") },
     { href: "/depot-memoire", label: "Déposer" },
+    { href: "/chat", label: t("nav.chat"), icon: MessageCircle },
     { href: "/a-propos", label: t("nav.about") },
     { href: "/contact", label: t("nav.contact") },
   ];
