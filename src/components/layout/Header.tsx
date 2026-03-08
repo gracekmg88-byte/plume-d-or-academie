@@ -26,6 +26,7 @@ export function Header() {
     { href: "/chat", label: t("nav.chat"), icon: MessageCircle },
     { href: "/a-propos", label: t("nav.about") },
     { href: "/contact", label: t("nav.contact") },
+    { href: "/installer", label: t("nav.install"), icon: Download },
   ];
 
   return (

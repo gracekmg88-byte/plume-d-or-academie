@@ -78,6 +78,7 @@ function AnimatedRoutes() {
       <Route path="/admin/submissions" element={<AdminSubmissions />} />
       <Route path="/depot-memoire" element={<DepotMemoire />} />
       <Route path="/chat" element={<Chat />} />
+      <Route path="/installer" element={<InstallApp />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
