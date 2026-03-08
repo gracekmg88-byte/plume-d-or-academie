@@ -214,8 +214,8 @@ export default function DepotMemoire() {
         <SubmissionStepper steps={STEPS} currentStep={step} />
 
         <div className="min-h-[280px]">
-          {step === 0 && <SubmissionStepPersonal form={form} onChange={updateForm} />}
-          {step === 1 && <SubmissionStepDetails form={form} onChange={updateForm} />}
+          {step === 0 && <SubmissionStepPersonal form={form} onChange={updateForm} touched={touched} onBlur={handleBlur} />}
+          {step === 1 && <SubmissionStepDetails form={form} onChange={updateForm} touched={touched} onBlur={handleBlur} />}
           {step === 2 && (
             <SubmissionStepFiles
               fileUrl={fileUrl}
