@@ -50,6 +50,16 @@ export default function DepotMemoire() {
   const [coverPreview, setCoverPreview] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
+  if (loading) {
+    return (
+      <Layout>
+        <div className="container py-16 text-center">
+          <div className="h-8 w-8 mx-auto animate-spin rounded-full border-2 border-primary border-t-transparent" />
+        </div>
+      </Layout>
+    );
+  }
+
   if (!user) {
     return (
       <Layout>
