@@ -354,6 +354,28 @@ export default function PublicationForm() {
                   💡 Remplissez le titre et l'auteur pour activer la génération IA
                 </p>
               )}
+
+              {/* Style selector */}
+              <div className="space-y-2">
+                <Label className="text-sm">Style de couverture IA</Label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {coverStyles.map((s) => (
+                    <button
+                      key={s.value}
+                      type="button"
+                      onClick={() => setCoverStyle(s.value)}
+                      className={`flex flex-col items-center p-2.5 rounded-lg border-2 transition-all text-center ${
+                        coverStyle === s.value
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border hover:border-primary/30 text-muted-foreground"
+                      }`}
+                    >
+                      <span className="text-sm font-medium">{s.label}</span>
+                      <span className="text-[10px] leading-tight mt-0.5">{s.desc}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
 
             {/* PDF File */}
