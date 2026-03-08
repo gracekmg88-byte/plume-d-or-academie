@@ -15,6 +15,8 @@ import { RecommendationsSection } from "@/components/home/RecommendationsSection
 import heroImage from "@/assets/hero-library.webp";
 
 export default function Index() {
+  const isOnline = useOnlineStatus();
+  const navigate = useNavigate();
   const { data: publications, isLoading } = usePublications();
   const recentPublications = publications?.slice(0, 4) || [];
   const { t } = useLanguage();
