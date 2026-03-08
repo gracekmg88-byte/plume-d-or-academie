@@ -104,7 +104,7 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
       </div>
 
       {/* PDF Content */}
-      <div className="overflow-auto max-h-[70vh] flex justify-center py-4 bg-muted/50">
+      <div className="overflow-auto max-h-[70vh] min-h-[50vh] flex justify-center py-4 bg-muted/50">
         {loading && (
           <div className="absolute inset-0 flex items-center justify-center z-10 bg-muted/80">
             <div className="flex flex-col items-center gap-3">
