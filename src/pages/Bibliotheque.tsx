@@ -82,20 +82,23 @@ export default function Bibliotheque() {
     }
     // Sorting
     filtered.sort((a, b) => {
+      const dateA = new Date(a.created_at || 0).getTime();
+      const dateB = new Date(b.created_at || 0).getTime();
       switch (filters.sortBy) {
         case "date_asc":
-          return (a.created_at || "").localeCompare(b.created_at || "");
+          return dateA - dateB;
+        case "date_desc":
+          return dateB - dateA;
         case "views_desc":
-          return b.views_count - a.views_count;
+          return (b.views_count ?? 0) - (a.views_count ?? 0);
         case "views_asc":
-          return a.views_count - b.views_count;
+          return (a.views_count ?? 0) - (b.views_count ?? 0);
         case "title_asc":
           return a.title.localeCompare(b.title);
         case "title_desc":
           return b.title.localeCompare(a.title);
-        case "date_desc":
         default:
-          return (b.created_at || "").localeCompare(a.created_at || "");
+          return dateB - dateA;
       }
     });
     return filtered;
