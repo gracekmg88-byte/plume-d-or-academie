@@ -302,6 +302,57 @@ export type Database = {
         }
         Relationships: []
       }
+      submissions: {
+        Row: {
+          academic_year: string
+          admin_note: string | null
+          category: string
+          created_at: string
+          description: string | null
+          faculty: string
+          file_url: string | null
+          id: string
+          status: string
+          student_name: string
+          title: string
+          university: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          academic_year: string
+          admin_note?: string | null
+          category?: string
+          created_at?: string
+          description?: string | null
+          faculty: string
+          file_url?: string | null
+          id?: string
+          status?: string
+          student_name: string
+          title: string
+          university: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          academic_year?: string
+          admin_note?: string | null
+          category?: string
+          created_at?: string
+          description?: string | null
+          faculty?: string
+          file_url?: string | null
+          id?: string
+          status?: string
+          student_name?: string
+          title?: string
+          university?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_profiles: {
         Row: {
           created_at: string
