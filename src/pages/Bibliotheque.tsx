@@ -106,8 +106,20 @@ export default function Bibliotheque() {
     return filtered;
   }, [sourceData, search, category, isOnline, filters]);
 
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, category, filters]);
+
+  const totalPages = Math.ceil(filteredPublications.length / ITEMS_PER_PAGE);
+  const paginatedPublications = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filteredPublications.slice(start, start + ITEMS_PER_PAGE);
+  }, [filteredPublications, currentPage, ITEMS_PER_PAGE]);
+
   const handleCategoryChange = (newCategory: Category) => {
     setCategory(newCategory);
+    setCurrentPage(1);
     if (newCategory === "all") {
       searchParams.delete("categorie");
     } else {
@@ -115,6 +127,10 @@ export default function Bibliotheque() {
     }
     setSearchParams(searchParams);
   };
+
+  const scrollToGrid = useCallback(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
 
   return (
     <Layout>
