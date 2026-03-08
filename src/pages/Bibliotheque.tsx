@@ -156,8 +156,12 @@ export default function Bibliotheque() {
 
       {/* No connection state */}
       {!isOnline && !actualLoading && filteredPublications.length === 0 && offlinePubs.length === 0 ? (
-        <section className="py-12 md:py-16 bg-background">
-          <div className="container">
+        <section className="relative py-12 md:py-16 overflow-hidden">
+          <div className="absolute inset-0">
+            <img src={heroBiblioImage} alt="" className="h-full w-full object-cover" />
+            <div className="absolute inset-0 bg-background/90 dark:bg-background/95 backdrop-blur-sm" />
+          </div>
+          <div className="relative container">
             <div className="text-center py-16 max-w-md mx-auto">
               <WifiOff className="h-16 w-16 mx-auto mb-4 text-destructive/50" />
               <h2 className="font-serif text-2xl font-semibold text-foreground mb-2">
