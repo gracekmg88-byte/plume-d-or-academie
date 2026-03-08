@@ -86,7 +86,44 @@ export default function PublicationForm() {
     const file = e.target.files?.[0];
     if (file) {
       setCoverFile(file);
+      setAiCoverUrl(null);
       setCoverPreview(URL.createObjectURL(file));
+    }
+  };
+
+  const handleGenerateCover = async () => {
+    if (!formData.title || !formData.author) {
+      toast.error("Veuillez remplir le titre et l'auteur avant de générer la couverture");
+      return;
+    }
+
+    setIsGeneratingCover(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("Non authentifié");
+
+      const response = await supabase.functions.invoke("generate-cover", {
+        body: {
+          title: formData.title,
+          author: formData.author,
+          category: formData.category,
+        },
+      });
+
+      if (response.error) throw new Error(response.error.message);
+      
+      const result = response.data;
+      if (result.error) throw new Error(result.error);
+
+      setCoverPreview(result.coverUrl);
+      setAiCoverUrl(result.coverUrl);
+      setCoverFile(null);
+      toast.success("Couverture générée avec succès !");
+    } catch (error: any) {
+      console.error("AI cover error:", error);
+      toast.error(error.message || "Erreur lors de la génération de la couverture");
+    } finally {
+      setIsGeneratingCover(false);
     }
   };
 
