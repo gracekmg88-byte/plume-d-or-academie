@@ -28,6 +28,8 @@ import AdminSettings from "./pages/admin/AdminSettings";
 import AdminUsers from "./pages/admin/AdminUsers";
 import PublicationForm from "./pages/admin/PublicationForm";
 import AdminDevices from "./pages/admin/AdminDevices";
+import AdminSubmissions from "./pages/admin/AdminSubmissions";
+import DepotMemoire from "./pages/DepotMemoire";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -60,6 +62,8 @@ function AnimatedRoutes() {
         <Route path="/admin/users" element={<AdminUsers />} />
         <Route path="/admin/publication/:id" element={<PublicationForm />} />
         <Route path="/admin/devices" element={<AdminDevices />} />
+        <Route path="/admin/submissions" element={<AdminSubmissions />} />
+        <Route path="/depot-memoire" element={<DepotMemoire />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </AnimatePresence>

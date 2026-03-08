@@ -22,6 +22,7 @@ export function Header() {
   const navLinks = [
     { href: "/", label: t("nav.home") },
     { href: "/bibliotheque", label: t("nav.library") },
+    { href: "/depot-memoire", label: "Déposer" },
     { href: "/a-propos", label: t("nav.about") },
     { href: "/contact", label: t("nav.contact") },
   ];
