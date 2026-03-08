@@ -12,7 +12,6 @@ interface ServiceAccount {
   project_id: string;
 }
 
-// Create a JWT for FCM V1 API using service account
 async function getAccessToken(sa: ServiceAccount): Promise<string> {
   const now = Math.floor(Date.now() / 1000);
   const header = btoa(JSON.stringify({ alg: "RS256", typ: "JWT" }));
@@ -27,15 +26,12 @@ async function getAccessToken(sa: ServiceAccount): Promise<string> {
   );
 
   const unsignedToken = `${header}.${payload}`;
-
-  // Import the private key
   const pemContents = sa.private_key
     .replace(/-----BEGIN PRIVATE KEY-----/g, "")
     .replace(/-----END PRIVATE KEY-----/g, "")
     .replace(/\n/g, "");
 
   const binaryKey = Uint8Array.from(atob(pemContents), (c) => c.charCodeAt(0));
-
   const cryptoKey = await crypto.subtle.importKey(
     "pkcs8",
     binaryKey,
@@ -57,7 +53,6 @@ async function getAccessToken(sa: ServiceAccount): Promise<string> {
 
   const jwt = `${header}.${payload}.${sig}`;
 
-  // Exchange JWT for access token
   const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -86,15 +81,15 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Get all device tokens
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
+    // Get all device tokens with their user_ids
     const { data: tokens, error: tokensError } = await supabase
       .from("device_tokens")
-      .select("token");
+      .select("token, user_id");
 
     if (tokensError) {
       throw new Error(`Error fetching tokens: ${tokensError.message}`);
@@ -103,6 +98,35 @@ Deno.serve(async (req) => {
     if (!tokens || tokens.length === 0) {
       return new Response(
         JSON.stringify({ message: "No devices registered", sent: 0 }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Get notification preferences for users who have explicitly disabled this category
+    const userIds = [...new Set(tokens.map((t) => t.user_id))];
+    const { data: disabledPrefs } = await supabase
+      .from("notification_preferences")
+      .select("user_id")
+      .eq("category", category || "")
+      .eq("enabled", false)
+      .in("user_id", userIds);
+
+    const disabledUserIds = new Set(
+      (disabledPrefs || []).map((p) => p.user_id)
+    );
+
+    // Filter tokens: only send to users who haven't disabled this category
+    const eligibleTokens = tokens.filter(
+      (t) => !disabledUserIds.has(t.user_id)
+    );
+
+    if (eligibleTokens.length === 0) {
+      return new Response(
+        JSON.stringify({
+          message: "No eligible devices for this category",
+          sent: 0,
+          filtered: tokens.length,
+        }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -125,12 +149,11 @@ Deno.serve(async (req) => {
 
     const categoryLabel = categoryLabels[category] || category;
 
-    // Send notification to each device
     let sent = 0;
     let failed = 0;
     const failedTokens: string[] = [];
 
-    for (const { token } of tokens) {
+    for (const { token } of eligibleTokens) {
       try {
         const res = await fetch(
           `https://fcm.googleapis.com/v1/projects/${serviceAccount.project_id}/messages:send`,
@@ -169,12 +192,18 @@ Deno.serve(async (req) => {
           sent++;
         } else {
           const errData = await res.json();
-          console.error(`FCM error for token ${token.slice(0, 10)}...:`, errData);
+          console.error(
+            `FCM error for token ${token.slice(0, 10)}...:`,
+            errData
+          );
           failed++;
-          // If token is invalid, mark for cleanup
-          if (errData?.error?.details?.some((d: any) =>
-            d.errorCode === "UNREGISTERED" || d.errorCode === "INVALID_ARGUMENT"
-          )) {
+          if (
+            errData?.error?.details?.some(
+              (d: any) =>
+                d.errorCode === "UNREGISTERED" ||
+                d.errorCode === "INVALID_ARGUMENT"
+            )
+          ) {
             failedTokens.push(token);
           }
         }
@@ -194,17 +223,19 @@ Deno.serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ sent, failed, cleaned: failedTokens.length }),
+      JSON.stringify({
+        sent,
+        failed,
+        cleaned: failedTokens.length,
+        filtered: tokens.length - eligibleTokens.length,
+      }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
     console.error("Error:", error);
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
-    );
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 });
