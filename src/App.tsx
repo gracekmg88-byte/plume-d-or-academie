@@ -40,6 +40,32 @@ warmUpCache().catch(() => {});
   preloadImage(src).catch(() => {});
 });
 
+function AnimatedRoutes() {
+  const location = useLocation();
+  return (
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        <Route path="/" element={<Index />} />
+        <Route path="/bibliotheque" element={<Bibliotheque />} />
+        <Route path="/publication/:id" element={<Publication />} />
+        <Route path="/a-propos" element={<APropos />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/auth" element={<Auth />} />
+        <Route path="/profil" element={<Profil />} />
+        <Route path="/abonnement" element={<Abonnement />} />
+        <Route path="/admin" element={<AdminLogin />} />
+        <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        <Route path="/admin/messages" element={<AdminMessages />} />
+        <Route path="/admin/settings" element={<AdminSettings />} />
+        <Route path="/admin/users" element={<AdminUsers />} />
+        <Route path="/admin/publication/:id" element={<PublicationForm />} />
+        <Route path="/admin/devices" element={<AdminDevices />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </AnimatePresence>
+  );
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
@@ -49,25 +75,7 @@ const App = () => (
           <Sonner />
           <PushNotificationInit />
           <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/bibliotheque" element={<Bibliotheque />} />
-              <Route path="/publication/:id" element={<Publication />} />
-              <Route path="/a-propos" element={<APropos />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/profil" element={<Profil />} />
-              <Route path="/abonnement" element={<Abonnement />} />
-              <Route path="/admin" element={<AdminLogin />} />
-              <Route path="/admin/dashboard" element={<AdminDashboard />} />
-              <Route path="/admin/messages" element={<AdminMessages />} />
-              <Route path="/admin/settings" element={<AdminSettings />} />
-              <Route path="/admin/users" element={<AdminUsers />} />
-              <Route path="/admin/publication/:id" element={<PublicationForm />} />
-              <Route path="/admin/devices" element={<AdminDevices />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+            <AnimatedRoutes />
           </BrowserRouter>
         </TooltipProvider>
       </LanguageProvider>
