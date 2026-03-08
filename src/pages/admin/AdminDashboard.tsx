@@ -136,41 +136,9 @@ export default function AdminDashboard() {
       </header>
 
       <div className="container py-8">
-        {/* Stats */}
-        <div className="grid sm:grid-cols-3 gap-4 mb-8">
-          <div className="bg-card rounded-xl border border-border p-6">
-            <div className="flex items-center gap-4">
-              <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                <LayoutDashboard className="h-6 w-6 text-primary" />
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-foreground">{stats.total}</div>
-                <div className="text-sm text-muted-foreground">Publications totales</div>
-              </div>
-            </div>
-          </div>
-          <div className="bg-card rounded-xl border border-border p-6">
-            <div className="flex items-center gap-4">
-              <div className="h-12 w-12 rounded-lg bg-green-500/10 flex items-center justify-center">
-                <Book className="h-6 w-6 text-green-600" />
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-foreground">{stats.published}</div>
-                <div className="text-sm text-muted-foreground">Publiées</div>
-              </div>
-            </div>
-          </div>
-          <div className="bg-card rounded-xl border border-border p-6">
-            <div className="flex items-center gap-4">
-              <div className="h-12 w-12 rounded-lg bg-blue-500/10 flex items-center justify-center">
-                <Eye className="h-6 w-6 text-blue-600" />
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-foreground">{stats.views}</div>
-                <div className="text-sm text-muted-foreground">Consultations</div>
-              </div>
-            </div>
-          </div>
+        {/* Global Stats */}
+        <div className="mb-8">
+          <GlobalStatsCard />
         </div>
 
         {/* Quick Links */}
