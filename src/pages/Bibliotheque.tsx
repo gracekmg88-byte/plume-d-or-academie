@@ -26,6 +26,8 @@ export default function Bibliotheque() {
   const [category, setCategory] = useState<Category>(initialCategory);
   const [search, setSearch] = useState("");
   const [filters, setFilters] = useState<AdvancedFilterValues>({ author: "", sortBy: "date_desc" });
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 12;
   const isOnline = useOnlineStatus();
   const { t } = useLanguage();
   
