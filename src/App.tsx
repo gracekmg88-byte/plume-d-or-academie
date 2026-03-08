@@ -32,6 +32,7 @@ import AdminDevices from "./pages/admin/AdminDevices";
 import AdminSubmissions from "./pages/admin/AdminSubmissions";
 import DepotMemoire from "./pages/DepotMemoire";
 import Chat from "./pages/Chat";
+import InstallApp from "./pages/InstallApp";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -77,6 +78,7 @@ function AnimatedRoutes() {
       <Route path="/admin/submissions" element={<AdminSubmissions />} />
       <Route path="/depot-memoire" element={<DepotMemoire />} />
       <Route path="/chat" element={<Chat />} />
+      <Route path="/installer" element={<InstallApp />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

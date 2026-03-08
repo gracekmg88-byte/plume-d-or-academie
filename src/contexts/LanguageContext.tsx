@@ -163,6 +163,23 @@ const translations = {
     "chat.empty": "Aucun message pour le moment. Soyez le premier à écrire !",
     "chat.deleted": "Message supprimé",
     "chat.error": "Erreur lors de l'envoi du message",
+
+    // Install PWA
+    "install.title": "Installer Plume d'Or",
+    "install.description": "Installez l'application sur votre appareil pour un accès rapide, même hors connexion.",
+    "install.alreadyInstalled": "L'application est déjà installée !",
+    "install.installButton": "Installer l'application",
+    "install.iosTitle": "Comment installer sur iPhone / iPad :",
+    "install.iosStep1": "Appuyez sur le bouton Partager",
+    "install.iosStep2": "Sélectionnez « Sur l'écran d'accueil »",
+    "install.iosStep3": "Appuyez sur « Ajouter »",
+    "install.androidTitle": "Comment installer sur Android :",
+    "install.androidStep1": "Appuyez sur le menu",
+    "install.androidStep2": "Sélectionnez « Installer l'application »",
+    "install.feature1": "⚡ Chargement rapide",
+    "install.feature2": "📱 Comme une app native",
+    "install.feature3": "🔔 Notifications",
+    "nav.install": "Installer",
   },
   en: {
     // Nav
@@ -324,6 +341,23 @@ const translations = {
     "chat.empty": "No messages yet. Be the first to write!",
     "chat.deleted": "Message deleted",
     "chat.error": "Error sending message",
+
+    // Install PWA
+    "install.title": "Install Plume d'Or",
+    "install.description": "Install the app on your device for quick access, even offline.",
+    "install.alreadyInstalled": "The app is already installed!",
+    "install.installButton": "Install the app",
+    "install.iosTitle": "How to install on iPhone / iPad:",
+    "install.iosStep1": "Tap the Share button",
+    "install.iosStep2": "Select 'Add to Home Screen'",
+    "install.iosStep3": "Tap 'Add'",
+    "install.androidTitle": "How to install on Android:",
+    "install.androidStep1": "Tap the menu button",
+    "install.androidStep2": "Select 'Install app'",
+    "install.feature1": "⚡ Fast loading",
+    "install.feature2": "📱 Native-like experience",
+    "install.feature3": "🔔 Notifications",
+    "nav.install": "Install",
   },
 } as const;
 

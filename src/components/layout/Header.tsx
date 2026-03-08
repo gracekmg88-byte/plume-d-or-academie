@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, BookOpen, Feather, User, LogIn, Crown, Sun, Moon, Globe, MessageCircle } from "lucide-react";
+import { Menu, X, BookOpen, Feather, User, LogIn, Crown, Sun, Moon, Globe, MessageCircle, Download } from "lucide-react";
 import { NotificationCenter } from "@/components/layout/NotificationCenter";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -26,6 +26,7 @@ export function Header() {
     { href: "/chat", label: t("nav.chat"), icon: MessageCircle },
     { href: "/a-propos", label: t("nav.about") },
     { href: "/contact", label: t("nav.contact") },
+    { href: "/installer", label: t("nav.install"), icon: Download },
   ];
 
   return (
