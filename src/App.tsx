@@ -2,8 +2,9 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation, useNavigationType } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
+import { useEffect } from "react";
 import { warmUpCache } from "@/lib/image-cache";
 import { preloadImage } from "@/components/ui/cached-image";
 import heroImage from "@/assets/hero-library.webp";
@@ -42,6 +43,17 @@ warmUpCache().catch(() => {});
   preloadImage(src).catch(() => {});
 });
 
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  const navType = useNavigationType();
+  useEffect(() => {
+    if (navType !== "POP") {
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    }
+  }, [pathname, navType]);
+  return null;
+}
+
 function AnimatedRoutes() {
   const location = useLocation();
   return (
@@ -79,6 +91,7 @@ const App = () => (
           <Sonner />
           <PushNotificationInit />
           <BrowserRouter>
+            <ScrollToTop />
             <AnimatedRoutes />
           </BrowserRouter>
         </TooltipProvider>
