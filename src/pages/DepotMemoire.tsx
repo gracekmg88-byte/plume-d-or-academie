@@ -289,6 +289,50 @@ export default function DepotMemoire() {
             />
           </div>
 
+          {/* Page de couverture */}
+          <div className="space-y-2">
+            <Label>Page de couverture (max 5 Mo)</Label>
+            <div className="border-2 border-dashed border-border rounded-lg p-6 text-center">
+              {coverPreview ? (
+                <div className="flex flex-col items-center gap-3">
+                  <img
+                    src={coverPreview}
+                    alt="Aperçu couverture"
+                    className="max-h-40 rounded-lg border border-border object-contain"
+                  />
+                  <span className="text-sm font-medium text-primary">Couverture téléversée</span>
+                  <label className="cursor-pointer">
+                    <span className="text-xs text-muted-foreground hover:text-foreground underline">
+                      Changer l'image
+                    </span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleCoverUpload}
+                      disabled={coverUploading}
+                    />
+                  </label>
+                </div>
+              ) : (
+                <>
+                  <ImagePlus className="mx-auto h-8 w-8 text-muted-foreground/40 mb-2" />
+                  <label className="cursor-pointer">
+                    <span className="text-sm text-primary font-medium hover:underline">
+                      {coverUploading ? "Téléversement..." : "Ajouter une page de couverture"}
+                    </span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleCoverUpload}
+                      disabled={coverUploading}
+                    />
+                  </label>
+                  <p className="text-xs text-muted-foreground mt-1">JPG, PNG ou WebP</p>
+                </>
+              )}
+            </div>
           <div className="space-y-2">
             <Label>Fichier PDF * (max 20 Mo)</Label>
             <div className="border-2 border-dashed border-border rounded-lg p-6 text-center">
