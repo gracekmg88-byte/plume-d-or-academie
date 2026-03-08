@@ -3,8 +3,9 @@ import { useNavigate, Link } from "react-router-dom";
 import { 
   Feather, LogOut, Plus, Book, FileText, GraduationCap, Newspaper, 
   Eye, LayoutDashboard, Settings, Trash2, Edit, ToggleLeft, ToggleRight,
-  MessageSquare, Mail, Copy, Download, Users, Smartphone
+  MessageSquare, Mail, Copy, Download, Users, Smartphone, Send, Loader2
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useBillingConfig } from "@/hooks/useBillingConfig";
 import { AdminReadingStatsCard } from "@/components/admin/AdminReadingStatsCard";
@@ -59,9 +60,30 @@ export default function AdminDashboard() {
   const { hidePremiumUI } = useBillingConfig();
   const navigate = useNavigate();
 
+  const [sendingNewsletter, setSendingNewsletter] = useState(false);
+
   const handleSignOut = async () => {
     await signOut();
     navigate("/admin");
+  };
+
+  const handleSendNewsletter = async () => {
+    setSendingNewsletter(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("send-newsletter");
+      if (error) throw error;
+      if (data?.emailsSent > 0) {
+        toast.success(`Newsletter envoyée à ${data.emailsSent} abonné(s) avec ${data.publications} publication(s)`);
+      } else if (data?.message) {
+        toast.info(data.message);
+      } else {
+        toast.info("Aucun email envoyé");
+      }
+    } catch (err: any) {
+      toast.error("Erreur lors de l'envoi : " + (err.message || "Erreur inconnue"));
+    } finally {
+      setSendingNewsletter(false);
+    }
   };
 
   const handleDelete = async (id: string) => {
@@ -142,7 +164,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Quick Links */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-6 gap-4 mb-8">
           <Link to="/admin/submissions" className="block">
             <div className="bg-card rounded-xl border border-border p-6 hover:shadow-elegant transition-all">
               <div className="flex items-center gap-4">
@@ -197,6 +219,31 @@ export default function AdminDashboard() {
               </div>
             </div>
           </Link>
+          <div
+            onClick={handleSendNewsletter}
+            className={cn(
+              "block cursor-pointer",
+              sendingNewsletter && "pointer-events-none opacity-60"
+            )}
+          >
+            <div className="bg-card rounded-xl border border-border p-6 hover:shadow-elegant transition-all">
+              <div className="flex items-center gap-4">
+                <div className="h-12 w-12 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                  {sendingNewsletter ? (
+                    <Loader2 className="h-6 w-6 text-blue-600 animate-spin" />
+                  ) : (
+                    <Send className="h-6 w-6 text-blue-600" />
+                  )}
+                </div>
+                <div>
+                  <div className="font-semibold text-foreground">Newsletter</div>
+                  <div className="text-sm text-muted-foreground">
+                    {sendingNewsletter ? "Envoi en cours..." : "Envoyer maintenant"}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
           <Link to="/admin/settings" className="block">
             <div className="bg-card rounded-xl border border-border p-6 hover:shadow-elegant transition-all">
               <div className="flex items-center gap-4">
