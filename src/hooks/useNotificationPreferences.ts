@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
 
-const ALL_CATEGORIES = ["livre", "memoire", "tfc", "article"] as const;
+const ALL_CATEGORIES = ["livre", "memoire", "tfc", "article", "chat"] as const;
 
 export type NotificationCategory = (typeof ALL_CATEGORIES)[number];
 
