@@ -361,7 +361,7 @@ export default function Publication() {
                 <ProtectedPdfViewer
                   fileUrl={pdfUrl}
                   title={displayPub.title}
-                  initialPage={initialPage}
+                  initialPage={resumePage}
                   onPageChange={handlePageChange}
                 />
                 <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
