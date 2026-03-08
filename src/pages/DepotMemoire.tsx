@@ -131,8 +131,18 @@ export default function DepotMemoire() {
     }
 
     setCoverUploading(true);
-    const fileName = `submissions/${user.id}/covers/${Date.now()}-${file.name}`;
-    const { error } = await supabase.storage.from("publications").upload(fileName, file);
+
+    // Compress cover image before upload (WebP, max 800x1200, 75% quality)
+    let optimizedFile = file;
+    try {
+      const { compressImage } = await import("@/lib/compress-image");
+      optimizedFile = await compressImage(file, { maxWidth: 800, maxHeight: 1200, quality: 0.75 });
+    } catch (err) {
+      console.warn("Compression failed, uploading original:", err);
+    }
+
+    const fileName = `submissions/${user.id}/covers/${Date.now()}-${optimizedFile.name}`;
+    const { error } = await supabase.storage.from("publications").upload(fileName, optimizedFile);
 
     if (error) {
       toast.error("Erreur lors du téléversement de la couverture.");
