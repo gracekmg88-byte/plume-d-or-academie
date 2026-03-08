@@ -368,6 +368,16 @@ const translations = {
     "install.feature2": "📱 Native-like experience",
     "install.feature3": "🔔 Notifications",
     "nav.install": "Install",
+
+    // Newsletter
+    "newsletter.title": "Newsletter",
+    "newsletter.subtitle": "Get new publications delivered weekly",
+    "newsletter.namePlaceholder": "Your name (optional)",
+    "newsletter.emailPlaceholder": "Your email",
+    "newsletter.subscribe": "Subscribe",
+    "newsletter.success": "You're subscribed! Thank you 🎉",
+    "newsletter.alreadySubscribed": "You're already subscribed to the newsletter",
+    "newsletter.error": "Subscription error",
   },
 } as const;
 
