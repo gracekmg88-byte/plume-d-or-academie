@@ -16,6 +16,7 @@ import { savePublicationOffline, getOfflinePublication, isPublicationCached, typ
 import { useTrackReading } from "@/hooks/useReadingHistory";
 import { supabase } from "@/integrations/supabase/client";
 import { FavoriteButton } from "@/components/publications/FavoriteButton";
+import { ShareButtons } from "@/components/publications/ShareButtons";
 import { cn } from "@/lib/utils";
 import { CommentsList } from "@/components/publications/CommentsList";
 import { format } from "date-fns";
