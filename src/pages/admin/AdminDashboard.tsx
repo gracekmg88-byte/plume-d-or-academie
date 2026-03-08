@@ -219,6 +219,31 @@ export default function AdminDashboard() {
               </div>
             </div>
           </Link>
+          <div
+            onClick={handleSendNewsletter}
+            className={cn(
+              "block cursor-pointer",
+              sendingNewsletter && "pointer-events-none opacity-60"
+            )}
+          >
+            <div className="bg-card rounded-xl border border-border p-6 hover:shadow-elegant transition-all">
+              <div className="flex items-center gap-4">
+                <div className="h-12 w-12 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                  {sendingNewsletter ? (
+                    <Loader2 className="h-6 w-6 text-blue-600 animate-spin" />
+                  ) : (
+                    <Send className="h-6 w-6 text-blue-600" />
+                  )}
+                </div>
+                <div>
+                  <div className="font-semibold text-foreground">Newsletter</div>
+                  <div className="text-sm text-muted-foreground">
+                    {sendingNewsletter ? "Envoi en cours..." : "Envoyer maintenant"}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
           <Link to="/admin/settings" className="block">
             <div className="bg-card rounded-xl border border-border p-6 hover:shadow-elegant transition-all">
               <div className="flex items-center gap-4">
