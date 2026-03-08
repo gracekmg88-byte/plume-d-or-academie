@@ -64,6 +64,7 @@ export function useCreateSubmission() {
       description: string;
       category: string;
       file_url: string;
+      cover_url?: string;
     }) => {
       const { error } = await supabase.from("submissions").insert([
         { ...submission, user_id: user!.id },
