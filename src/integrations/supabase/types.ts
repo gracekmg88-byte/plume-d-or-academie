@@ -14,6 +14,47 @@ export type Database = {
   }
   public: {
     Tables: {
+      annotations: {
+        Row: {
+          color: string
+          content: string
+          created_at: string
+          id: string
+          page_number: number
+          publication_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          color?: string
+          content?: string
+          created_at?: string
+          id?: string
+          page_number: number
+          publication_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          color?: string
+          content?: string
+          created_at?: string
+          id?: string
+          page_number?: number
+          publication_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "annotations_publication_id_fkey"
+            columns: ["publication_id"]
+            isOneToOne: false
+            referencedRelation: "publications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chat_messages: {
         Row: {
           content: string
@@ -253,6 +294,7 @@ export type Database = {
           file_url: string | null
           id: string
           is_published: boolean
+          summary: string | null
           title: string
           updated_at: string
           views_count: number
@@ -266,6 +308,7 @@ export type Database = {
           file_url?: string | null
           id?: string
           is_published?: boolean
+          summary?: string | null
           title: string
           updated_at?: string
           views_count?: number
@@ -279,6 +322,7 @@ export type Database = {
           file_url?: string | null
           id?: string
           is_published?: boolean
+          summary?: string | null
           title?: string
           updated_at?: string
           views_count?: number
