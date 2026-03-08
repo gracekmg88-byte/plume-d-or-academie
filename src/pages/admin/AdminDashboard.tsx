@@ -108,12 +108,6 @@ export default function AdminDashboard() {
     );
   }
 
-  const stats = {
-    total: publications?.length || 0,
-    published: publications?.filter((p) => p.is_published).length || 0,
-    views: publications?.reduce((acc, p) => acc + p.views_count, 0) || 0,
-  };
-
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
