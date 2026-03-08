@@ -115,6 +115,7 @@ export default function PublicationForm() {
           title: formData.title,
           author: formData.author,
           category: formData.category,
+          style: coverStyle,
         },
       });
 
