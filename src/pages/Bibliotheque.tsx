@@ -1,7 +1,8 @@
 import { useState, useMemo, useEffect } from "react";
 
-import { useSearchParams } from "react-router-dom";
-import { BookOpen, WifiOff } from "lucide-react";
+import { useSearchParams, useNavigate } from "react-router-dom";
+import { BookOpen, WifiOff, RefreshCw, FolderDown } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Layout } from "@/components/layout/Layout";
 import { PublicationCard } from "@/components/publications/PublicationCard";
 import { CategoryFilter } from "@/components/publications/CategoryFilter";
