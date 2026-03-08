@@ -375,6 +375,11 @@ export default function Publication() {
                 </p>
               </div>
             )}
+
+            {/* Comments Section */}
+            <div className="mt-10 border-t border-border pt-8">
+              <CommentsList publicationId={id!} />
+            </div>
           </div>
         </div>
       </div>
