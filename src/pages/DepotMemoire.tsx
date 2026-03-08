@@ -45,6 +45,9 @@ export default function DepotMemoire() {
   });
   const [uploading, setUploading] = useState(false);
   const [fileUrl, setFileUrl] = useState("");
+  const [coverUploading, setCoverUploading] = useState(false);
+  const [coverUrl, setCoverUrl] = useState("");
+  const [coverPreview, setCoverPreview] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
   if (!user) {
