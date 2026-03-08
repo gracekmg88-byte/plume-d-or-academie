@@ -20,6 +20,7 @@ type Category = "all" | "livre" | "memoire" | "tfc" | "article";
 
 export default function Bibliotheque() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const initialCategory = (searchParams.get("categorie") as Category) || "all";
   
   const [category, setCategory] = useState<Category>(initialCategory);

@@ -203,6 +203,11 @@ const translations = {
     "library.noResultsOffline": "View publications online to make them available offline.",
     "library.noResultsSearch": "No results for \"{search}\". Try different terms.",
     "library.noResultsCategory": "No publications available in this category.",
+    "library.noConnection": "No internet connection.",
+    "library.noConnectionDesc": "Please check your connection and try again.",
+    "library.noConnectionHint": "You can also view your downloaded documents offline from your profile.",
+    "library.retry": "Retry",
+    "library.viewOfflineDocs": "View my offline documents",
 
     // About
     "about.title": "About Plume d'Or KMG",
