@@ -105,7 +105,25 @@ export default function Publication() {
     startReading.mutateAsync(id).then((recordId) => {
       if (recordId) readingRecordId.current = recordId;
     });
+
+    const handleBeforeUnload = () => {
+      if (readingRecordId.current) {
+        const seconds = Math.floor((Date.now() - readingStart.current) / 1000);
+        // Use sendBeacon for reliable save on page close
+        const url = `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/reading_history?id=eq.${readingRecordId.current}`;
+        const body = JSON.stringify({
+          reading_duration_seconds: seconds,
+          last_page_read: currentPageRef.current,
+        });
+        navigator.sendBeacon?.(url, new Blob([body], { type: "application/json" }));
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
     return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
       if (readingRecordId.current) {
         const seconds = Math.floor((Date.now() - readingStart.current) / 1000);
         if (seconds > 2) {
@@ -119,6 +137,17 @@ export default function Publication() {
       }
     };
   }, [id, user, isOnline]);
+
+  // Save page progress on every page change (debounced)
+  const handlePageChange = useCallback((page: number) => {
+    currentPageRef.current = page;
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    saveTimeoutRef.current = setTimeout(() => {
+      if (readingRecordId.current && page > 0) {
+        savePageProgress.mutate({ recordId: readingRecordId.current, lastPage: page });
+      }
+    }, 1500);
+  }, [savePageProgress]);
 
   useEffect(() => {
     // Scroll to top when opening the publication
