@@ -33,9 +33,8 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
     setLoading(false);
   }, []);
 
-  const goToPrev = () => setCurrentPage((p) => Math.max(1, p - 1));
-  const goToNext = () => setCurrentPage((p) => Math.min(numPages, p + 1));
-  const zoomIn = () => setScale((s) => Math.min(2.5, s + 0.25));
+  const goToPrev = () => setCurrentPage((p) => { const next = Math.max(1, p - 1); onPageChange?.(next); return next; });
+  const goToNext = () => setCurrentPage((p) => { const next = Math.min(numPages, p + 1); onPageChange?.(next); return next; });
   const zoomOut = () => setScale((s) => Math.max(0.5, s - 0.25));
 
   const retry = () => {
