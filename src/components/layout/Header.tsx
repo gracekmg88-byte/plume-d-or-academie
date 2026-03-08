@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X, BookOpen, Feather, User, LogIn, Crown, Sun, Moon, Globe } from "lucide-react";
+import { NotificationCenter } from "@/components/layout/NotificationCenter";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
@@ -92,6 +93,7 @@ export function Header() {
 
           {user ? (
             <>
+              <NotificationCenter />
               <Link to="/profil">
                 <Button variant="ghost" size="sm" className="gap-2">
                   <User className="h-4 w-4" />
@@ -128,6 +130,7 @@ export function Header() {
           <Button variant="ghost" size="icon" onClick={toggleTheme} className="h-9 w-9">
             {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </Button>
+          {user && <NotificationCenter />}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="p-2 text-foreground"
