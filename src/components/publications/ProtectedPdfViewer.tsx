@@ -12,9 +12,11 @@ pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.vers
 interface ProtectedPdfViewerProps {
   fileUrl: string;
   title: string;
+  initialPage?: number;
+  onPageChange?: (page: number) => void;
 }
 
-export function ProtectedPdfViewer({ fileUrl, title }: ProtectedPdfViewerProps) {
+export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }: ProtectedPdfViewerProps) {
   const [numPages, setNumPages] = useState<number>(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [scale, setScale] = useState(0.5);
