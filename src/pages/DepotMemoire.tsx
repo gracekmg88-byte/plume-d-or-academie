@@ -41,9 +41,14 @@ export default function DepotMemoire() {
   const [coverUrl, setCoverUrl] = useState("");
   const [coverPreview, setCoverPreview] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
 
   const updateForm = (updates: Partial<typeof form>) => {
     setForm((prev) => ({ ...prev, ...updates }));
+  };
+
+  const handleBlur = (field: string) => {
+    setTouched((prev) => ({ ...prev, [field]: true }));
   };
 
   if (loading) {
