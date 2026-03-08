@@ -43,10 +43,11 @@ export default function Publication() {
   const [offlineData, setOfflineData] = useState<OfflinePublication | null>(null);
   const [offlineLoading, setOfflineLoading] = useState(!isOnline);
   const [isCached, setIsCached] = useState(false);
-  const { startReading, updateDuration } = useTrackReading();
+  const { startReading, updateDuration, savePageProgress } = useTrackReading();
   const readingRecordId = useRef<string | null>(null);
   const readingStart = useRef<number>(Date.now());
   const currentPageRef = useRef<number>(initialPage);
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const hasFullAccess = hidePremiumUI || isPremium;
   const dateLocale = language === "fr" ? fr : enUS;
