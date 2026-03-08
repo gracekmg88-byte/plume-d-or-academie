@@ -60,9 +60,30 @@ export default function AdminDashboard() {
   const { hidePremiumUI } = useBillingConfig();
   const navigate = useNavigate();
 
+  const [sendingNewsletter, setSendingNewsletter] = useState(false);
+
   const handleSignOut = async () => {
     await signOut();
     navigate("/admin");
+  };
+
+  const handleSendNewsletter = async () => {
+    setSendingNewsletter(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("send-newsletter");
+      if (error) throw error;
+      if (data?.emailsSent > 0) {
+        toast.success(`Newsletter envoyée à ${data.emailsSent} abonné(s) avec ${data.publications} publication(s)`);
+      } else if (data?.message) {
+        toast.info(data.message);
+      } else {
+        toast.info("Aucun email envoyé");
+      }
+    } catch (err: any) {
+      toast.error("Erreur lors de l'envoi : " + (err.message || "Erreur inconnue"));
+    } finally {
+      setSendingNewsletter(false);
+    }
   };
 
   const handleDelete = async (id: string) => {
