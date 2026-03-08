@@ -92,9 +92,8 @@ export function Header() {
           </Button>
 
           {user ? (
-              <>
-              <NotificationCenter />
             <>
+              <NotificationCenter />
               <Link to="/profil">
                 <Button variant="ghost" size="sm" className="gap-2">
                   <User className="h-4 w-4" />
