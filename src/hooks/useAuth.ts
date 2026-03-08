@@ -9,18 +9,7 @@ export function useAuth() {
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        checkAdminRole(session.user.id);
-      } else {
-        setLoading(false);
-      }
-    });
-
-    // Listen for auth changes
+    // Set up listener FIRST, then get initial session
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -33,6 +22,10 @@ export function useAuth() {
         setLoading(false);
       }
     });
+
+    // getSession triggers onAuthStateChange with INITIAL_SESSION event,
+    // so no need to handle the result separately — avoids double fetch
+    supabase.auth.getSession();
 
     return () => subscription.unsubscribe();
   }, []);
