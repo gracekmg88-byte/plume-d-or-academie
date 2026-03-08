@@ -68,6 +68,10 @@ export default function Publication() {
           const page = data[0].last_page_read;
           setResumePage(page);
           currentPageRef.current = page;
+          toast({
+            title: "📖 Reprise de lecture",
+            description: `Reprise à la page ${page}`,
+          });
         }
       });
   }, [id, user, pageFromUrl]);
