@@ -145,6 +145,23 @@ const translations = {
     "theme.daySuggestion": "☀️ Il fait jour. Essayez le mode clair pour une meilleure visibilité.",
     "theme.activate": "Activer",
     "theme.dismiss": "Non merci",
+
+    // Share
+    "share.button": "Partager",
+    "share.copied": "Lien copié !",
+    "share.copyError": "Impossible de copier le lien",
+    "share.copyLink": "Copier le lien",
+
+    // Chat
+    "chat.title": "Chat communautaire",
+    "chat.subtitle": "Discutez avec la communauté Plume d'Or",
+    "chat.placeholder": "Écrire un message...",
+    "chat.send": "Envoyer",
+    "chat.login": "Connectez-vous pour participer au chat",
+    "chat.loginBtn": "Se connecter",
+    "chat.empty": "Aucun message pour le moment. Soyez le premier à écrire !",
+    "chat.deleted": "Message supprimé",
+    "chat.error": "Erreur lors de l'envoi du message",
   },
   en: {
     // Nav
