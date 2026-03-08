@@ -23,6 +23,13 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
+  // Sync with initialPage when it changes (e.g. from DB fetch)
+  useEffect(() => {
+    if (initialPage && initialPage > 1) {
+      setCurrentPage(initialPage);
+    }
+  }, [initialPage]);
+
   const onDocumentLoadSuccess = useCallback(({ numPages }: { numPages: number }) => {
     setNumPages(numPages);
     setLoading(false);
