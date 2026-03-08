@@ -57,30 +57,26 @@ function ScrollToTop() {
 function AnimatedRoutes() {
   const location = useLocation();
   return (
-    <AnimatePresence mode="wait">
-      <Routes location={location} key={location.pathname}>
-        <Route path="/" element={<Index />} />
-        <Route path="/bibliotheque" element={<Bibliotheque />} />
-        <Route path="/publication/:id" element={<Publication />} />
-        <Route path="/a-propos" element={<APropos />} />
-        <Route path="/contact" element={<Contact />} />
-        <Route path="/auth" element={<Auth />} />
-        <Route path="/profil" element={<Profil />} />
-        <Route path="/abonnement" element={<Abonnement />} />
-        <Route path="/admin" element={<AdminLogin />} />
-        <Route path="/admin/dashboard" element={<AdminDashboard />} />
-        <Route path="/admin/messages" element={<AdminMessages />} />
-        <Route path="/admin/settings" element={<AdminSettings />} />
-        <Route path="/admin/users" element={<AdminUsers />} />
-        <Route path="/admin/publication/:id" element={<PublicationForm />} />
-        <Route path="/admin/devices" element={<AdminDevices />} />
-        <Route path="/admin/submissions" element={<AdminSubmissions />} />
-        <Route path="/depot-memoire" element={<DepotMemoire />} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </AnimatePresence>
-  );
-}
+    <Routes location={location} key={location.pathname}>
+      <Route path="/" element={<Index />} />
+      <Route path="/bibliotheque" element={<Bibliotheque />} />
+      <Route path="/publication/:id" element={<Publication />} />
+      <Route path="/a-propos" element={<APropos />} />
+      <Route path="/contact" element={<Contact />} />
+      <Route path="/auth" element={<Auth />} />
+      <Route path="/profil" element={<Profil />} />
+      <Route path="/abonnement" element={<Abonnement />} />
+      <Route path="/admin" element={<AdminLogin />} />
+      <Route path="/admin/dashboard" element={<AdminDashboard />} />
+      <Route path="/admin/messages" element={<AdminMessages />} />
+      <Route path="/admin/settings" element={<AdminSettings />} />
+      <Route path="/admin/users" element={<AdminUsers />} />
+      <Route path="/admin/publication/:id" element={<PublicationForm />} />
+      <Route path="/admin/devices" element={<AdminDevices />} />
+      <Route path="/admin/submissions" element={<AdminSubmissions />} />
+      <Route path="/depot-memoire" element={<DepotMemoire />} />
+      <Route path="*" element={<NotFound />} />
+    </Routes>
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
