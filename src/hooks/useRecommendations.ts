@@ -90,7 +90,7 @@ export function useRecommendations(limit = 5) {
         .from("publications")
         .select("id, title, author, category, cover_image_url, views_count")
         .eq("is_published", true)
-        .in("category", sortedCats)
+        .in("category", sortedCats as ("livre" | "memoire" | "tfc" | "article")[])
         .order("views_count", { ascending: false })
         .limit(limit + readPubIds.size); // fetch extra to filter out read ones
 
