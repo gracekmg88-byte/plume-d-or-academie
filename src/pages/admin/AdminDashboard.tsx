@@ -8,6 +8,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useBillingConfig } from "@/hooks/useBillingConfig";
 import { AdminReadingStatsCard } from "@/components/admin/AdminReadingStatsCard";
+import { GlobalStatsCard } from "@/components/admin/GlobalStatsCard";
 import { Badge } from "@/components/ui/badge";
 import {
   Tooltip,
