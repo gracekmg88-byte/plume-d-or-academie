@@ -52,6 +52,7 @@ export default function Publication() {
   const [offlineLoading, setOfflineLoading] = useState(!isOnline);
   const [isCached, setIsCached] = useState(false);
   const [resumePage, setResumePage] = useState<number>(pageFromUrl || 1);
+  const [currentViewPage, setCurrentViewPage] = useState<number>(pageFromUrl || 1);
   const { startReading, updateDuration, savePageProgress } = useTrackReading();
   const readingRecordId = useRef<string | null>(null);
   const readingStart = useRef<number>(Date.now());
