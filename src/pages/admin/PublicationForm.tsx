@@ -135,7 +135,9 @@ export default function PublicationForm() {
       let coverImageUrl = existingPublication?.cover_image_url || null;
       let fileUrl = existingPublication?.file_url || null;
 
-      if (coverFile) {
+      if (aiCoverUrl) {
+        coverImageUrl = aiCoverUrl;
+      } else if (coverFile) {
         const compressed = await compressImage(coverFile, { maxWidth: 800, maxHeight: 1200, quality: 0.75 });
         coverImageUrl = await uploadFile(compressed, "covers");
       }
