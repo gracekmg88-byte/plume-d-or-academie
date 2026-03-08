@@ -163,6 +163,23 @@ const translations = {
     "chat.empty": "Aucun message pour le moment. Soyez le premier à écrire !",
     "chat.deleted": "Message supprimé",
     "chat.error": "Erreur lors de l'envoi du message",
+
+    // Install PWA
+    "install.title": "Installer Plume d'Or",
+    "install.description": "Installez l'application sur votre appareil pour un accès rapide, même hors connexion.",
+    "install.alreadyInstalled": "L'application est déjà installée !",
+    "install.installButton": "Installer l'application",
+    "install.iosTitle": "Comment installer sur iPhone / iPad :",
+    "install.iosStep1": "Appuyez sur le bouton Partager",
+    "install.iosStep2": "Sélectionnez « Sur l'écran d'accueil »",
+    "install.iosStep3": "Appuyez sur « Ajouter »",
+    "install.androidTitle": "Comment installer sur Android :",
+    "install.androidStep1": "Appuyez sur le menu",
+    "install.androidStep2": "Sélectionnez « Installer l'application »",
+    "install.feature1": "⚡ Chargement rapide",
+    "install.feature2": "📱 Comme une app native",
+    "install.feature3": "🔔 Notifications",
+    "nav.install": "Installer",
   },
   en: {
     // Nav
