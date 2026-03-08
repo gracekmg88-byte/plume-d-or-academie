@@ -306,7 +306,12 @@ export default function Publication() {
             {pdfUrl && (
               <div className="mt-8" id="document-viewer">
                 <h2 className="font-serif text-xl font-semibold text-foreground mb-4">{t("pub.document")}</h2>
-                <ProtectedPdfViewer fileUrl={pdfUrl} title={displayPub.title} />
+                <ProtectedPdfViewer
+                  fileUrl={pdfUrl}
+                  title={displayPub.title}
+                  initialPage={initialPage}
+                  onPageChange={(page) => { currentPageRef.current = page; }}
+                />
                 <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
                   <Lock className="h-3 w-3" />
                   {t("pub.protected")}
