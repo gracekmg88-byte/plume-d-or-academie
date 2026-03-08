@@ -14,6 +14,41 @@ export type Database = {
   }
   public: {
     Tables: {
+      comments: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          publication_id: string
+          user_id: string
+          user_name: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          publication_id: string
+          user_id: string
+          user_name: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          publication_id?: string
+          user_id?: string
+          user_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comments_publication_id_fkey"
+            columns: ["publication_id"]
+            isOneToOne: false
+            referencedRelation: "publications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contact_messages: {
         Row: {
           created_at: string

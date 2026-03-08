@@ -17,6 +17,7 @@ import { useTrackReading } from "@/hooks/useReadingHistory";
 import { supabase } from "@/integrations/supabase/client";
 import { FavoriteButton } from "@/components/publications/FavoriteButton";
 import { cn } from "@/lib/utils";
+import { CommentsList } from "@/components/publications/CommentsList";
 import { format } from "date-fns";
 import { fr, enUS } from "date-fns/locale";
 import { toast } from "sonner";
@@ -374,6 +375,11 @@ export default function Publication() {
                 </p>
               </div>
             )}
+
+            {/* Comments Section */}
+            <div className="mt-10 border-t border-border pt-8">
+              <CommentsList publicationId={id!} />
+            </div>
           </div>
         </div>
       </div>
