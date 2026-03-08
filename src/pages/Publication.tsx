@@ -340,7 +340,7 @@ export default function Publication() {
                   fileUrl={pdfUrl}
                   title={displayPub.title}
                   initialPage={initialPage}
-                  onPageChange={(page) => { currentPageRef.current = page; }}
+                  onPageChange={handlePageChange}
                 />
                 <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
                   <Lock className="h-3 w-3" />
