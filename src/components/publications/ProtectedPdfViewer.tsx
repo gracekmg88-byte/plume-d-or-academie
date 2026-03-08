@@ -35,6 +35,7 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
 
   const goToPrev = () => setCurrentPage((p) => { const next = Math.max(1, p - 1); onPageChange?.(next); return next; });
   const goToNext = () => setCurrentPage((p) => { const next = Math.min(numPages, p + 1); onPageChange?.(next); return next; });
+  const zoomIn = () => setScale((s) => Math.min(2.5, s + 0.25));
   const zoomOut = () => setScale((s) => Math.max(0.5, s - 0.25));
 
   const retry = () => {
