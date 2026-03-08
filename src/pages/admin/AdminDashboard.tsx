@@ -142,7 +142,20 @@ export default function AdminDashboard() {
         </div>
 
         {/* Quick Links */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+          <Link to="/admin/submissions" className="block">
+            <div className="bg-card rounded-xl border border-border p-6 hover:shadow-elegant transition-all">
+              <div className="flex items-center gap-4">
+                <div className="h-12 w-12 rounded-lg bg-amber-500/10 flex items-center justify-center">
+                  <GraduationCap className="h-6 w-6 text-amber-600" />
+                </div>
+                <div>
+                  <div className="font-semibold text-foreground">Soumissions</div>
+                  <div className="text-sm text-muted-foreground">Mémoires étudiants</div>
+                </div>
+              </div>
+            </div>
+          </Link>
           <Link to="/admin/messages" className="block">
             <div className="bg-card rounded-xl border border-border p-6 hover:shadow-elegant transition-all">
               <div className="flex items-center gap-4">
