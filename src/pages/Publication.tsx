@@ -16,6 +16,7 @@ import { savePublicationOffline, getOfflinePublication, isPublicationCached, typ
 import { useTrackReading } from "@/hooks/useReadingHistory";
 import { supabase } from "@/integrations/supabase/client";
 import { FavoriteButton } from "@/components/publications/FavoriteButton";
+import { ShareButtons } from "@/components/publications/ShareButtons";
 import { cn } from "@/lib/utils";
 import { CommentsList } from "@/components/publications/CommentsList";
 import { format } from "date-fns";
@@ -323,12 +324,17 @@ export default function Publication() {
 
           {/* Content */}
           <div className="lg:col-span-2 space-y-6">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <Badge className={cn("text-sm", config.className)}>
                 <Icon className="h-4 w-4 mr-1" />
                 {config.label}
               </Badge>
               <FavoriteButton publicationId={id!} size="sm" />
+              <ShareButtons
+                title={displayPub.title}
+                description={displayPub.description || undefined}
+                publicationId={id!}
+              />
             </div>
 
             <h1 className="font-serif text-3xl md:text-4xl lg:text-5xl font-bold text-foreground leading-tight">
