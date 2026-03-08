@@ -93,6 +93,12 @@ export default function Index() {
         </div>
       </section>
 
+      {/* Continue Reading - only for logged-in users */}
+      {user && <ContinueReadingSection />}
+
+      {/* Recommendations */}
+      <RecommendationsSection />
+
       {/* Features Section */}
       <section className="py-16 md:py-24 bg-background">
         <div className="container">
