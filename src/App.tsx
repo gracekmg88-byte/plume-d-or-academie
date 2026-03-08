@@ -77,6 +77,8 @@ function AnimatedRoutes() {
       <Route path="/depot-memoire" element={<DepotMemoire />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
+  );
+}
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
