@@ -108,7 +108,11 @@ export default function Publication() {
       if (readingRecordId.current) {
         const seconds = Math.floor((Date.now() - readingStart.current) / 1000);
         if (seconds > 2) {
-          updateDuration.mutate({ recordId: readingRecordId.current, seconds });
+          updateDuration.mutate({
+            recordId: readingRecordId.current,
+            seconds,
+            lastPage: currentPageRef.current,
+          });
         }
         readingRecordId.current = null;
       }
