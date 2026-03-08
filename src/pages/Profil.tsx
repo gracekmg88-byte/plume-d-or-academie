@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { User, Mail, Crown, Calendar, LogOut, Star, BookOpen, Trash2, WifiOff, HardDrive } from "lucide-react";
+import { NotificationPreferencesCard } from "@/components/profile/NotificationPreferencesCard";
 import { FavoritesSection } from "@/components/profile/FavoritesSection";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
@@ -195,6 +196,9 @@ export default function Profil() {
               </div>
               {/* Favorites */}
               <FavoritesSection />
+
+              {/* Notification Preferences */}
+              <NotificationPreferencesCard />
 
               {/* Offline Cache Management */}
               <div className="border-t border-border pt-6">
