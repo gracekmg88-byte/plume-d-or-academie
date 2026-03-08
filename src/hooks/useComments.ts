@@ -43,12 +43,12 @@ export function useComments(publicationId: string) {
 
       const userName = profile?.full_name || profile?.email || "Utilisateur";
 
-      const { error } = await supabase.from("comments").insert({
+      const { error } = await supabase.from("comments").insert([{
         publication_id: publicationId,
         user_id: user.id,
         user_name: userName,
         content,
-      } as Record<string, unknown>);
+      }] as any);
 
       if (error) throw error;
     },
