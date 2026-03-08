@@ -61,10 +61,10 @@ export default function InstallApp() {
           </p>
 
           {isInstalled ? (
-            <Card className="border-green-500/30 bg-green-500/5">
+            <Card className="border-primary/30 bg-primary/5">
               <CardContent className="flex items-center justify-center gap-3 py-6">
-                <CheckCircle2 className="h-6 w-6 text-green-500" />
-                <span className="text-lg font-medium text-green-600 dark:text-green-400">
+                <CheckCircle2 className="h-6 w-6 text-primary" />
+                <span className="text-lg font-medium text-primary">
                   {t("install.alreadyInstalled")}
                 </span>
               </CardContent>
