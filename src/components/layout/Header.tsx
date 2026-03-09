@@ -19,6 +19,10 @@ export function Header() {
   const { theme, toggleTheme } = useTheme();
   const { language, setLanguage, t } = useLanguage();
 
+  const isNativeApp =
+    window.matchMedia("(display-mode: standalone)").matches ||
+    (window as any).Capacitor?.isNativePlatform?.();
+
   const navLinks = [
     { href: "/", label: t("nav.home") },
     { href: "/bibliotheque", label: t("nav.library") },
@@ -26,7 +30,7 @@ export function Header() {
     { href: "/chat", label: t("nav.chat"), icon: MessageCircle },
     { href: "/a-propos", label: t("nav.about") },
     { href: "/contact", label: t("nav.contact") },
-    { href: "/installer", label: t("nav.install"), icon: Download },
+    ...(!isNativeApp ? [{ href: "/installer", label: t("nav.install"), icon: Download }] : []),
   ];
 
   return (
