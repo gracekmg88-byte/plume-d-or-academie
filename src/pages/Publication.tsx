@@ -397,9 +397,7 @@ export default function Publication() {
                       {t("pub.protected")}
                     </p>
                   </div>
-                  {user && (
-                    <AnnotationsPanel publicationId={id!} currentPage={currentViewPage} />
-                  )}
+                  <AnnotationsPanel publicationId={id!} currentPage={currentViewPage} />
                 </div>
               </div>
             )}

@@ -32,9 +32,17 @@ export function AnnotationsPanel({ publicationId, currentPage }: AnnotationsPane
 
   if (!user) {
     return (
-      <div className="bg-card border border-border rounded-xl p-4 text-center">
-        <StickyNote className="h-8 w-8 mx-auto mb-2 text-muted-foreground/50" />
-        <p className="text-sm text-muted-foreground">Connectez-vous pour prendre des notes</p>
+      <div className="bg-card border border-border rounded-xl p-4 text-center space-y-3">
+        <StickyNote className="h-8 w-8 mx-auto text-muted-foreground/50" />
+        <p className="text-sm text-muted-foreground">
+          Prenez des notes et annotations sur chaque page pour enrichir votre lecture.
+        </p>
+        <a
+          href="/auth"
+          className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+        >
+          Se connecter pour annoter
+        </a>
       </div>
     );
   }
