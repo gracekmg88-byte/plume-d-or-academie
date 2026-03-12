@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Feather, LogOut, ArrowLeft, Lock, Eye, EyeOff, Settings, CreditCard, ImageDown, Loader2 } from "lucide-react";
+import { Feather, LogOut, ArrowLeft, Lock, Eye, EyeOff, Settings, CreditCard, ImageDown, Loader2, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
 import { useBillingConfig } from "@/hooks/useBillingConfig";
+import { useDownloadSetting } from "@/hooks/useDownloadSetting";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { PaymentSettingsForm } from "@/components/admin/PaymentSettingsForm";
@@ -15,6 +17,7 @@ import { compressImage } from "@/lib/compress-image";
 export default function AdminSettings() {
   const { user, isAdmin, loading, signOut } = useAuth();
   const { hidePremiumUI } = useBillingConfig();
+  const { allowDownloads, toggleDownload } = useDownloadSetting();
   const navigate = useNavigate();
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -290,6 +293,33 @@ export default function AdminSettings() {
               </form>
             </div>
 
+            {/* Download Toggle */}
+            <div className="bg-card rounded-xl border border-border p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <Download className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <h2 className="font-semibold text-foreground">Autoriser le téléchargement des documents</h2>
+                    <p className="text-sm text-muted-foreground">
+                      {allowDownloads ? "Les utilisateurs peuvent télécharger les documents" : "Documents en lecture seule uniquement"}
+                    </p>
+                  </div>
+                </div>
+                <Switch
+                  checked={allowDownloads}
+                  onCheckedChange={(checked) => {
+                    toggleDownload.mutate(checked, {
+                      onSuccess: () => toast.success(checked ? "Téléchargement activé" : "Téléchargement désactivé"),
+                      onError: () => toast.error("Erreur lors de la mise à jour"),
+                    });
+                  }}
+                  disabled={toggleDownload.isPending}
+                />
+              </div>
+            </div>
+
             {/* Compress Covers */}
             <div className="bg-card rounded-xl border border-border p-6">
               <div className="flex items-center gap-3 mb-4">
@@ -407,6 +437,33 @@ export default function AdminSettings() {
                     {isSubmitting ? "Mise à jour..." : "Mettre à jour le mot de passe"}
                   </Button>
                 </form>
+              </div>
+
+              {/* Download Toggle */}
+              <div className="bg-card rounded-xl border border-border p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                      <Download className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <h2 className="font-semibold text-foreground">Autoriser le téléchargement des documents</h2>
+                      <p className="text-sm text-muted-foreground">
+                        {allowDownloads ? "Les utilisateurs peuvent télécharger les documents" : "Documents en lecture seule uniquement"}
+                      </p>
+                    </div>
+                  </div>
+                  <Switch
+                    checked={allowDownloads}
+                    onCheckedChange={(checked) => {
+                      toggleDownload.mutate(checked, {
+                        onSuccess: () => toast.success(checked ? "Téléchargement activé" : "Téléchargement désactivé"),
+                        onError: () => toast.error("Erreur lors de la mise à jour"),
+                      });
+                    }}
+                    disabled={toggleDownload.isPending}
+                  />
+                </div>
               </div>
 
               {/* Compress Covers */}

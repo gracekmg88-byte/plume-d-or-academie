@@ -12,6 +12,7 @@ import { usePublication, useIncrementViews } from "@/hooks/usePublications";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useBillingConfig } from "@/hooks/useBillingConfig";
+import { useDownloadSetting } from "@/hooks/useDownloadSetting";
 import { useOnlineStatus } from "@/hooks/useOffline";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { savePublicationOffline, getOfflinePublication, isPublicationCached, type OfflinePublication } from "@/lib/offline-storage";
@@ -45,6 +46,7 @@ export default function Publication() {
   const { isPremium, isLoading: subscriptionLoading } = useSubscription();
   const { hidePremiumUI } = useBillingConfig();
   const { t, language } = useLanguage();
+  const { allowDownloads } = useDownloadSetting();
   const [offlineData, setOfflineData] = useState<OfflinePublication | null>(null);
   const [offlineLoading, setOfflineLoading] = useState(!isOnline);
   const [isCached, setIsCached] = useState(false);
@@ -308,7 +310,7 @@ export default function Publication() {
 
               {/* Download Button */}
               <div className="mt-6 space-y-3">
-                {displayPub.file_url && hasFullAccess && isOnline && (
+                {displayPub.file_url && hasFullAccess && isOnline && allowDownloads && (
                   <a href={displayPub.file_url} download>
                     <Button className="w-full gap-2">
                       <Download className="h-4 w-4" />
