@@ -46,6 +46,7 @@ export default function Publication() {
   const { isPremium, isLoading: subscriptionLoading } = useSubscription();
   const { hidePremiumUI } = useBillingConfig();
   const { t, language } = useLanguage();
+  const { allowDownloads } = useDownloadSetting();
   const [offlineData, setOfflineData] = useState<OfflinePublication | null>(null);
   const [offlineLoading, setOfflineLoading] = useState(!isOnline);
   const [isCached, setIsCached] = useState(false);
