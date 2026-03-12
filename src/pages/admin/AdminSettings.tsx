@@ -439,6 +439,33 @@ export default function AdminSettings() {
                 </form>
               </div>
 
+              {/* Download Toggle */}
+              <div className="bg-card rounded-xl border border-border p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                      <Download className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <h2 className="font-semibold text-foreground">Autoriser le téléchargement des documents</h2>
+                      <p className="text-sm text-muted-foreground">
+                        {allowDownloads ? "Les utilisateurs peuvent télécharger les documents" : "Documents en lecture seule uniquement"}
+                      </p>
+                    </div>
+                  </div>
+                  <Switch
+                    checked={allowDownloads}
+                    onCheckedChange={(checked) => {
+                      toggleDownload.mutate(checked, {
+                        onSuccess: () => toast.success(checked ? "Téléchargement activé" : "Téléchargement désactivé"),
+                        onError: () => toast.error("Erreur lors de la mise à jour"),
+                      });
+                    }}
+                    disabled={toggleDownload.isPending}
+                  />
+                </div>
+              </div>
+
               {/* Compress Covers */}
               <div className="bg-card rounded-xl border border-border p-6">
                 <div className="flex items-center gap-3 mb-4">
