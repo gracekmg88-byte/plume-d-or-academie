@@ -17,6 +17,7 @@ import { compressImage } from "@/lib/compress-image";
 export default function AdminSettings() {
   const { user, isAdmin, loading, signOut } = useAuth();
   const { hidePremiumUI } = useBillingConfig();
+  const { allowDownloads, toggleDownload } = useDownloadSetting();
   const navigate = useNavigate();
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
