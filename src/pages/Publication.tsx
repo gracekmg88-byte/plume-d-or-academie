@@ -12,6 +12,7 @@ import { usePublication, useIncrementViews } from "@/hooks/usePublications";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useBillingConfig } from "@/hooks/useBillingConfig";
+import { useDownloadSetting } from "@/hooks/useDownloadSetting";
 import { useOnlineStatus } from "@/hooks/useOffline";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { savePublicationOffline, getOfflinePublication, isPublicationCached, type OfflinePublication } from "@/lib/offline-storage";
