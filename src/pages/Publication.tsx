@@ -310,7 +310,7 @@ export default function Publication() {
 
               {/* Download Button */}
               <div className="mt-6 space-y-3">
-                {displayPub.file_url && hasFullAccess && isOnline && allowDownloads && (
+                {displayPub.file_url && hasFullAccess && isOnline && allowDownloads && (displayPub as any).allow_download !== false && (
                   <a href={displayPub.file_url} download>
                     <Button className="w-full gap-2">
                       <Download className="h-4 w-4" />
