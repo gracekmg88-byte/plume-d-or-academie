@@ -420,7 +420,7 @@ export default function PublicationForm() {
           </div>
 
           {/* Publishing */}
-          <div className="bg-card rounded-xl border border-border p-6">
+          <div className="bg-card rounded-xl border border-border p-6 space-y-4">
             <div className="flex items-center justify-between">
               <div>
                 <Label htmlFor="published" className="text-base">Publier</Label>
@@ -432,6 +432,19 @@ export default function PublicationForm() {
                 id="published"
                 checked={formData.is_published}
                 onCheckedChange={(checked) => setFormData({ ...formData, is_published: checked })}
+              />
+            </div>
+            <div className="border-t border-border pt-4 flex items-center justify-between">
+              <div>
+                <Label htmlFor="allow_download" className="text-base">Autoriser le téléchargement</Label>
+                <p className="text-sm text-muted-foreground">
+                  Permettre le téléchargement de ce document
+                </p>
+              </div>
+              <Switch
+                id="allow_download"
+                checked={formData.allow_download}
+                onCheckedChange={(checked) => setFormData({ ...formData, allow_download: checked })}
               />
             </div>
           </div>
