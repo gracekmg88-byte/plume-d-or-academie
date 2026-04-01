@@ -17,7 +17,9 @@ interface ShareButtonsProps {
 
 export function ShareButtons({ title, description, publicationId }: ShareButtonsProps) {
   const { t } = useLanguage();
-  const url = `${window.location.origin}/publication/${publicationId}`;
+  // Use published URL for sharing (not capacitor:// or preview URLs)
+  const publishedOrigin = "https://plume-d-or-academie.lovable.app";
+  const url = `${publishedOrigin}/publication/${publicationId}`;
   const text = description ? `${title} — ${description.slice(0, 100)}` : title;
 
   const shareWhatsApp = () => {

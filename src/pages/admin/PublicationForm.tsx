@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
-import { ArrowLeft, Upload, Save, Loader2, Sparkles, RefreshCw } from "lucide-react";
+import { ArrowLeft, Upload, Save, Loader2, Sparkles, RefreshCw, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -297,17 +297,25 @@ export default function PublicationForm() {
                       {aiCoverUrl ? "✨ Générée par IA" : "📁 Image téléversée"}
                     </p>
                     {aiCoverUrl && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={handleGenerateCover}
-                        disabled={isGeneratingCover}
-                        className="gap-1.5"
-                      >
-                        <RefreshCw className={`h-3.5 w-3.5 ${isGeneratingCover ? "animate-spin" : ""}`} />
-                        Régénérer
-                      </Button>
+                      <>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={handleGenerateCover}
+                          disabled={isGeneratingCover}
+                          className="gap-1.5"
+                        >
+                          <RefreshCw className={`h-3.5 w-3.5 ${isGeneratingCover ? "animate-spin" : ""}`} />
+                          Régénérer
+                        </Button>
+                        <a href={aiCoverUrl} download={`couverture-${formData.title || "cover"}.png`} target="_blank" rel="noopener noreferrer">
+                          <Button type="button" variant="outline" size="sm" className="gap-1.5 w-full">
+                            <Download className="h-3.5 w-3.5" />
+                            Télécharger
+                          </Button>
+                        </a>
+                      </>
                     )}
                   </div>
                 </div>
