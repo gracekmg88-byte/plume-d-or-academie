@@ -20,11 +20,25 @@ export function useDownloadSetting() {
 
   const toggleDownload = useMutation({
     mutationFn: async (enabled: boolean) => {
+      const oldValue = allowDownloads ? "true" : "false";
       const { error } = await supabase
         .from("site_settings")
         .update({ value: enabled ? "true" : "false" })
         .eq("key", "allow_downloads");
       if (error) throw error;
+
+      // Audit log
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase.from("audit_log").insert({
+          user_id: user.id,
+          action: "Modification paramètre téléchargement",
+          table_name: "site_settings",
+          record_id: "allow_downloads",
+          old_value: oldValue,
+          new_value: enabled ? "true" : "false",
+        });
+      }
 
       // Notify all users about the change
       const { data: users } = await supabase

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Feather, LogOut, ArrowLeft, Lock, Eye, EyeOff, Settings, CreditCard, ImageDown, Loader2, Download } from "lucide-react";
+import { Feather, LogOut, ArrowLeft, Lock, Eye, EyeOff, Settings, CreditCard, ImageDown, Loader2, Download, ClipboardList } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,15 +9,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
 import { useBillingConfig } from "@/hooks/useBillingConfig";
 import { useDownloadSetting } from "@/hooks/useDownloadSetting";
+import { useAuditLog } from "@/hooks/useAuditLog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { PaymentSettingsForm } from "@/components/admin/PaymentSettingsForm";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
 import { compressImage } from "@/lib/compress-image";
 
 export default function AdminSettings() {
   const { user, isAdmin, loading, signOut } = useAuth();
   const { hidePremiumUI } = useBillingConfig();
   const { allowDownloads, toggleDownload } = useDownloadSetting();
+  const { logs, isLoading: logsLoading } = useAuditLog();
   const navigate = useNavigate();
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -347,6 +351,40 @@ export default function AdminSettings() {
                   </>
                 )}
               </Button>
+            </div>
+
+            {/* Audit Log */}
+            <div className="bg-card rounded-xl border border-border p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <ClipboardList className="h-5 w-5 text-primary" />
+                <h2 className="font-semibold text-foreground">Historique des modifications</h2>
+              </div>
+              {logsLoading ? (
+                <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Chargement...
+                </div>
+              ) : logs.length === 0 ? (
+                <p className="text-sm text-muted-foreground">Aucune modification enregistrée.</p>
+              ) : (
+                <div className="space-y-3 max-h-80 overflow-y-auto">
+                  {logs.map((log) => (
+                    <div key={log.id} className="flex flex-col gap-1 border-b border-border pb-3 last:border-0">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-sm font-medium text-foreground">{log.action}</span>
+                        <span className="text-xs text-muted-foreground shrink-0">
+                          {format(new Date(log.created_at), "d MMM yyyy HH:mm", { locale: fr })}
+                        </span>
+                      </div>
+                      <div className="flex gap-2 text-xs text-muted-foreground">
+                        <span>Table : {log.table_name}</span>
+                        {log.old_value && <span>• Ancien : {log.old_value}</span>}
+                        {log.new_value && <span>• Nouveau : {log.new_value}</span>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         ) : (

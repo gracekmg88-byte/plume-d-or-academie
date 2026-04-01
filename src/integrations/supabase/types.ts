@@ -55,6 +55,39 @@ export type Database = {
           },
         ]
       }
+      audit_log: {
+        Row: {
+          action: string
+          created_at: string
+          id: string
+          new_value: string | null
+          old_value: string | null
+          record_id: string | null
+          table_name: string
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          id?: string
+          new_value?: string | null
+          old_value?: string | null
+          record_id?: string | null
+          table_name: string
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          id?: string
+          new_value?: string | null
+          old_value?: string | null
+          record_id?: string | null
+          table_name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       chat_messages: {
         Row: {
           content: string
@@ -286,6 +319,7 @@ export type Database = {
       }
       publications: {
         Row: {
+          allow_download: boolean
           author: string
           category: Database["public"]["Enums"]["content_category"]
           cover_image_url: string | null
@@ -300,6 +334,7 @@ export type Database = {
           views_count: number
         }
         Insert: {
+          allow_download?: boolean
           author: string
           category: Database["public"]["Enums"]["content_category"]
           cover_image_url?: string | null
@@ -314,6 +349,7 @@ export type Database = {
           views_count?: number
         }
         Update: {
+          allow_download?: boolean
           author?: string
           category?: Database["public"]["Enums"]["content_category"]
           cover_image_url?: string | null
