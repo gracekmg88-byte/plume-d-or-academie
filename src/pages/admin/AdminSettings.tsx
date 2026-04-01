@@ -21,6 +21,7 @@ export default function AdminSettings() {
   const { user, isAdmin, loading, signOut } = useAuth();
   const { hidePremiumUI } = useBillingConfig();
   const { allowDownloads, toggleDownload } = useDownloadSetting();
+  const { logs, isLoading: logsLoading } = useAuditLog();
   const navigate = useNavigate();
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
