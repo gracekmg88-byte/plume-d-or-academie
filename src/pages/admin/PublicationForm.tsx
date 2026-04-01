@@ -67,6 +67,7 @@ export default function PublicationForm() {
         description: existingPublication.description || "",
         category: existingPublication.category as typeof formData.category,
         is_published: existingPublication.is_published,
+        allow_download: (existingPublication as any).allow_download !== false,
       });
       if (existingPublication.cover_image_url) {
         setCoverPreview(existingPublication.cover_image_url);
