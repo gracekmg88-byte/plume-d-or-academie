@@ -25,6 +25,23 @@ export function useDownloadSetting() {
         .update({ value: enabled ? "true" : "false" })
         .eq("key", "allow_downloads");
       if (error) throw error;
+
+      // Notify all users about the change
+      const { data: users } = await supabase
+        .from("user_profiles")
+        .select("user_id");
+
+      if (users && users.length > 0) {
+        const notifications = users.map((u) => ({
+          user_id: u.user_id,
+          title: enabled ? "📥 Téléchargement activé" : "🔒 Téléchargement désactivé",
+          message: enabled
+            ? "Le téléchargement des documents est maintenant disponible."
+            : "Les documents sont maintenant en lecture seule.",
+          type: "system",
+        }));
+        await supabase.from("notifications").insert(notifications);
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["site-settings", "allow_downloads"] });
