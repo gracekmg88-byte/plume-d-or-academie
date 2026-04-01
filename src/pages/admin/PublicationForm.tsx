@@ -42,6 +42,7 @@ export default function PublicationForm() {
     description: "",
     category: "livre" as "livre" | "memoire" | "tfc" | "article",
     is_published: false,
+    allow_download: true,
   });
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [pdfFile, setPdfFile] = useState<File | null>(null);
