@@ -104,6 +104,15 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleToggleDownload = async (id: string, currentStatus: boolean) => {
+    try {
+      await updatePublication.mutateAsync({ id, allow_download: !currentStatus } as any);
+      toast.success(!currentStatus ? "Téléchargement activé" : "Téléchargement désactivé");
+    } catch {
+      toast.error("Erreur lors de la mise à jour");
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -353,6 +362,23 @@ export default function AdminDashboard() {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-1">
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => handleToggleDownload(pub.id, (pub as any).allow_download !== false)}
+                                  className={(pub as any).allow_download === false ? "text-destructive" : "text-muted-foreground"}
+                                >
+                                  <Download className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>{(pub as any).allow_download === false ? "Activer le téléchargement" : "Désactiver le téléchargement"}</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
                           {pub.file_url && (
                             <TooltipProvider>
                               <Tooltip>
