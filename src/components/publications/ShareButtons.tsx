@@ -20,7 +20,7 @@ export function ShareButtons({ title, description, publicationId }: ShareButtons
   // Use published URL for sharing (not capacitor:// or preview URLs)
   const publishedOrigin = "https://plume-d-or-academie.lovable.app";
   const url = `${publishedOrigin}/publication/${publicationId}`;
-  const text = description ? `${title} — ${description.slice(0, 100)}` : title;
+  const text = description ? `${title} — ${description}` : title;
 
   const shareWhatsApp = () => {
     window.open(

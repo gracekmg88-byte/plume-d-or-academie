@@ -301,7 +301,21 @@ export default function AdminDashboard() {
                   return (
                     <TableRow key={pub.id}>
                       <TableCell className="font-medium max-w-[200px] truncate">
-                        {pub.title}
+                        <div className="flex items-center gap-2">
+                          {pub.title}
+                          {(pub as any).allow_download === false && (
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger>
+                                  <Download className="h-3.5 w-3.5 text-destructive line-through" />
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>Téléchargement désactivé</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell>
                         <Badge className={cn("gap-1", config.className)}>
