@@ -104,6 +104,15 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleToggleDownload = async (id: string, currentStatus: boolean) => {
+    try {
+      await updatePublication.mutateAsync({ id, allow_download: !currentStatus } as any);
+      toast.success(!currentStatus ? "Téléchargement activé" : "Téléchargement désactivé");
+    } catch {
+      toast.error("Erreur lors de la mise à jour");
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
