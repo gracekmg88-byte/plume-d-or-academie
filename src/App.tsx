@@ -131,6 +131,7 @@ const App = () => (
           <PushNotificationInit />
           <BrowserRouter>
             <ScrollToTop />
+            <ScrollRestorer />
             <AnimatedRoutes />
           </BrowserRouter>
         </TooltipProvider>
