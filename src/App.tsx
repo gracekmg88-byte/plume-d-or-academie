@@ -50,9 +50,46 @@ function ScrollToTop() {
   const navType = useNavigationType();
   useEffect(() => {
     if (navType !== "POP") {
+      // Save scroll position for the previous page before scrolling
       window.scrollTo({ top: 0, left: 0, behavior: "instant" });
     }
   }, [pathname, navType]);
+  return null;
+}
+
+// Save scroll position per pathname so back navigation restores it
+function ScrollRestorer() {
+  const { pathname } = useLocation();
+  const navType = useNavigationType();
+
+  useEffect(() => {
+    // On POP (back/forward), restore saved position
+    if (navType === "POP") {
+      const saved = sessionStorage.getItem(`scroll:${pathname}`);
+      if (saved) {
+        const y = parseInt(saved, 10);
+        // Use requestAnimationFrame to wait for render
+        requestAnimationFrame(() => {
+          window.scrollTo({ top: y, left: 0, behavior: "instant" });
+        });
+      }
+    }
+
+    // Save scroll position on leave
+    return () => {
+      sessionStorage.setItem(`scroll:${pathname}`, String(window.scrollY));
+    };
+  }, [pathname, navType]);
+
+  // Also save on scroll for the current page
+  useEffect(() => {
+    const handleScroll = () => {
+      sessionStorage.setItem(`scroll:${pathname}`, String(window.scrollY));
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [pathname]);
+
   return null;
 }
 
