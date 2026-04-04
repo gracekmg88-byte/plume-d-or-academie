@@ -36,6 +36,7 @@ export default function Auth() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
 
