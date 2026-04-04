@@ -122,6 +122,26 @@ export default function Auth() {
     }
   };
 
+  const handleGoogleSignIn = async () => {
+    setError("");
+    setGoogleLoading(true);
+    try {
+      const result = await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: window.location.origin,
+      });
+      if (result.error) {
+        setError("Erreur de connexion avec Google");
+        return;
+      }
+      if (result.redirected) return;
+      navigate("/profil");
+    } catch {
+      setError("Erreur de connexion avec Google");
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-parchment p-4">
       <div className="w-full max-w-md">
