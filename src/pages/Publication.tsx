@@ -251,12 +251,10 @@ export default function Publication() {
           <p className="text-muted-foreground mb-6">
             {!isOnline ? t("pub.notFoundOffline") : t("pub.notFoundOnline")}
           </p>
-          <Link to="/bibliotheque">
-            <Button variant="outline" className="gap-2">
+          <Button variant="outline" className="gap-2" onClick={() => navigate("/bibliotheque")}>
               <ArrowLeft className="h-4 w-4" />
               {t("pub.back")}
             </Button>
-          </Link>
         </div>
       </Layout>
     );
