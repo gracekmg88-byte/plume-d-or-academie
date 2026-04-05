@@ -37,6 +37,7 @@ const categoryConfig: Record<Category, { label: string; icon: typeof Book; class
 
 export default function Publication() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const pageFromUrl = parseInt(searchParams.get("page") || "0", 10);
   const isOnline = useOnlineStatus();
