@@ -70,9 +70,16 @@ function ScrollRestorer() {
       const saved = sessionStorage.getItem(`scroll:${pathname}`);
       if (saved) {
         const y = parseInt(saved, 10);
-        requestAnimationFrame(() => {
+        // Retry multiple times to handle lazy-loaded content
+        let attempts = 0;
+        const tryRestore = () => {
           window.scrollTo({ top: y, left: 0, behavior: "instant" });
-        });
+          attempts++;
+          if (attempts < 5 && document.documentElement.scrollHeight < y + window.innerHeight) {
+            setTimeout(tryRestore, 100);
+          }
+        };
+        requestAnimationFrame(tryRestore);
       }
     }
 
