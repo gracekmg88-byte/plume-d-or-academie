@@ -37,6 +37,7 @@ export default function Auth() {
   const [success, setSuccess] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -220,6 +221,36 @@ export default function Auth() {
                       {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
                   </div>
+                </div>
+
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    disabled={resetLoading}
+                    onClick={async () => {
+                      setError("");
+                      setSuccess("");
+                      if (!email.trim()) {
+                        setError("Veuillez entrer votre email pour réinitialiser le mot de passe");
+                        return;
+                      }
+                      setResetLoading(true);
+                      try {
+                        const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+                          redirectTo: `${window.location.origin}/reset-password`,
+                        });
+                        if (error) throw error;
+                        setSuccess("Un email de réinitialisation a été envoyé à votre adresse.");
+                      } catch (err: any) {
+                        setError(err.message || "Erreur lors de l'envoi");
+                      } finally {
+                        setResetLoading(false);
+                      }
+                    }}
+                    className="text-xs text-primary hover:underline"
+                  >
+                    {resetLoading ? "Envoi..." : "Mot de passe oublié ?"}
+                  </button>
                 </div>
 
                 <Button type="submit" className="w-full" disabled={isLoading}>
