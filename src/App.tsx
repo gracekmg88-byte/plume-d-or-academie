@@ -70,8 +70,15 @@ function ScrollRestorer() {
       const saved = sessionStorage.getItem(`scroll:${pathname}`);
       if (saved) {
         const y = parseInt(saved, 10);
-        requestAnimationFrame(() => {
-          window.scrollTo({ top: y, left: 0, behavior: "instant" });
+        if (y === 0) return;
+        // Retry with increasing delays to handle async content loading
+        const delays = [0, 50, 150, 300, 500, 800, 1200];
+        delays.forEach((delay) => {
+          setTimeout(() => {
+            if (Math.abs(window.scrollY - y) > 50) {
+              window.scrollTo({ top: y, left: 0, behavior: "instant" });
+            }
+          }, delay);
         });
       }
     }
