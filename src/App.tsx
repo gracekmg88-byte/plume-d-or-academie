@@ -4,7 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation, useNavigationType } from "react-router-dom";
 
-import { lazy, Suspense, useEffect, useRef } from "react";
+import { lazy, Suspense, useEffect, useLayoutEffect, useRef } from "react";
 import { warmUpCache } from "@/lib/image-cache";
 import { preloadImage } from "@/components/ui/cached-image";
 import heroImage from "@/assets/hero-library.webp";
@@ -55,9 +55,12 @@ function ScrollManager() {
   const navType = useNavigationType();
   const prevPathRef = useRef(pathname);
   const isRestoringRef = useRef(false);
+  const restoreTimeoutsRef = useRef<number[]>([]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const prev = prevPathRef.current;
+    restoreTimeoutsRef.current.forEach((timeoutId) => window.clearTimeout(timeoutId));
+    restoreTimeoutsRef.current = [];
     prevPathRef.current = pathname;
 
     if (prev !== pathname && prev) {
@@ -74,19 +77,28 @@ function ScrollManager() {
           isRestoringRef.current = true;
           const delays = [0, 50, 150, 300, 500, 800, 1200];
           delays.forEach((delay) => {
-            setTimeout(() => {
+            const timeoutId = window.setTimeout(() => {
               if (Math.abs(window.scrollY - y) > 50) {
                 window.scrollTo({ top: y, left: 0, behavior: "instant" });
               }
             }, delay);
+            restoreTimeoutsRef.current.push(timeoutId);
           });
-          setTimeout(() => { isRestoringRef.current = false; }, 1500);
+          const releaseTimeoutId = window.setTimeout(() => {
+            isRestoringRef.current = false;
+          }, 1500);
+          restoreTimeoutsRef.current.push(releaseTimeoutId);
         }
       }
     } else if (prev !== pathname) {
       // Forward navigation: scroll to top
       window.scrollTo({ top: 0, left: 0, behavior: "instant" });
     }
+
+    return () => {
+      restoreTimeoutsRef.current.forEach((timeoutId) => window.clearTimeout(timeoutId));
+      restoreTimeoutsRef.current = [];
+    };
   }, [pathname, navType]);
 
   // Continuously save scroll position, but not during restoration

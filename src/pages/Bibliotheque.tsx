@@ -22,11 +22,12 @@ export default function Bibliotheque() {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const initialCategory = (searchParams.get("categorie") as Category) || "all";
+  const initialPage = Math.max(1, Number.parseInt(searchParams.get("page") || "1", 10) || 1);
   
   const [category, setCategory] = useState<Category>(initialCategory);
   const [search, setSearch] = useState("");
   const [filters, setFilters] = useState<AdvancedFilterValues>({ author: "", sortBy: "date_desc" });
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(initialPage);
   const ITEMS_PER_PAGE = 12;
   const isOnline = useOnlineStatus();
   const { t } = useLanguage();
@@ -120,17 +121,31 @@ export default function Bibliotheque() {
   const handleCategoryChange = (newCategory: Category) => {
     setCategory(newCategory);
     setCurrentPage(1);
+    const nextParams = new URLSearchParams(searchParams);
     if (newCategory === "all") {
-      searchParams.delete("categorie");
+      nextParams.delete("categorie");
     } else {
-      searchParams.set("categorie", newCategory);
+      nextParams.set("categorie", newCategory);
     }
-    setSearchParams(searchParams);
+    nextParams.delete("page");
+    setSearchParams(nextParams, { replace: true });
   };
 
   const scrollToGrid = useCallback(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
+
+  const handlePageChange = useCallback((page: number) => {
+    setCurrentPage(page);
+    const nextParams = new URLSearchParams(searchParams);
+    if (page <= 1) {
+      nextParams.delete("page");
+    } else {
+      nextParams.set("page", String(page));
+    }
+    setSearchParams(nextParams, { replace: true });
+    scrollToGrid();
+  }, [scrollToGrid, searchParams, setSearchParams]);
 
   return (
     <Layout>
@@ -253,7 +268,7 @@ export default function Bibliotheque() {
                       variant="outline"
                       size="icon"
                       disabled={currentPage === 1}
-                      onClick={() => { setCurrentPage((p) => p - 1); scrollToGrid(); }}
+                      onClick={() => handlePageChange(currentPage - 1)}
                       aria-label="Page précédente"
                     >
                       <ChevronLeft className="h-4 w-4" />
@@ -282,7 +297,7 @@ export default function Bibliotheque() {
                             variant={currentPage === item ? "default" : "outline"}
                             size="icon"
                             className="h-9 w-9"
-                            onClick={() => { setCurrentPage(item); scrollToGrid(); }}
+                            onClick={() => handlePageChange(item)}
                           >
                             {item}
                           </Button>
@@ -293,7 +308,7 @@ export default function Bibliotheque() {
                       variant="outline"
                       size="icon"
                       disabled={currentPage === totalPages}
-                      onClick={() => { setCurrentPage((p) => p + 1); scrollToGrid(); }}
+                      onClick={() => handlePageChange(currentPage + 1)}
                       aria-label="Page suivante"
                     >
                       <ChevronRight className="h-4 w-4" />
