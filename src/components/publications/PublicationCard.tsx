@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Book, FileText, GraduationCap, Newspaper, Eye } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -34,11 +34,17 @@ export function PublicationCard({
   coverImageUrl,
   viewsCount,
 }: PublicationCardProps) {
+  const { pathname } = useLocation();
   const config = categoryConfig[category];
   const Icon = config.icon;
 
   return (
-    <Link to={`/publication/${id}`}>
+    <Link
+      to={`/publication/${id}`}
+      onClickCapture={() => {
+        sessionStorage.setItem(`scroll:${pathname}`, String(window.scrollY));
+      }}
+    >
       <Card className="group h-full overflow-hidden transition-all duration-300 hover:shadow-elegant hover:-translate-y-1 bg-card border-border/50">
         {/* Cover Image */}
         <div className="relative aspect-[3/4] overflow-hidden bg-muted">
