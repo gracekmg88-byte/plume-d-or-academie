@@ -50,47 +50,51 @@ warmUpCache().catch(() => {});
   preloadImage(src).catch(() => {});
 });
 
-function ScrollToTop() {
+function ScrollManager() {
   const { pathname } = useLocation();
   const navType = useNavigationType();
+  const prevPathRef = useRef(pathname);
+  const isRestoringRef = useRef(false);
+
   useEffect(() => {
-    if (navType !== "POP") {
-      window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    const prev = prevPathRef.current;
+    prevPathRef.current = pathname;
+
+    if (prev !== pathname && prev) {
+      // Save scroll position for the page we're LEAVING before anything else
+      sessionStorage.setItem(`scroll:${prev}`, String(window.scrollY));
     }
-  }, [pathname, navType]);
-  return null;
-}
 
-function ScrollRestorer() {
-  const { pathname } = useLocation();
-  const navType = useNavigationType();
-
-  useEffect(() => {
     if (navType === "POP") {
+      // Restore scroll position
       const saved = sessionStorage.getItem(`scroll:${pathname}`);
       if (saved) {
         const y = parseInt(saved, 10);
-        if (y === 0) return;
-        // Retry with increasing delays to handle async content loading
-        const delays = [0, 50, 150, 300, 500, 800, 1200];
-        delays.forEach((delay) => {
-          setTimeout(() => {
-            if (Math.abs(window.scrollY - y) > 50) {
-              window.scrollTo({ top: y, left: 0, behavior: "instant" });
-            }
-          }, delay);
-        });
+        if (y > 0) {
+          isRestoringRef.current = true;
+          const delays = [0, 50, 150, 300, 500, 800, 1200];
+          delays.forEach((delay) => {
+            setTimeout(() => {
+              if (Math.abs(window.scrollY - y) > 50) {
+                window.scrollTo({ top: y, left: 0, behavior: "instant" });
+              }
+            }, delay);
+          });
+          setTimeout(() => { isRestoringRef.current = false; }, 1500);
+        }
       }
+    } else if (prev !== pathname) {
+      // Forward navigation: scroll to top
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" });
     }
-
-    return () => {
-      sessionStorage.setItem(`scroll:${pathname}`, String(window.scrollY));
-    };
   }, [pathname, navType]);
 
+  // Continuously save scroll position, but not during restoration
   useEffect(() => {
     const handleScroll = () => {
-      sessionStorage.setItem(`scroll:${pathname}`, String(window.scrollY));
+      if (!isRestoringRef.current) {
+        sessionStorage.setItem(`scroll:${pathname}`, String(window.scrollY));
+      }
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
