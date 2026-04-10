@@ -1,5 +1,5 @@
 import { Heart, BookOpen } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useFavorites } from "@/hooks/useFavorites";
 import { FavoriteButton } from "@/components/publications/FavoriteButton";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -7,6 +7,11 @@ import { useLanguage } from "@/contexts/LanguageContext";
 export function FavoritesSection() {
   const { favorites, isLoading } = useFavorites();
   const { language } = useLanguage();
+  const { pathname } = useLocation();
+
+  const saveScroll = () => {
+    sessionStorage.setItem(`scroll:${pathname}`, String(window.scrollY));
+  };
 
   if (isLoading) {
     return (
@@ -62,6 +67,7 @@ export function FavoritesSection() {
               >
                 <Link
                   to={`/publication/${pub.id}`}
+                  onClickCapture={saveScroll}
                   className="min-w-0 flex-1 mr-3 hover:text-primary transition-colors"
                 >
                   <p className="text-sm font-medium text-foreground truncate">
