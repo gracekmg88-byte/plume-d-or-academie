@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect, useCallback } from "react";
 
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { BookOpen, WifiOff, RefreshCw, FolderDown, ChevronLeft, ChevronRight } from "lucide-react";
+import { ScrollToTopButton } from "@/components/ui/scroll-to-top-button";
 import { Button } from "@/components/ui/button";
 import { Layout } from "@/components/layout/Layout";
 import { PublicationCard } from "@/components/publications/PublicationCard";
@@ -332,6 +333,7 @@ export default function Bibliotheque() {
           </div>
         </section>
       )}
+      <ScrollToTopButton />
     </Layout>
   );
 }
