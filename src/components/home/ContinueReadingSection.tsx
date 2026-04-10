@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { BookOpen, ArrowRight, Book, GraduationCap, FileText, Newspaper } from "lucide-react";
 import { CachedImage } from "@/components/ui/cached-image";
 import { useContinueReading } from "@/hooks/useContinueReading";
@@ -40,6 +40,11 @@ const headingVariants = {
 
 export function ContinueReadingSection() {
   const { data: items, isLoading } = useContinueReading(3);
+  const { pathname } = useLocation();
+
+  const saveScroll = () => {
+    sessionStorage.setItem(`scroll:${pathname}`, String(window.scrollY));
+  };
 
   if (isLoading) {
     return (
@@ -100,6 +105,7 @@ export function ContinueReadingSection() {
               <motion.div key={item.publication_id} variants={itemVariants}>
                 <Link
                   to={`/publication/${item.publication_id}?page=${item.last_page_read}`}
+                  onClickCapture={saveScroll}
                   className="group flex gap-4 bg-background rounded-xl border border-border p-4 hover:shadow-elegant transition-all duration-300 h-full"
                 >
                   <div className="w-16 h-20 rounded-lg overflow-hidden bg-muted shrink-0">
