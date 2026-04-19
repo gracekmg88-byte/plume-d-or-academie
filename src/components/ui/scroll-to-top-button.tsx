@@ -1,16 +1,30 @@
 import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { ArrowUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
+// Routes where the button is hidden (short pages with no scroll need)
+const HIDDEN_ROUTES = ["/auth", "/reset-password", "/install-app", "/admin/login"];
+
 export function ScrollToTopButton() {
   const [visible, setVisible] = useState(false);
+  const { pathname } = useLocation();
+
+  const isHidden = HIDDEN_ROUTES.some((r) => pathname.startsWith(r));
 
   useEffect(() => {
+    if (isHidden) {
+      setVisible(false);
+      return;
+    }
     const onScroll = () => setVisible(window.scrollY > 400);
+    onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  }, [isHidden]);
+
+  if (isHidden) return null;
 
   return (
     <Button
