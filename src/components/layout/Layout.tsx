@@ -4,6 +4,7 @@ import { Footer } from "./Footer";
 import { ThemeSuggestionBanner } from "./ThemeSuggestionBanner";
 import { PageTransition } from "./PageTransition";
 import { AppDownloadBanner } from "./AppDownloadBanner";
+import { ScrollToTopButton } from "@/components/ui/scroll-to-top-button";
 
 interface LayoutProps {
   children: ReactNode;
@@ -19,6 +20,7 @@ export function Layout({ children }: LayoutProps) {
         <PageTransition>{children}</PageTransition>
       </main>
       <Footer />
+      <ScrollToTopButton />
     </div>
   );
 }
