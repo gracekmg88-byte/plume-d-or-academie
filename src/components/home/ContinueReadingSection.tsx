@@ -3,39 +3,12 @@ import { BookOpen, ArrowRight, Book, GraduationCap, FileText, Newspaper } from "
 import { CachedImage } from "@/components/ui/cached-image";
 import { useContinueReading } from "@/hooks/useContinueReading";
 import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
 
 const categoryConfig: Record<string, { label: string; icon: typeof Book; className: string }> = {
   livre: { label: "Livre", icon: Book, className: "bg-primary/10 text-primary" },
   memoire: { label: "Mémoire", icon: GraduationCap, className: "bg-secondary/80 text-secondary-foreground" },
   tfc: { label: "TFC", icon: FileText, className: "bg-accent text-accent-foreground" },
   article: { label: "Article", icon: Newspaper, className: "bg-muted text-muted-foreground" },
-};
-
-const containerVariants = {
-  hidden: {},
-  visible: {
-    transition: { staggerChildren: 0.12 },
-  },
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 24, scale: 0.96 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    transition: { duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] as const },
-  },
-};
-
-const headingVariants = {
-  hidden: { opacity: 0, x: -20 },
-  visible: {
-    opacity: 1,
-    x: 0,
-    transition: { duration: 0.6, ease: "easeOut" as const },
-  },
 };
 
 export function ContinueReadingSection() {
@@ -78,31 +51,19 @@ export function ContinueReadingSection() {
   return (
     <section className="py-12 md:py-16 bg-card border-y border-border overflow-hidden">
       <div className="container">
-        <motion.div
-          className="flex items-center gap-3 mb-6"
-          variants={headingVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-50px" }}
-        >
+        <div className="flex items-center gap-3 mb-6">
           <BookOpen className="h-6 w-6 text-primary" />
           <h2 className="font-serif text-2xl md:text-3xl font-bold text-foreground">
             📖 Continuer la lecture
           </h2>
-        </motion.div>
-        <motion.div
-          className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4"
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-50px" }}
-        >
+        </div>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {items.map((item) => {
             const config = categoryConfig[item.category] || categoryConfig.livre;
             const Icon = config.icon;
 
             return (
-              <motion.div key={item.publication_id} variants={itemVariants}>
+              <div key={item.publication_id}>
                 <Link
                   to={`/publication/${item.publication_id}?page=${item.last_page_read}`}
                   onClickCapture={saveScroll}
@@ -138,10 +99,10 @@ export function ContinueReadingSection() {
                     </p>
                   </div>
                 </Link>
-              </motion.div>
+              </div>
             );
           })}
-        </motion.div>
+        </div>
       </div>
     </section>
   );

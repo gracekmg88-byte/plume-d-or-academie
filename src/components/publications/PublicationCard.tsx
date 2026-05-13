@@ -1,10 +1,13 @@
 import { Link, useLocation } from "react-router-dom";
 import { Book, FileText, GraduationCap, Newspaper, Eye } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CachedImage } from "@/components/ui/cached-image";
 import { FavoriteButton } from "@/components/publications/FavoriteButton";
 import { cn } from "@/lib/utils";
+import { fetchPublication } from "@/hooks/usePublications";
+import { saveScrollPosition } from "@/lib/scroll-restoration";
 
 type Category = "livre" | "memoire" | "tfc" | "article";
 
@@ -35,15 +38,24 @@ export function PublicationCard({
   viewsCount,
 }: PublicationCardProps) {
   const { pathname } = useLocation();
+  const queryClient = useQueryClient();
   const config = categoryConfig[category];
   const Icon = config.icon;
+
+  const prepareNavigation = () => {
+    saveScrollPosition(window.history.state?.key, pathname, window.scrollY);
+    queryClient.prefetchQuery({
+      queryKey: ["publication", id],
+      queryFn: () => fetchPublication(id),
+      staleTime: 60_000,
+    }).catch(() => {});
+  };
 
   return (
     <Link
       to={`/publication/${id}`}
-      onClickCapture={() => {
-        sessionStorage.setItem(`scroll:${pathname}`, String(window.scrollY));
-      }}
+      onPointerDown={prepareNavigation}
+      onClickCapture={prepareNavigation}
     >
       <Card className="group h-full overflow-hidden transition-all duration-300 hover:shadow-elegant hover:-translate-y-1 bg-card border-border/50">
         {/* Cover Image */}

@@ -6,14 +6,10 @@ import { BrowserRouter, Routes, Route, useLocation, useNavigationType } from "re
 
 import { lazy, Suspense, useEffect, useLayoutEffect, useRef } from "react";
 import { warmUpCache } from "@/lib/image-cache";
-import { preloadImage } from "@/components/ui/cached-image";
-import heroImage from "@/assets/hero-library.webp";
-import heroBiblioImage from "@/assets/hero-bibliotheque.webp";
-import heroContactImage from "@/assets/hero-contact.webp";
-import heroAProposImage from "@/assets/hero-apropos.webp";
 import { PushNotificationInit } from "@/components/PushNotificationInit";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
+import { getSavedScrollPosition, saveScrollPosition } from "@/lib/scroll-restoration";
 
 // Eager-load the home page for instant first paint
 import Index from "./pages/Index";
@@ -45,35 +41,30 @@ const queryClient = new QueryClient();
 // Pre-load image cache index at startup for instant lookups on native
 warmUpCache().catch(() => {});
 
-// Preload all hero images at startup for instant display
-[heroImage, heroBiblioImage, heroContactImage, heroAProposImage].forEach(src => {
-  preloadImage(src).catch(() => {});
-});
-
 function ScrollManager() {
-  const { pathname } = useLocation();
+  const location = useLocation();
+  const { pathname, key } = location;
   const navType = useNavigationType();
-  const prevPathRef = useRef(pathname);
+  const prevRef = useRef({ pathname, key });
   const isRestoringRef = useRef(false);
   const rafRef = useRef<number | null>(null);
   const cancelRestoreRef = useRef<(() => void) | null>(null);
 
   useLayoutEffect(() => {
-    const prev = prevPathRef.current;
+    const prev = prevRef.current;
     // Cancel any in-flight restoration
     if (cancelRestoreRef.current) {
       cancelRestoreRef.current();
       cancelRestoreRef.current = null;
     }
-    prevPathRef.current = pathname;
+    prevRef.current = { pathname, key };
 
-    if (prev !== pathname && prev) {
-      sessionStorage.setItem(`scroll:${prev}`, String(window.scrollY));
+    if ((prev.pathname !== pathname || prev.key !== key) && prev.pathname) {
+      saveScrollPosition(prev.key, prev.pathname, window.scrollY);
     }
 
     if (navType === "POP") {
-      const saved = sessionStorage.getItem(`scroll:${pathname}`);
-      const y = saved ? parseInt(saved, 10) : 0;
+      const y = getSavedScrollPosition(key, pathname);
       if (y > 0) {
         isRestoringRef.current = true;
         let cancelled = false;
@@ -110,7 +101,7 @@ function ScrollManager() {
       } else {
         window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
       }
-    } else if (prev !== pathname) {
+    } else if (prev.pathname !== pathname) {
       window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
     }
 
@@ -120,18 +111,18 @@ function ScrollManager() {
         cancelRestoreRef.current = null;
       }
     };
-  }, [pathname, navType]);
+  }, [pathname, key, navType]);
 
   // Continuously save scroll position, but not during restoration
   useEffect(() => {
     const handleScroll = () => {
       if (!isRestoringRef.current) {
-        sessionStorage.setItem(`scroll:${pathname}`, String(window.scrollY));
+        saveScrollPosition(key, pathname, window.scrollY);
       }
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [pathname]);
+  }, [pathname, key]);
 
   return null;
 }
