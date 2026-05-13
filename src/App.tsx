@@ -111,7 +111,7 @@ function ScrollManager() {
       } else {
         window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
       }
-    } else if (prev !== pathname) {
+    } else if (prev.pathname !== pathname) {
       window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
     }
 
