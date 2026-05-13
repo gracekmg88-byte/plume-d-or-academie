@@ -50,8 +50,11 @@ export default function Bibliotheque() {
   }, [isOnline]);
 
   useEffect(() => {
-    if (publications) {
-      const urls = publications.map((p) => p.cover_image_url).filter((url): url is string => !!url);
+    if (publications?.length) {
+      const urls = publications
+        .slice(0, 16)
+        .map((p) => p.cover_image_url)
+        .filter((url): url is string => !!url);
       preloadImages(urls);
       preloadAndCacheImages(urls);
     }
