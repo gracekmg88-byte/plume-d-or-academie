@@ -55,49 +55,70 @@ function ScrollManager() {
   const navType = useNavigationType();
   const prevPathRef = useRef(pathname);
   const isRestoringRef = useRef(false);
-  const restoreTimeoutsRef = useRef<number[]>([]);
+  const rafRef = useRef<number | null>(null);
+  const cancelRestoreRef = useRef<(() => void) | null>(null);
 
   useLayoutEffect(() => {
     const prev = prevPathRef.current;
-    restoreTimeoutsRef.current.forEach((timeoutId) => window.clearTimeout(timeoutId));
-    restoreTimeoutsRef.current = [];
+    // Cancel any in-flight restoration
+    if (cancelRestoreRef.current) {
+      cancelRestoreRef.current();
+      cancelRestoreRef.current = null;
+    }
     prevPathRef.current = pathname;
 
     if (prev !== pathname && prev) {
-      // Save scroll position for the page we're LEAVING before anything else
       sessionStorage.setItem(`scroll:${prev}`, String(window.scrollY));
     }
 
     if (navType === "POP") {
-      // Restore scroll position
       const saved = sessionStorage.getItem(`scroll:${pathname}`);
-      if (saved) {
-        const y = parseInt(saved, 10);
-        if (y > 0) {
-          isRestoringRef.current = true;
-          const delays = [0, 50, 150, 300, 500, 800, 1200];
-          delays.forEach((delay) => {
-            const timeoutId = window.setTimeout(() => {
-              if (Math.abs(window.scrollY - y) > 50) {
-                window.scrollTo({ top: y, left: 0, behavior: "instant" });
-              }
-            }, delay);
-            restoreTimeoutsRef.current.push(timeoutId);
-          });
-          const releaseTimeoutId = window.setTimeout(() => {
-            isRestoringRef.current = false;
-          }, 1500);
-          restoreTimeoutsRef.current.push(releaseTimeoutId);
-        }
+      const y = saved ? parseInt(saved, 10) : 0;
+      if (y > 0) {
+        isRestoringRef.current = true;
+        let cancelled = false;
+        const start = performance.now();
+        const TIMEOUT_MS = 2500;
+
+        const tryRestore = () => {
+          if (cancelled) return;
+          const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+          const target = Math.min(y, Math.max(0, maxScroll));
+          if (Math.abs(window.scrollY - target) > 2) {
+            window.scrollTo({ top: target, left: 0, behavior: "instant" as ScrollBehavior });
+          }
+          // Keep trying until content is tall enough OR timeout
+          if (maxScroll < y && performance.now() - start < TIMEOUT_MS) {
+            rafRef.current = window.requestAnimationFrame(tryRestore);
+          } else {
+            // Final correction then release
+            window.setTimeout(() => {
+              isRestoringRef.current = false;
+            }, 100);
+          }
+        };
+
+        rafRef.current = window.requestAnimationFrame(tryRestore);
+        cancelRestoreRef.current = () => {
+          cancelled = true;
+          if (rafRef.current !== null) {
+            window.cancelAnimationFrame(rafRef.current);
+            rafRef.current = null;
+          }
+          isRestoringRef.current = false;
+        };
+      } else {
+        window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
       }
     } else if (prev !== pathname) {
-      // Forward navigation: scroll to top
-      window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
     }
 
     return () => {
-      restoreTimeoutsRef.current.forEach((timeoutId) => window.clearTimeout(timeoutId));
-      restoreTimeoutsRef.current = [];
+      if (cancelRestoreRef.current) {
+        cancelRestoreRef.current();
+        cancelRestoreRef.current = null;
+      }
     };
   }, [pathname, navType]);
 
@@ -117,7 +138,7 @@ function ScrollManager() {
 
 function PageLoader() {
   return (
-    <div className="min-h-screen flex items-center justify-center">
+    <div className="flex items-center justify-center py-24">
       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
     </div>
   );
@@ -127,7 +148,7 @@ function AnimatedRoutes() {
   const location = useLocation();
   return (
     <Suspense fallback={<PageLoader />}>
-      <Routes location={location} key={location.pathname}>
+      <Routes location={location}>
         <Route path="/" element={<Index />} />
         <Route path="/bibliotheque" element={<Bibliotheque />} />
         <Route path="/publication/:id" element={<Publication />} />
