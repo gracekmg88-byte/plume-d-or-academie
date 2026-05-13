@@ -8,6 +8,17 @@ export type PublicationUpdate = TablesUpdate<"publications">;
 
 type ContentCategory = "livre" | "memoire" | "tfc" | "article";
 
+export async function fetchPublication(id: string) {
+  const { data, error } = await supabase
+    .from("publications")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
 export function usePublications(category?: string) {
   return useQuery({
     queryKey: ["publications", category],
@@ -32,17 +43,9 @@ export function usePublications(category?: string) {
 export function usePublication(id: string) {
   return useQuery({
     queryKey: ["publication", id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("publications")
-        .select("*")
-        .eq("id", id)
-        .single();
-
-      if (error) throw error;
-      return data;
-    },
+    queryFn: () => fetchPublication(id),
     enabled: !!id,
+    staleTime: 60_000,
   });
 }
 
