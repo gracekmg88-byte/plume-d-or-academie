@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/hooks/useAuth";
 import { z } from "zod";
+import { SEO } from "@/components/seo/SEO";
 
 const loginSchema = z.object({
   email: z.string().trim().email("Adresse email invalide"),
@@ -145,6 +146,12 @@ export default function Auth() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-parchment p-4">
+      <SEO
+        title="Connexion / Inscription — Plume d'Or KMG"
+        description="Connectez-vous ou créez un compte gratuit pour accéder à la bibliothèque académique Plume d'Or KMG."
+        path="/auth"
+        noindex
+      />
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
