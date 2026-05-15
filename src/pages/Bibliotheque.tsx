@@ -15,6 +15,7 @@ import { preloadAndCacheImages } from "@/lib/image-cache";
 import { useOnlineStatus } from "@/hooks/useOffline";
 import { getAllOfflinePublications, type OfflinePublication } from "@/lib/offline-storage";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { SEO } from "@/components/seo/SEO";
 import heroBiblioImage from "@/assets/hero-bibliotheque.webp";
 
 type Category = "all" | "livre" | "memoire" | "tfc" | "article";
@@ -153,6 +154,19 @@ export default function Bibliotheque() {
 
   return (
     <Layout>
+      <SEO
+        title="Bibliothèque — livres, mémoires, TFC et articles"
+        description="Catalogue académique complet : livres, mémoires, TFC et articles scientifiques avec filtres, recherche et tri. Lecture gratuite, en ligne et hors-ligne."
+        path="/bibliotheque"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "CollectionPage",
+          name: "Bibliothèque Plume d'Or KMG",
+          url: "https://plume-d-or-academie.lovable.app/bibliotheque",
+          description: "Catalogue de publications académiques francophones.",
+          isPartOf: { "@type": "WebSite", name: "Plume d'Or KMG" },
+        }}
+      />
       {/* Header with background image */}
       <section className="relative overflow-hidden py-12 md:py-16">
         <div className="absolute inset-0">
