@@ -25,6 +25,7 @@ import { CommentsList } from "@/components/publications/CommentsList";
 import { format } from "date-fns";
 import { fr, enUS } from "date-fns/locale";
 import { toast } from "sonner";
+import { SEO } from "@/components/seo/SEO";
 
 type Category = "livre" | "memoire" | "tfc" | "article";
 
@@ -268,8 +269,47 @@ export default function Publication() {
     ? offlineData.local_pdf_uri
     : displayPub.file_url;
 
+  const pubCategory = publication?.category as Category | undefined;
+  const pubType: "book" | "article" =
+    pubCategory === "livre" ? "book" : "article";
+  const schemaType =
+    pubCategory === "livre"
+      ? "Book"
+      : pubCategory === "article"
+        ? "ScholarlyArticle"
+        : "CreativeWork";
+  const pubDescription = publication?.description
+    ? publication.description.slice(0, 200)
+    : `${publication?.title ?? ""} — ${publication?.author ?? ""} sur Plume d'Or KMG.`;
+
   return (
     <Layout>
+      {publication && (
+        <SEO
+          title={`${publication.title}${publication.author ? ` — ${publication.author}` : ""}`}
+          description={pubDescription}
+          path={`/publication/${publication.id}`}
+          type={pubType}
+          image={publication.cover_image_url || undefined}
+          jsonLd={{
+            "@context": "https://schema.org",
+            "@type": schemaType,
+            name: publication.title,
+            headline: publication.title,
+            author: publication.author
+              ? { "@type": "Person", name: publication.author }
+              : undefined,
+            description: publication.description || undefined,
+            image: publication.cover_image_url || undefined,
+            url: `https://plume-d-or-academie.lovable.app/publication/${publication.id}`,
+            inLanguage: "fr",
+            publisher: {
+              "@type": "Organization",
+              name: "KMG Multi Services",
+            },
+          }}
+        />
+      )}
       <div className="container py-8 md:py-12">
         {/* Offline banner */}
         {!isOnline && (

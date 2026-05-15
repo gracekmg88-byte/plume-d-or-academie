@@ -1,0 +1,22 @@
+# Plume d'Or KMG
+
+> Bibliothèque numérique académique francophone : livres, mémoires, TFC et articles scientifiques accessibles gratuitement, en ligne et hors-ligne.
+
+Plume d'Or KMG est une plateforme éditée par KMG Multi Services (RDC) qui met à disposition étudiants et chercheurs une collection de publications académiques. Lecture en ligne avec PDF protégé, annotations, résumés IA, mode hors-ligne et application Android (Capacitor / PWA). Accès gratuit pour tous.
+
+## Pages
+
+- [Accueil](/): Présentation, recommandations, dernières publications.
+- [Bibliothèque](/bibliotheque): Catalogue complet avec filtres par catégorie (livre, mémoire, TFC, article), recherche et tri.
+- [Publication](/publication/): Page détaillée d'une publication — métadonnées, lecteur PDF intégré, annotations, résumé IA et commentaires.
+- [À propos](/a-propos): Mission, équipe et histoire de Plume d'Or KMG.
+- [Contact](/contact): Formulaire de contact et coordonnées de KMG Multi Services.
+- [Dépôt de mémoire](/depot-memoire): Workflow étudiant pour soumettre un mémoire ou TFC.
+- [Chat communautaire](/chat): Discussion en temps réel entre lecteurs et étudiants.
+- [Installer l'application](/installer): Guide d'installation PWA et Android.
+
+## Optional
+
+- [Connexion](/auth): Authentification email + Google.
+- [Profil](/profil): Espace utilisateur, favoris et historique de lecture.
+- [Abonnement](/abonnement): Information sur l'accès (gratuit pour tous).

@@ -13,6 +13,7 @@ import { useBillingConfig } from "@/hooks/useBillingConfig";
 import { getAllOfflinePublications, removeOfflinePublication, type OfflinePublication } from "@/lib/offline-storage";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { SEO } from "@/components/seo/SEO";
 import { toast } from "sonner";
 
 export default function Profil() {
@@ -75,6 +76,7 @@ export default function Profil() {
 
   return (
     <Layout>
+      <SEO title="Mon profil — Plume d'Or KMG" description="Espace personnel : favoris, historique de lecture, préférences et publications hors-ligne." path="/profil" noindex />
       <div className="container py-12">
         <div className="max-w-2xl mx-auto space-y-8">
           <div className="text-center">

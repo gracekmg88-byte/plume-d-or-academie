@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
 import { useBillingConfig } from "@/hooks/useBillingConfig";
+import { SEO } from "@/components/seo/SEO";
 
 const freeFeatures = [
   { text: "Lecture en ligne", included: true },
@@ -139,6 +140,7 @@ export default function Abonnement() {
   // Original subscription page when billing is enabled (future use)
   return (
     <Layout>
+      <SEO title="Abonnement — Plume d'Or KMG" description="Plume d'Or KMG est entièrement gratuit pour tous : accédez librement à l'ensemble du catalogue académique." path="/abonnement" />
       <div className="container py-12 md:py-20">
         <div className="text-center max-w-3xl mx-auto">
           <h1 className="font-serif text-4xl md:text-5xl font-bold text-foreground mb-4">

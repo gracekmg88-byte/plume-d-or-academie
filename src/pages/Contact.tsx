@@ -9,6 +9,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { useSubmitContactMessage } from "@/hooks/useContactMessages";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { SEO } from "@/components/seo/SEO";
 import heroContactImage from "@/assets/hero-contact.webp";
 
 export default function Contact() {
@@ -36,6 +37,11 @@ export default function Contact() {
 
   return (
     <Layout>
+      <SEO
+        title="Contact — Plume d'Or KMG"
+        description="Contactez Plume d'Or KMG : téléphone +243 998 102 000, email kmgmultiservices98@gmail.com. Formulaire de contact en ligne."
+        path="/contact"
+      />
       <section className="relative overflow-hidden py-12 md:py-16">
         <div className="absolute inset-0">
           <img src={heroContactImage} alt="" className="h-full w-full object-cover" loading="eager" fetchPriority="high" decoding="sync" />

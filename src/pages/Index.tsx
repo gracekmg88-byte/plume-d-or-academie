@@ -12,6 +12,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useOnlineStatus } from "@/hooks/useOffline";
 import { ContinueReadingSection } from "@/components/home/ContinueReadingSection";
 import { RecommendationsSection } from "@/components/home/RecommendationsSection";
+import { SEO } from "@/components/seo/SEO";
 import heroImage from "@/assets/hero-library.webp";
 
 export default function Index() {
@@ -48,6 +49,33 @@ export default function Index() {
 
   return (
     <Layout>
+      <SEO
+        title="Plume d'Or KMG — Bibliothèque numérique académique"
+        description="Consultez gratuitement livres, mémoires, TFC et articles académiques en ligne et hors-ligne. Plateforme francophone éditée par KMG Multi Services."
+        path="/"
+        jsonLd={[
+          {
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            name: "Plume d'Or KMG",
+            url: "https://plume-d-or-academie.lovable.app/",
+            potentialAction: {
+              "@type": "SearchAction",
+              target: "https://plume-d-or-academie.lovable.app/bibliotheque?search={query}",
+              "query-input": "required name=query",
+            },
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            name: "KMG Multi Services",
+            url: "https://plume-d-or-academie.lovable.app/",
+            logo: "https://plume-d-or-academie.lovable.app/pwa-512x512.png",
+            email: "kmgmultiservices98@gmail.com",
+            telephone: "+243998102000",
+          },
+        ]}
+      />
       {/* Hero Section */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0">
