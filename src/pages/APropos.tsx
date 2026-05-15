@@ -2,6 +2,7 @@ import { BookOpen, Target, Users, Award, Heart, Lightbulb } from "lucide-react";
 
 import { Layout } from "@/components/layout/Layout";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { SEO } from "@/components/seo/SEO";
 import heroAProposImage from "@/assets/hero-apropos.webp";
 
 export default function APropos() {
@@ -17,6 +18,11 @@ export default function APropos() {
 
   return (
     <Layout>
+      <SEO
+        title="À propos — Plume d'Or KMG"
+        description="Mission, valeurs et équipe de Plume d'Or KMG, bibliothèque numérique académique francophone éditée par KMG Multi Services en RDC."
+        path="/a-propos"
+      />
       <section className="relative overflow-hidden py-12 md:py-16">
         <div className="absolute inset-0">
           <img src={heroAProposImage} alt="" className="h-full w-full object-cover" loading="eager" fetchPriority="high" decoding="sync" />
