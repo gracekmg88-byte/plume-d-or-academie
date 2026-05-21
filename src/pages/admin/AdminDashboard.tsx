@@ -53,7 +53,7 @@ const categoryConfig: Record<Category, { label: string; icon: typeof Book; class
 };
 
 export default function AdminDashboard() {
-  const { user, isAdmin, loading, signOut } = useAuth();
+  const { user, isAdmin, loading, adminChecking, signOut } = useAuth();
   const { data: publications, isLoading } = useAdminPublications();
   const deletePublication = useDeletePublication();
   const updatePublication = useUpdatePublication();
