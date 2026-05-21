@@ -11,14 +11,18 @@ export function useAuth() {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [adminChecking, setAdminChecking] = useState(true);
   const mountedRef = useRef(true);
 
   const checkAdminRole = useCallback(async (userId: string) => {
-    // Use cached result if available for same user
+    // Use cached result if available for same user — instant, no flicker
     if (cachedAdminStatus && cachedAdminStatus.userId === userId) {
       setIsAdmin(cachedAdminStatus.isAdmin);
+      setAdminChecking(false);
       return;
     }
+
+    setAdminChecking(true);
 
     // Deduplicate concurrent requests
     if (!adminCheckPromise) {
@@ -46,6 +50,7 @@ export function useAuth() {
     const result = await adminCheckPromise;
     if (mountedRef.current) {
       setIsAdmin(result);
+      setAdminChecking(false);
     }
   }, []);
 
@@ -58,18 +63,23 @@ export function useAuth() {
       if (!mountedRef.current) return;
       setSession(session);
       setUser(session?.user ?? null);
-      // Set loading false immediately — don't wait for admin check
       setLoading(false);
 
       if (session?.user) {
         checkAdminRole(session.user.id);
       } else {
         setIsAdmin(false);
+        setAdminChecking(false);
         cachedAdminStatus = null;
       }
     });
 
-    supabase.auth.getSession();
+    supabase.auth.getSession().then(({ data }) => {
+      if (!data.session && mountedRef.current) {
+        // No session — done checking
+        setAdminChecking(false);
+      }
+    });
 
     return () => {
       mountedRef.current = false;
