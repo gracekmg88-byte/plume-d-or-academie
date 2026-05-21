@@ -66,6 +66,7 @@ export function ContinueReadingSection() {
               <div key={item.publication_id}>
                 <Link
                   to={`/publication/${item.publication_id}?page=${item.last_page_read}`}
+                  state={{ returnTo: `${pathname}${window.location.search}` }}
                   onClickCapture={saveScroll}
                   className="group flex gap-4 bg-background rounded-xl border border-border p-4 hover:shadow-elegant transition-all duration-300 h-full"
                 >
