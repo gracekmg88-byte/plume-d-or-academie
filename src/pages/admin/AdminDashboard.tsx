@@ -113,8 +113,7 @@ export default function AdminDashboard() {
     }
   };
 
-  // Wait for both auth and admin role check before rendering — prevents "Accès non autorisé" flash
-  if (loading || adminChecking || (user && isAdmin === false && adminChecking)) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
