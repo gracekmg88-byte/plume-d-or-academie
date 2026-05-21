@@ -114,8 +114,14 @@ export default function Bibliotheque() {
     return filtered;
   }, [sourceData, search, category, isOnline, filters]);
 
-  // Reset page when filters change
+  // Reset page when filters change — but skip the very first render so that
+  // returning from a publication (e.g. ?page=5) keeps the saved page instead of resetting to 1.
+  const skipResetRef = useRef(true);
   useEffect(() => {
+    if (skipResetRef.current) {
+      skipResetRef.current = false;
+      return;
+    }
     setCurrentPage(1);
   }, [search, category, filters]);
 
