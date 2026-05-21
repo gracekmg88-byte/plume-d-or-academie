@@ -113,10 +113,11 @@ export default function AdminDashboard() {
     }
   };
 
-  if (loading) {
+  // Wait for both auth and admin role check before rendering — prevents "Accès non autorisé" flash
+  if (loading || adminChecking || (user && isAdmin === false && adminChecking)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="animate-pulse text-muted-foreground">Chargement...</div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
       </div>
     );
   }
