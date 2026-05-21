@@ -102,10 +102,14 @@ export function useAuth() {
     if (error) throw error;
   };
 
+  // Keep `loading` true while we still don't know if the user is admin —
+  // prevents flickers like "Accès non autorisé" on protected pages.
+  const effectiveLoading = loading || (!!user && adminChecking);
+
   return {
     user,
     session,
-    loading,
+    loading: effectiveLoading,
     isAdmin,
     adminChecking,
     signIn,
