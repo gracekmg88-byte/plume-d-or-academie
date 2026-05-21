@@ -92,11 +92,12 @@ function useProvideAuth(): AuthContextValue {
     } = supabase.auth.onAuthStateChange((_event, nextSession) => {
       if (!mountedRef.current) return;
 
-      applySession(nextSession);
-
-      if (initializedRef.current) {
-        setAuthReady(true);
+      if (!initializedRef.current) {
+        return;
       }
+
+      applySession(nextSession);
+      setAuthReady(true);
     });
 
     supabase.auth
