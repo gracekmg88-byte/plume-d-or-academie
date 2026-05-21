@@ -41,11 +41,31 @@ export function usePublications(category?: string) {
 }
 
 export function usePublication(id: string) {
+  const queryClient = useQueryClient();
   return useQuery({
     queryKey: ["publication", id],
     queryFn: () => fetchPublication(id),
     enabled: !!id,
     staleTime: 60_000,
+    // Seed from any cached list so the page renders instantly without a spinner
+    initialData: () => {
+      if (!id) return undefined;
+      const caches = queryClient.getQueriesData<Publication[]>({ queryKey: ["publications"] });
+      for (const [, list] of caches) {
+        const hit = list?.find((p) => p.id === id);
+        if (hit) return hit as Publication;
+      }
+      const adminLists = queryClient.getQueriesData<Publication[]>({ queryKey: ["admin-publications"] });
+      for (const [, list] of adminLists) {
+        const hit = list?.find((p) => p.id === id);
+        if (hit) return hit as Publication;
+      }
+      return undefined;
+    },
+    initialDataUpdatedAt: () => {
+      const state = queryClient.getQueryState(["publications", undefined]);
+      return state?.dataUpdatedAt;
+    },
   });
 }
 

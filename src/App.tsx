@@ -36,7 +36,18 @@ const Chat = lazy(() => import("./pages/Chat"));
 const InstallApp = lazy(() => import("./pages/InstallApp"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      // Aggressive caching for instant back-navigation & route reuse
+      staleTime: 5 * 60 * 1000, // 5 min — data is "fresh" for 5 min, no auto-refetch
+      gcTime: 30 * 60 * 1000, // 30 min — keep in memory for snappy returns
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: true,
+      retry: 1,
+    },
+  },
+});
 
 // Pre-load image cache index at startup for instant lookups on native
 warmUpCache().catch(() => {});
