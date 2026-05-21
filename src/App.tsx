@@ -9,6 +9,7 @@ import { warmUpCache } from "@/lib/image-cache";
 import { PushNotificationInit } from "@/components/PushNotificationInit";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
+import { AuthProvider } from "@/hooks/useAuth";
 import { getSavedScrollPosition, saveScrollPosition } from "@/lib/scroll-restoration";
 
 // Eager-load the home page for instant first paint
@@ -60,6 +61,17 @@ function ScrollManager() {
   const isRestoringRef = useRef(false);
   const rafRef = useRef<number | null>(null);
   const cancelRestoreRef = useRef<(() => void) | null>(null);
+
+  useEffect(() => {
+    if (!("scrollRestoration" in window.history)) return;
+
+    const previous = window.history.scrollRestoration;
+    window.history.scrollRestoration = "manual";
+
+    return () => {
+      window.history.scrollRestoration = previous;
+    };
+  }, []);
 
   useLayoutEffect(() => {
     const prev = prevRef.current;
@@ -179,19 +191,21 @@ function AnimatedRoutes() {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <ThemeProvider>
-      <LanguageProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <PushNotificationInit />
-          <BrowserRouter>
-            <ScrollManager />
-            <AnimatedRoutes />
-          </BrowserRouter>
-        </TooltipProvider>
-      </LanguageProvider>
-    </ThemeProvider>
+    <AuthProvider>
+      <ThemeProvider>
+        <LanguageProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <PushNotificationInit />
+            <BrowserRouter>
+              <ScrollManager />
+              <AnimatedRoutes />
+            </BrowserRouter>
+          </TooltipProvider>
+        </LanguageProvider>
+      </ThemeProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 

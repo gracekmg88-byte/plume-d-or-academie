@@ -16,7 +16,7 @@ export interface UserProfile {
 }
 
 export function useSubscription() {
-  const { user } = useAuth();
+  const { user, authReady } = useAuth();
 
   const { data: profile, isLoading, error, refetch } = useQuery({
     queryKey: ["user-profile", user?.id],
@@ -36,7 +36,7 @@ export function useSubscription() {
 
       return data as UserProfile | null;
     },
-    enabled: !!user?.id,
+    enabled: authReady && !!user?.id,
   });
 
   const isPremium = profile?.subscription_type === "premium";

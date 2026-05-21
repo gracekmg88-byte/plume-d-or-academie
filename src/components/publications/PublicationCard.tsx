@@ -54,6 +54,7 @@ export function PublicationCard({
   return (
     <Link
       to={`/publication/${id}`}
+      state={{ returnTo: `${pathname}${window.location.search}` }}
       onPointerDown={prepareNavigation}
       onClickCapture={prepareNavigation}
     >

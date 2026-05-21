@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from "react";
+import { createContext, createElement, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { User, Session } from "@supabase/supabase-js";
 
@@ -6,13 +6,27 @@ import type { User, Session } from "@supabase/supabase-js";
 let cachedAdminStatus: { userId: string; isAdmin: boolean } | null = null;
 let adminCheckPromise: Promise<boolean> | null = null;
 
-export function useAuth() {
+interface AuthContextValue {
+  user: User | null;
+  session: Session | null;
+  loading: boolean;
+  authReady: boolean;
+  isAdmin: boolean;
+  adminChecking: boolean;
+  signIn: (email: string, password: string) => Promise<unknown>;
+  signOut: () => Promise<void>;
+}
+
+const AuthContext = createContext<AuthContextValue | null>(null);
+
+function useProvideAuth(): AuthContextValue {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [authReady, setAuthReady] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [adminChecking, setAdminChecking] = useState(true);
+  const [adminChecking, setAdminChecking] = useState(false);
   const mountedRef = useRef(true);
+  const initializedRef = useRef(false);
 
   const checkAdminRole = useCallback(async (userId: string) => {
     // Use cached result if available for same user — instant, no flicker
@@ -54,38 +68,59 @@ export function useAuth() {
     }
   }, []);
 
+  const applySession = useCallback((nextSession: Session | null) => {
+    if (!mountedRef.current) return;
+
+    setSession(nextSession);
+    setUser(nextSession?.user ?? null);
+
+    if (nextSession?.user) {
+      void checkAdminRole(nextSession.user.id);
+      return;
+    }
+
+    setIsAdmin(false);
+    setAdminChecking(false);
+    cachedAdminStatus = null;
+  }, [checkAdminRole]);
+
   useEffect(() => {
     mountedRef.current = true;
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((_event, nextSession) => {
       if (!mountedRef.current) return;
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
 
-      if (session?.user) {
-        checkAdminRole(session.user.id);
-      } else {
-        setIsAdmin(false);
-        setAdminChecking(false);
-        cachedAdminStatus = null;
+      if (!initializedRef.current) {
+        return;
       }
+
+      applySession(nextSession);
+      setAuthReady(true);
     });
 
-    supabase.auth.getSession().then(({ data }) => {
-      if (!data.session && mountedRef.current) {
-        // No session — done checking
-        setAdminChecking(false);
-      }
-    });
+    supabase.auth
+      .getSession()
+      .then(({ data: { session: restoredSession } }) => {
+        if (!mountedRef.current) return;
+        applySession(restoredSession);
+      })
+      .catch(() => {
+        if (!mountedRef.current) return;
+        applySession(null);
+      })
+      .finally(() => {
+        if (!mountedRef.current) return;
+        initializedRef.current = true;
+        setAuthReady(true);
+      });
 
     return () => {
       mountedRef.current = false;
       subscription.unsubscribe();
     };
-  }, [checkAdminRole]);
+  }, [applySession]);
 
   const signIn = async (email: string, password: string) => {
     const { data, error } = await supabase.auth.signInWithPassword({
@@ -102,17 +137,32 @@ export function useAuth() {
     if (error) throw error;
   };
 
-  // Keep `loading` true while we still don't know if the user is admin —
-  // prevents flickers like "Accès non autorisé" on protected pages.
-  const effectiveLoading = loading || (!!user && adminChecking);
+  const effectiveLoading = !authReady || (!!user && adminChecking);
 
-  return {
-    user,
-    session,
-    loading: effectiveLoading,
-    isAdmin,
-    adminChecking,
-    signIn,
-    signOut,
-  };
+  return useMemo(
+    () => ({
+      user,
+      session,
+      loading: effectiveLoading,
+      authReady,
+      isAdmin,
+      adminChecking,
+      signIn,
+      signOut,
+    }),
+    [user, session, effectiveLoading, authReady, isAdmin, adminChecking],
+  );
+}
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const value = useProvideAuth();
+  return createElement(AuthContext.Provider, { value }, children);
+}
+
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
 }

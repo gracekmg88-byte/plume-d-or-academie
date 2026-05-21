@@ -1,5 +1,5 @@
 import { useEffect, useCallback, useState, useRef } from "react";
-import { useParams, Link, useSearchParams, useNavigate } from "react-router-dom";
+import { useParams, Link, useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft, Book, FileText, GraduationCap, Newspaper, Eye, Calendar, User, Lock, Download, WifiOff, CheckCircle, Heart } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
@@ -39,6 +39,7 @@ const categoryConfig: Record<Category, { label: string; icon: typeof Book; class
 export default function Publication() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
   const pageFromUrl = parseInt(searchParams.get("page") || "0", 10);
   const isOnline = useOnlineStatus();
@@ -59,6 +60,13 @@ export default function Publication() {
   const readingStart = useRef<number>(Date.now());
   const currentPageRef = useRef<number>(resumePage);
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const returnTo = typeof (location.state as { returnTo?: string } | null)?.returnTo === "string"
+    ? (location.state as { returnTo?: string }).returnTo
+    : "/bibliotheque";
+
+  const handleBack = useCallback(() => {
+    navigate(returnTo);
+  }, [navigate, returnTo]);
 
   // Fetch last read page from DB if not provided in URL
   useEffect(() => {
@@ -252,7 +260,7 @@ export default function Publication() {
           <p className="text-muted-foreground mb-6">
             {!isOnline ? t("pub.notFoundOffline") : t("pub.notFoundOnline")}
           </p>
-          <Button variant="outline" className="gap-2" onClick={() => navigate("/bibliotheque")}>
+          <Button variant="outline" className="gap-2" onClick={handleBack}>
               <ArrowLeft className="h-4 w-4" />
               {t("pub.back")}
             </Button>
@@ -320,7 +328,7 @@ export default function Publication() {
         )}
 
         <button
-          onClick={() => navigate(-1)}
+          onClick={handleBack}
           className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-8"
         >
           <ArrowLeft className="h-4 w-4" />
