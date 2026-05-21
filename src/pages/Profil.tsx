@@ -57,7 +57,8 @@ export default function Profil() {
     navigate("/");
   };
 
-  if (loading || profileLoading) {
+  // Wait for auth AND profile (when user is logged in) to fully resolve before rendering
+  if (loading || (!!user && profileLoading)) {
     return (
       <Layout>
         <div className="container py-12">
