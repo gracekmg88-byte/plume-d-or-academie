@@ -11,31 +11,54 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AuthProvider } from "@/hooks/useAuth";
 import { getSavedScrollPosition, saveScrollPosition } from "@/lib/scroll-restoration";
+import {
+  loadAProposPage,
+  loadAbonnementPage,
+  loadAdminDashboardPage,
+  loadAdminDevicesPage,
+  loadAdminLoginPage,
+  loadAdminMessagesPage,
+  loadAdminSettingsPage,
+  loadAdminSubmissionsPage,
+  loadAdminUsersPage,
+  loadAuthPage,
+  loadBibliothequePage,
+  loadChatPage,
+  loadContactPage,
+  loadDepotMemoirePage,
+  loadInstallAppPage,
+  loadNotFoundPage,
+  loadProfilPage,
+  loadPublicationFormPage,
+  loadPublicationPage,
+  loadResetPasswordPage,
+  preloadCommonRoutes,
+} from "@/lib/route-preload";
 
 // Eager-load the home page for instant first paint
 import Index from "./pages/Index";
 
 // Lazy-load all other pages for code-splitting
-const Bibliotheque = lazy(() => import("./pages/Bibliotheque"));
-const Publication = lazy(() => import("./pages/Publication"));
-const APropos = lazy(() => import("./pages/APropos"));
-const Contact = lazy(() => import("./pages/Contact"));
-const Auth = lazy(() => import("./pages/Auth"));
-const ResetPassword = lazy(() => import("./pages/ResetPassword"));
-const Profil = lazy(() => import("./pages/Profil"));
-const Abonnement = lazy(() => import("./pages/Abonnement"));
-const AdminLogin = lazy(() => import("./pages/admin/AdminLogin"));
-const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
-const AdminMessages = lazy(() => import("./pages/admin/AdminMessages"));
-const AdminSettings = lazy(() => import("./pages/admin/AdminSettings"));
-const AdminUsers = lazy(() => import("./pages/admin/AdminUsers"));
-const PublicationForm = lazy(() => import("./pages/admin/PublicationForm"));
-const AdminDevices = lazy(() => import("./pages/admin/AdminDevices"));
-const AdminSubmissions = lazy(() => import("./pages/admin/AdminSubmissions"));
-const DepotMemoire = lazy(() => import("./pages/DepotMemoire"));
-const Chat = lazy(() => import("./pages/Chat"));
-const InstallApp = lazy(() => import("./pages/InstallApp"));
-const NotFound = lazy(() => import("./pages/NotFound"));
+const Bibliotheque = lazy(loadBibliothequePage);
+const Publication = lazy(loadPublicationPage);
+const APropos = lazy(loadAProposPage);
+const Contact = lazy(loadContactPage);
+const Auth = lazy(loadAuthPage);
+const ResetPassword = lazy(loadResetPasswordPage);
+const Profil = lazy(loadProfilPage);
+const Abonnement = lazy(loadAbonnementPage);
+const AdminLogin = lazy(loadAdminLoginPage);
+const AdminDashboard = lazy(loadAdminDashboardPage);
+const AdminMessages = lazy(loadAdminMessagesPage);
+const AdminSettings = lazy(loadAdminSettingsPage);
+const AdminUsers = lazy(loadAdminUsersPage);
+const PublicationForm = lazy(loadPublicationFormPage);
+const AdminDevices = lazy(loadAdminDevicesPage);
+const AdminSubmissions = lazy(loadAdminSubmissionsPage);
+const DepotMemoire = lazy(loadDepotMemoirePage);
+const Chat = lazy(loadChatPage);
+const InstallApp = lazy(loadInstallAppPage);
+const NotFound = lazy(loadNotFoundPage);
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -151,11 +174,19 @@ function ScrollManager() {
 }
 
 function PageLoader() {
-  return (
-    <div className="flex items-center justify-center py-24">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-    </div>
-  );
+  return <div className="h-0 w-full overflow-hidden opacity-0" aria-hidden="true" />;
+}
+
+function NavigationWarmup() {
+  useEffect(() => {
+    const warmup = window.setTimeout(() => {
+      preloadCommonRoutes();
+    }, 300);
+
+    return () => window.clearTimeout(warmup);
+  }, []);
+
+  return null;
 }
 
 function AnimatedRoutes() {
@@ -199,6 +230,7 @@ const App = () => (
             <Sonner />
             <PushNotificationInit />
             <BrowserRouter>
+              <NavigationWarmup />
               <ScrollManager />
               <AnimatedRoutes />
             </BrowserRouter>

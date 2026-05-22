@@ -3,6 +3,8 @@ import { BookOpen, ArrowRight, Book, GraduationCap, FileText, Newspaper } from "
 import { CachedImage } from "@/components/ui/cached-image";
 import { useContinueReading } from "@/hooks/useContinueReading";
 import { cn } from "@/lib/utils";
+import { preloadPublicationFlow } from "@/lib/route-preload";
+import { saveScrollPosition } from "@/lib/scroll-restoration";
 
 const categoryConfig: Record<string, { label: string; icon: typeof Book; className: string }> = {
   livre: { label: "Livre", icon: Book, className: "bg-primary/10 text-primary" },
@@ -16,7 +18,8 @@ export function ContinueReadingSection() {
   const { pathname } = useLocation();
 
   const saveScroll = () => {
-    sessionStorage.setItem(`scroll:${pathname}`, String(window.scrollY));
+    saveScrollPosition(window.history.state?.key, pathname, window.scrollY);
+    preloadPublicationFlow();
   };
 
   if (isLoading) {
@@ -66,7 +69,9 @@ export function ContinueReadingSection() {
               <div key={item.publication_id}>
                 <Link
                   to={`/publication/${item.publication_id}?page=${item.last_page_read}`}
-                  state={{ returnTo: `${pathname}${window.location.search}` }}
+                    state={{ returnTo: `${pathname}${window.location.search}`, returnKey: window.history.state?.key ?? null }}
+                    onPointerDown={saveScroll}
+                    onMouseEnter={saveScroll}
                   onClickCapture={saveScroll}
                   className="group flex gap-4 bg-background rounded-xl border border-border p-4 hover:shadow-elegant transition-all duration-300 h-full"
                 >

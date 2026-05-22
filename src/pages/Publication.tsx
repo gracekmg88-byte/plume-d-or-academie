@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useState, useRef } from "react";
+import { useEffect, useCallback, useState, useRef, startTransition } from "react";
 import { useParams, Link, useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft, Book, FileText, GraduationCap, Newspaper, Eye, Calendar, User, Lock, Download, WifiOff, CheckCircle, Heart } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
@@ -55,18 +55,32 @@ export default function Publication() {
   const [isCached, setIsCached] = useState(false);
   const [resumePage, setResumePage] = useState<number>(pageFromUrl || 1);
   const [currentViewPage, setCurrentViewPage] = useState<number>(pageFromUrl || 1);
+  const isNavigatingBackRef = useRef(false);
   const { startReading, updateDuration, savePageProgress } = useTrackReading();
   const readingRecordId = useRef<string | null>(null);
   const readingStart = useRef<number>(Date.now());
   const currentPageRef = useRef<number>(resumePage);
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const returnTo = typeof (location.state as { returnTo?: string } | null)?.returnTo === "string"
-    ? (location.state as { returnTo?: string }).returnTo
+  const returnState = location.state as { returnTo?: string; returnKey?: string | null } | null;
+  const returnTo = typeof returnState?.returnTo === "string"
+    ? returnState.returnTo
     : "/bibliotheque";
+  const returnKey = returnState?.returnKey ?? null;
 
   const handleBack = useCallback(() => {
-    navigate(returnTo);
-  }, [navigate, returnTo]);
+    if (isNavigatingBackRef.current) return;
+    isNavigatingBackRef.current = true;
+    startTransition(() => {
+      navigate(returnTo, {
+        replace: true,
+        preventScrollReset: true,
+        state: {
+          restoredFromPublication: true,
+          returnKey,
+        },
+      });
+    });
+  }, [navigate, returnKey, returnTo]);
 
   // Fetch last read page from DB if not provided in URL
   useEffect(() => {

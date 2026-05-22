@@ -102,14 +102,14 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://plume-d-or-academie.lovable.app/publication/2d32d22f-79c2-4d9c-afef-70bb188e4823</loc>
+    <loc>https://plume-d-or-academie.lovable.app/publication/89fb7feb-47a3-400c-ba94-0570c9dda8fa</loc>
     <lastmod>2026-05-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://plume-d-or-academie.lovable.app/publication/89fb7feb-47a3-400c-ba94-0570c9dda8fa</loc>
-    <lastmod>2026-05-17</lastmod>
+    <loc>https://plume-d-or-academie.lovable.app/publication/2d32d22f-79c2-4d9c-afef-70bb188e4823</loc>
+    <lastmod>2026-05-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -336,20 +336,20 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://plume-d-or-academie.lovable.app/publication/bf012537-c24c-4f23-ba63-be8efe7569b8</loc>
-    <lastmod>2026-03-03</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://plume-d-or-academie.lovable.app/publication/a450f482-d7eb-41a7-aa2e-cf72f4210903</loc>
-    <lastmod>2026-05-21</lastmod>
+    <lastmod>2026-05-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://plume-d-or-academie.lovable.app/publication/25396192-e4ae-4eb0-92ba-8a9ce6ce7366</loc>
     <lastmod>2026-03-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://plume-d-or-academie.lovable.app/publication/bf012537-c24c-4f23-ba63-be8efe7569b8</loc>
+    <lastmod>2026-05-21</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
