@@ -8,6 +8,7 @@ import { FavoriteButton } from "@/components/publications/FavoriteButton";
 import { cn } from "@/lib/utils";
 import { fetchPublication } from "@/hooks/usePublications";
 import { saveScrollPosition } from "@/lib/scroll-restoration";
+import { preloadPublicationFlow } from "@/lib/route-preload";
 
 type Category = "livre" | "memoire" | "tfc" | "article";
 
@@ -44,6 +45,7 @@ export function PublicationCard({
 
   const prepareNavigation = () => {
     saveScrollPosition(window.history.state?.key, pathname, window.scrollY);
+    preloadPublicationFlow();
     queryClient.prefetchQuery({
       queryKey: ["publication", id],
       queryFn: () => fetchPublication(id),
@@ -54,8 +56,9 @@ export function PublicationCard({
   return (
     <Link
       to={`/publication/${id}`}
-      state={{ returnTo: `${pathname}${window.location.search}` }}
+      state={{ returnTo: `${pathname}${window.location.search}`, returnKey: window.history.state?.key ?? null }}
       onPointerDown={prepareNavigation}
+      onMouseEnter={prepareNavigation}
       onClickCapture={prepareNavigation}
     >
       <Card className="group h-full overflow-hidden transition-all duration-300 hover:shadow-elegant hover:-translate-y-1 bg-card border-border/50">
