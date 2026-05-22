@@ -2,9 +2,9 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, useLocation, useNavigationType } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation, useNavigationType, useNavigate } from "react-router-dom";
 
-import { lazy, Suspense, useEffect, useLayoutEffect, useRef } from "react";
+import { lazy, Suspense, useEffect, useLayoutEffect, useRef, useCallback } from "react";
 import { warmUpCache } from "@/lib/image-cache";
 import { PushNotificationInit } from "@/components/PushNotificationInit";
 import { ThemeProvider } from "@/contexts/ThemeContext";
@@ -158,6 +158,34 @@ function PageLoader() {
   );
 }
 
+function NavigationWarmup() {
+  const navigate = useNavigate();
+
+  const warmRoute = useCallback((path: string) => {
+    navigate(path, { replace: false, state: window.history.state?.usr, preventScrollReset: true });
+    queueMicrotask(() => navigate(-1));
+  }, [navigate]);
+
+  useEffect(() => {
+    const routesToWarm = ["/bibliotheque", "/profil", "/a-propos"];
+    const idle = window.setTimeout(() => {
+      routesToWarm.forEach((route, index) => {
+        window.setTimeout(() => {
+          try {
+            warmRoute(route);
+          } catch {
+            // no-op
+          }
+        }, index * 120);
+      });
+    }, 1200);
+
+    return () => window.clearTimeout(idle);
+  }, [warmRoute]);
+
+  return null;
+}
+
 function AnimatedRoutes() {
   const location = useLocation();
   return (
@@ -199,6 +227,7 @@ const App = () => (
             <Sonner />
             <PushNotificationInit />
             <BrowserRouter>
+              <NavigationWarmup />
               <ScrollManager />
               <AnimatedRoutes />
             </BrowserRouter>
