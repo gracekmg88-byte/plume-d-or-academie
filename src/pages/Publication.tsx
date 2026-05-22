@@ -65,6 +65,7 @@ export default function Publication() {
   const returnTo = typeof returnState?.returnTo === "string"
     ? returnState.returnTo
     : "/bibliotheque";
+  const returnKey = returnState?.returnKey ?? null;
 
   const handleBack = useCallback(() => {
     if (isNavigatingBackRef.current) return;
@@ -75,11 +76,11 @@ export default function Publication() {
         preventScrollReset: true,
         state: {
           restoredFromPublication: true,
-          returnKey: returnState?.returnKey ?? null,
+          returnKey,
         },
       });
     });
-  }, [navigate, returnTo]);
+  }, [navigate, returnKey, returnTo]);
 
   // Fetch last read page from DB if not provided in URL
   useEffect(() => {
