@@ -109,36 +109,57 @@ function ScrollManager() {
       saveScrollPosition(prev.key, prev.pathname, window.scrollY);
     }
 
-    const navState = location.state as { restoredFromPublication?: boolean; returnKey?: string | null } | null;
+    const navState = location.state as {
+      restoredFromPublication?: boolean;
+      returnKey?: string | null;
+      returnPublicationId?: string | null;
+    } | null;
     const isReturnFromPublication = Boolean(navState?.restoredFromPublication);
     const shouldRestore = navType === "POP" || isReturnFromPublication;
 
     if (shouldRestore) {
       const restoreKey = isReturnFromPublication && navState?.returnKey ? navState.returnKey : key;
-      const y = getSavedScrollPosition(restoreKey, pathname);
-      if (y > 0) {
-        isRestoringRef.current = true;
-        let cancelled = false;
-        const start = performance.now();
-        const TIMEOUT_MS = 2500;
+      const savedY = getSavedScrollPosition(restoreKey, pathname);
+      const targetCardId = isReturnFromPublication ? navState?.returnPublicationId ?? null : null;
 
-        const tryRestore = () => {
-          if (cancelled) return;
-          const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-          const target = Math.min(y, Math.max(0, maxScroll));
-          if (Math.abs(window.scrollY - target) > 2) {
-            window.scrollTo({ top: target, left: 0, behavior: "instant" as ScrollBehavior });
-          }
-          // Keep trying until content is tall enough OR timeout
-          if (maxScroll < y && performance.now() - start < TIMEOUT_MS) {
-            rafRef.current = window.requestAnimationFrame(tryRestore);
-          } else {
-            window.setTimeout(() => {
-              isRestoringRef.current = false;
-            }, 100);
-          }
-        };
+      isRestoringRef.current = true;
+      let cancelled = false;
+      const start = performance.now();
+      const TIMEOUT_MS = 3000;
 
+      const computeCardTarget = (): number | null => {
+        if (!targetCardId) return null;
+        const card = document.querySelector<HTMLElement>(`[data-publication-card-id="${targetCardId}"]`);
+        if (!card) return null;
+        const rect = card.getBoundingClientRect();
+        const cardTop = rect.top + window.scrollY;
+        const stickyOffset = window.innerWidth >= 768 ? 112 : 96;
+        return Math.max(0, cardTop - stickyOffset - 12);
+      };
+
+      const tryRestore = () => {
+        if (cancelled) return;
+        const cardTarget = computeCardTarget();
+        const desired = cardTarget !== null ? cardTarget : savedY;
+        const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+        const target = Math.min(desired, Math.max(0, maxScroll));
+
+        if (target > 0 && Math.abs(window.scrollY - target) > 2) {
+          window.scrollTo({ top: target, left: 0, behavior: "instant" as ScrollBehavior });
+        }
+
+        const needMoreHeight = maxScroll < desired;
+        const cardNotFoundYet = targetCardId && cardTarget === null;
+        if ((needMoreHeight || cardNotFoundYet) && performance.now() - start < TIMEOUT_MS) {
+          rafRef.current = window.requestAnimationFrame(tryRestore);
+        } else {
+          window.setTimeout(() => {
+            isRestoringRef.current = false;
+          }, 100);
+        }
+      };
+
+      if (savedY > 0 || targetCardId) {
         rafRef.current = window.requestAnimationFrame(tryRestore);
         cancelRestoreRef.current = () => {
           cancelled = true;
@@ -150,6 +171,9 @@ function ScrollManager() {
         };
       } else if (!isReturnFromPublication) {
         window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
+        isRestoringRef.current = false;
+      } else {
+        isRestoringRef.current = false;
       }
     } else if (prev.pathname !== pathname) {
       window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
