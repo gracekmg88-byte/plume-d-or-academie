@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 
 
 
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import { BookOpen, WifiOff, RefreshCw, FolderDown, ChevronLeft, ChevronRight } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,7 @@ type Category = "all" | "livre" | "memoire" | "tfc" | "article";
 export default function Bibliotheque() {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const initialCategory = (searchParams.get("categorie") as Category) || "all";
   const initialPage = Math.max(1, Number.parseInt(searchParams.get("page") || "1", 10) || 1);
   
@@ -42,6 +43,7 @@ export default function Bibliotheque() {
   // Offline cached publications
   const [offlinePubs, setOfflinePubs] = useState<OfflinePublication[]>([]);
   const [offlineLoading, setOfflineLoading] = useState(!isOnline);
+  const restoredCardRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!isOnline) {
@@ -159,6 +161,36 @@ export default function Bibliotheque() {
     setSearchParams(nextParams, { replace: true });
     scrollToGrid();
   }, [scrollToGrid, searchParams, setSearchParams]);
+
+  useEffect(() => {
+    const navState = location.state as { restoredFromPublication?: boolean; returnPublicationId?: string | null } | null;
+    const targetPublicationId = navState?.restoredFromPublication ? navState.returnPublicationId : null;
+
+    if (!targetPublicationId || actualLoading || restoredCardRef.current === targetPublicationId) {
+      return;
+    }
+
+    const restoreCard = () => {
+      const card = document.querySelector<HTMLElement>(`[data-publication-card-id="${targetPublicationId}"]`);
+      if (!card) return false;
+
+      const cardTop = card.getBoundingClientRect().top + window.scrollY;
+      const stickyOffset = window.innerWidth >= 768 ? 112 : 96;
+      const targetTop = Math.max(0, cardTop - stickyOffset - 12);
+
+      window.scrollTo({ top: targetTop, left: 0, behavior: "instant" as ScrollBehavior });
+      restoredCardRef.current = targetPublicationId;
+      return true;
+    };
+
+    if (restoreCard()) return;
+
+    const raf = window.requestAnimationFrame(() => {
+      restoreCard();
+    });
+
+    return () => window.cancelAnimationFrame(raf);
+  }, [actualLoading, location.state, paginatedPublications]);
 
   return (
     <Layout>
