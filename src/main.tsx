@@ -3,6 +3,9 @@ import { HelmetProvider } from "react-helmet-async";
 import App from "./App.tsx";
 import "./index.css";
 
+const CACHE_RESET_RELOAD_FLAG = "plume-cache-reset-reload-done";
+const BF_CACHE_RELOAD_FLAG = "plume-bfcache-reload-done";
+
 const isInIframe = (() => {
   try {
     return window.self !== window.top;
@@ -15,18 +18,80 @@ const isPreviewHost =
   window.location.hostname.includes("id-preview--") ||
   window.location.hostname.includes("lovableproject.com");
 
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.getRegistrations().then((registrations) => {
-    registrations.forEach((registration) => {
-      const url = registration.active?.scriptURL ?? registration.waiting?.scriptURL ?? registration.installing?.scriptURL ?? "";
-      const isLegacyAppWorker = url.includes("/sw.js") || url.includes("/service-worker.js") || url.includes("workbox");
+const normalizedCurrentUrl = () => {
+  const url = new URL(window.location.href);
+  url.searchParams.delete("sw-cleanup");
+  return url.toString();
+};
 
-      if (isPreviewHost || isInIframe || isLegacyAppWorker) {
-        void registration.unregister();
-      }
-    });
-  }).catch(() => {});
-}
+const forceFreshReloadOnce = (flag: string) => {
+  if (sessionStorage.getItem(flag) === "1") return;
+  sessionStorage.setItem(flag, "1");
+  window.location.replace(normalizedCurrentUrl());
+};
+
+const clearBrowserCaches = async () => {
+  if (!("caches" in window)) return false;
+
+  const cacheNames = await caches.keys();
+  if (!cacheNames.length) return false;
+
+  await Promise.all(cacheNames.map((cacheName) => caches.delete(cacheName)));
+  return true;
+};
+
+const cleanupLegacyRuntime = async () => {
+  let removedRegistration = false;
+  let clearedCaches = false;
+
+  if ("serviceWorker" in navigator) {
+    try {
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(
+        registrations.map(async (registration) => {
+          const url = registration.active?.scriptURL ?? registration.waiting?.scriptURL ?? registration.installing?.scriptURL ?? "";
+          const isLegacyAppWorker = url.includes("/sw.js") || url.includes("/service-worker.js") || url.includes("workbox");
+          const shouldUnregister = isPreviewHost || isInIframe || isLegacyAppWorker || Boolean(url);
+
+          if (shouldUnregister) {
+            const removed = await registration.unregister();
+            removedRegistration = removedRegistration || removed;
+          }
+        }),
+      );
+    } catch {
+      // ignore cleanup failures during boot
+    }
+  }
+
+  try {
+    clearedCaches = await clearBrowserCaches();
+  } catch {
+    // ignore cache cleanup failures during boot
+  }
+
+  const hadCleanupQuery = new URL(window.location.href).searchParams.has("sw-cleanup");
+  if (hadCleanupQuery) {
+    window.history.replaceState(window.history.state, "", normalizedCurrentUrl());
+  }
+
+  if (removedRegistration || clearedCaches || hadCleanupQuery) {
+    forceFreshReloadOnce(CACHE_RESET_RELOAD_FLAG);
+  }
+};
+
+void cleanupLegacyRuntime();
+
+window.addEventListener("pageshow", (event) => {
+  const navEntry = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming | undefined;
+  const restoredFromBackForwardCache = event.persisted || navEntry?.type === "back_forward";
+
+  if (restoredFromBackForwardCache) {
+    forceFreshReloadOnce(BF_CACHE_RELOAD_FLAG);
+  } else {
+    sessionStorage.removeItem(BF_CACHE_RELOAD_FLAG);
+  }
+});
 
 createRoot(document.getElementById("root")!).render(
   <HelmetProvider>
