@@ -59,7 +59,11 @@ export default function Publication() {
   const readingStart = useRef<number>(Date.now());
   const currentPageRef = useRef<number>(resumePage);
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const returnState = location.state as { returnTo?: string; returnKey?: string | null } | null;
+  const returnState = location.state as {
+    returnTo?: string;
+    returnKey?: string | null;
+    returnPublicationId?: string | null;
+  } | null;
   const returnTo = typeof returnState?.returnTo === "string"
     ? returnState.returnTo
     : "/bibliotheque";
@@ -75,8 +79,9 @@ export default function Publication() {
     () => ({
       restoredFromPublication: true,
       returnKey,
+      returnPublicationId: returnState?.returnPublicationId ?? id ?? null,
     }),
-    [returnKey],
+    [id, returnKey, returnState?.returnPublicationId],
   );
 
   // Fetch last read page from DB if not provided in URL

@@ -56,7 +56,12 @@ export function PublicationCard({
   return (
     <Link
       to={`/publication/${id}`}
-      state={{ returnTo: `${pathname}${window.location.search}`, returnKey: window.history.state?.key ?? null }}
+      state={{
+        returnTo: `${pathname}${window.location.search}`,
+        returnKey: window.history.state?.key ?? null,
+        returnPublicationId: id,
+      }}
+      data-publication-card-id={id}
       onPointerDown={prepareNavigation}
       onMouseEnter={prepareNavigation}
       onClickCapture={prepareNavigation}
