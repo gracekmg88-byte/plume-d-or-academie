@@ -1,5 +1,5 @@
-import { useEffect, useCallback, useState, useMemo } from "react";
-import { useParams, Link, useSearchParams, useNavigate, useLocation } from "react-router-dom";
+import { useEffect, useCallback, useState, useMemo, useRef } from "react";
+import { useParams, Link, useSearchParams, useLocation } from "react-router-dom";
 import { ArrowLeft, Book, FileText, GraduationCap, Newspaper, Eye, Calendar, User, Lock, Download, WifiOff, CheckCircle, Heart } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
@@ -38,7 +38,6 @@ const categoryConfig: Record<Category, { label: string; icon: typeof Book; class
 
 export default function Publication() {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const pageFromUrl = parseInt(searchParams.get("page") || "0", 10);
