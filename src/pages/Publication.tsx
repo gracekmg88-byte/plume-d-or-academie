@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useState, useRef, startTransition } from "react";
+import { useEffect, useCallback, useState, useRef } from "react";
 import { useParams, Link, useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft, Book, FileText, GraduationCap, Newspaper, Eye, Calendar, User, Lock, Download, WifiOff, CheckCircle, Heart } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
@@ -70,16 +70,19 @@ export default function Publication() {
   const handleBack = useCallback(() => {
     if (isNavigatingBackRef.current) return;
     isNavigatingBackRef.current = true;
-    startTransition(() => {
-      navigate(returnTo, {
-        replace: true,
-        preventScrollReset: true,
-        state: {
-          restoredFromPublication: true,
-          returnKey,
-        },
-      });
+
+    navigate(returnTo, {
+      replace: true,
+      preventScrollReset: true,
+      state: {
+        restoredFromPublication: true,
+        returnKey,
+      },
     });
+
+    window.setTimeout(() => {
+      isNavigatingBackRef.current = false;
+    }, 250);
   }, [navigate, returnKey, returnTo]);
 
   // Fetch last read page from DB if not provided in URL
