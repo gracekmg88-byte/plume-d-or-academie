@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useState, useRef } from "react";
+import { useEffect, useCallback, useState, useMemo } from "react";
 import { useParams, Link, useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft, Book, FileText, GraduationCap, Newspaper, Eye, Calendar, User, Lock, Download, WifiOff, CheckCircle, Heart } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
@@ -55,7 +55,6 @@ export default function Publication() {
   const [isCached, setIsCached] = useState(false);
   const [resumePage, setResumePage] = useState<number>(pageFromUrl || 1);
   const [currentViewPage, setCurrentViewPage] = useState<number>(pageFromUrl || 1);
-  const isNavigatingBackRef = useRef(false);
   const { startReading, updateDuration, savePageProgress } = useTrackReading();
   const readingRecordId = useRef<string | null>(null);
   const readingStart = useRef<number>(Date.now());
@@ -66,24 +65,20 @@ export default function Publication() {
     ? returnState.returnTo
     : "/bibliotheque";
   const returnKey = returnState?.returnKey ?? null;
+  const backTarget = useMemo(() => {
+    if (!returnTo || returnTo.startsWith("/publication/")) {
+      return "/bibliotheque";
+    }
 
-  const handleBack = useCallback(() => {
-    if (isNavigatingBackRef.current) return;
-    isNavigatingBackRef.current = true;
-
-    navigate(returnTo, {
-      replace: true,
-      preventScrollReset: true,
-      state: {
-        restoredFromPublication: true,
-        returnKey,
-      },
-    });
-
-    window.setTimeout(() => {
-      isNavigatingBackRef.current = false;
-    }, 250);
-  }, [navigate, returnKey, returnTo]);
+    return returnTo;
+  }, [returnTo]);
+  const backState = useMemo(
+    () => ({
+      restoredFromPublication: true,
+      returnKey,
+    }),
+    [returnKey],
+  );
 
   // Fetch last read page from DB if not provided in URL
   useEffect(() => {
