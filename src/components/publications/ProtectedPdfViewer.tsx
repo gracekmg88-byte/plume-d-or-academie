@@ -1,8 +1,8 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
 import "react-pdf/dist/esm/Page/TextLayer.css";
-import { Lock, ZoomIn, ZoomOut, ChevronLeft, ChevronRight, Loader2, AlertCircle, RefreshCw } from "lucide-react";
+import { Lock, ZoomIn, ZoomOut, ChevronLeft, ChevronRight, AlertCircle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -22,6 +22,7 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
   const [scale, setScale] = useState(0.5);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const documentSource = useMemo(() => ({ url: fileUrl, withCredentials: false }), [fileUrl]);
 
   // Sync with initialPage when it changes (e.g. from DB fetch)
   useEffect(() => {
@@ -106,15 +107,12 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
       {/* PDF Content */}
       <div className="overflow-auto max-h-[70vh] min-h-[50vh] flex justify-center py-4 bg-muted/50">
         {loading && (
-          <div className="absolute inset-0 flex items-center justify-center z-10 bg-muted/80">
-            <div className="flex flex-col items-center gap-3">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              <span className="text-sm text-muted-foreground">Chargement du document…</span>
-            </div>
+          <div className="absolute inset-0 z-10 bg-background/70 backdrop-blur-[1px]" aria-hidden="true">
+            <div className="h-full w-full animate-pulse bg-gradient-to-b from-background/0 via-background/10 to-background/0" />
           </div>
         )}
         <Document
-          file={fileUrl}
+          file={documentSource}
           onLoadSuccess={onDocumentLoadSuccess}
           onLoadError={onDocumentLoadError}
           loading={null}

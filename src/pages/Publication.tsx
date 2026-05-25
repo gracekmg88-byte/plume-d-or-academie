@@ -1,5 +1,5 @@
-import { useEffect, useCallback, useState, useRef, startTransition } from "react";
-import { useParams, Link, useSearchParams, useNavigate, useLocation } from "react-router-dom";
+import { useEffect, useCallback, useState, useMemo, useRef } from "react";
+import { useParams, Link, useSearchParams, useLocation } from "react-router-dom";
 import { ArrowLeft, Book, FileText, GraduationCap, Newspaper, Eye, Calendar, User, Lock, Download, WifiOff, CheckCircle, Heart } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
@@ -38,7 +38,6 @@ const categoryConfig: Record<Category, { label: string; icon: typeof Book; class
 
 export default function Publication() {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const pageFromUrl = parseInt(searchParams.get("page") || "0", 10);
@@ -55,7 +54,6 @@ export default function Publication() {
   const [isCached, setIsCached] = useState(false);
   const [resumePage, setResumePage] = useState<number>(pageFromUrl || 1);
   const [currentViewPage, setCurrentViewPage] = useState<number>(pageFromUrl || 1);
-  const isNavigatingBackRef = useRef(false);
   const { startReading, updateDuration, savePageProgress } = useTrackReading();
   const readingRecordId = useRef<string | null>(null);
   const readingStart = useRef<number>(Date.now());
@@ -66,21 +64,20 @@ export default function Publication() {
     ? returnState.returnTo
     : "/bibliotheque";
   const returnKey = returnState?.returnKey ?? null;
+  const backTarget = useMemo(() => {
+    if (!returnTo || returnTo.startsWith("/publication/")) {
+      return "/bibliotheque";
+    }
 
-  const handleBack = useCallback(() => {
-    if (isNavigatingBackRef.current) return;
-    isNavigatingBackRef.current = true;
-    startTransition(() => {
-      navigate(returnTo, {
-        replace: true,
-        preventScrollReset: true,
-        state: {
-          restoredFromPublication: true,
-          returnKey,
-        },
-      });
-    });
-  }, [navigate, returnKey, returnTo]);
+    return returnTo;
+  }, [returnTo]);
+  const backState = useMemo(
+    () => ({
+      restoredFromPublication: true,
+      returnKey,
+    }),
+    [returnKey],
+  );
 
   // Fetch last read page from DB if not provided in URL
   useEffect(() => {
@@ -274,10 +271,12 @@ export default function Publication() {
           <p className="text-muted-foreground mb-6">
             {!isOnline ? t("pub.notFoundOffline") : t("pub.notFoundOnline")}
           </p>
-          <Button variant="outline" className="gap-2" onClick={handleBack}>
+          <Button variant="outline" className="gap-2" asChild>
+            <Link to={backTarget} replace state={backState} preventScrollReset>
               <ArrowLeft className="h-4 w-4" />
               {t("pub.back")}
-            </Button>
+            </Link>
+          </Button>
         </div>
       </Layout>
     );
@@ -341,13 +340,16 @@ export default function Publication() {
           </div>
         )}
 
-        <button
-          onClick={handleBack}
+        <Link
+          to={backTarget}
+          replace
+          state={backState}
+          preventScrollReset
           className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-8"
         >
           <ArrowLeft className="h-4 w-4" />
           {t("pub.back")}
-        </button>
+        </Link>
 
         <div className="grid lg:grid-cols-3 gap-8 lg:gap-12">
           {/* Cover Image */}
