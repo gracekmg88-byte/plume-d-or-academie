@@ -271,10 +271,12 @@ export default function Publication() {
           <p className="text-muted-foreground mb-6">
             {!isOnline ? t("pub.notFoundOffline") : t("pub.notFoundOnline")}
           </p>
-          <Button variant="outline" className="gap-2" onClick={handleBack}>
+          <Button variant="outline" className="gap-2" asChild>
+            <Link to={backTarget} replace state={backState} preventScrollReset>
               <ArrowLeft className="h-4 w-4" />
               {t("pub.back")}
-            </Button>
+            </Link>
+          </Button>
         </div>
       </Layout>
     );
@@ -338,13 +340,16 @@ export default function Publication() {
           </div>
         )}
 
-        <button
-          onClick={handleBack}
+        <Link
+          to={backTarget}
+          replace
+          state={backState}
+          preventScrollReset
           className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-8"
         >
           <ArrowLeft className="h-4 w-4" />
           {t("pub.back")}
-        </button>
+        </Link>
 
         <div className="grid lg:grid-cols-3 gap-8 lg:gap-12">
           {/* Cover Image */}
