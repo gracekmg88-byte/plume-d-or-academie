@@ -109,8 +109,13 @@ function ScrollManager() {
       saveScrollPosition(prev.key, prev.pathname, window.scrollY);
     }
 
-    if (navType === "POP") {
-      const y = getSavedScrollPosition(key, pathname);
+    const navState = location.state as { restoredFromPublication?: boolean; returnKey?: string | null } | null;
+    const isReturnFromPublication = Boolean(navState?.restoredFromPublication);
+    const shouldRestore = navType === "POP" || isReturnFromPublication;
+
+    if (shouldRestore) {
+      const restoreKey = isReturnFromPublication && navState?.returnKey ? navState.returnKey : key;
+      const y = getSavedScrollPosition(restoreKey, pathname);
       if (y > 0) {
         isRestoringRef.current = true;
         let cancelled = false;
@@ -128,7 +133,6 @@ function ScrollManager() {
           if (maxScroll < y && performance.now() - start < TIMEOUT_MS) {
             rafRef.current = window.requestAnimationFrame(tryRestore);
           } else {
-            // Final correction then release
             window.setTimeout(() => {
               isRestoringRef.current = false;
             }, 100);
@@ -144,7 +148,7 @@ function ScrollManager() {
           }
           isRestoringRef.current = false;
         };
-      } else {
+      } else if (!isReturnFromPublication) {
         window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
       }
     } else if (prev.pathname !== pathname) {
@@ -157,7 +161,7 @@ function ScrollManager() {
         cancelRestoreRef.current = null;
       }
     };
-  }, [pathname, key, navType]);
+  }, [pathname, key, navType, location.state]);
 
   // Continuously save scroll position, but not during restoration
   useEffect(() => {
