@@ -66,7 +66,7 @@ export function ContinueReadingSection() {
             const Icon = config.icon;
 
             return (
-              <div key={item.publication_id}>
+              <div key={item.publication_id} data-publication-card-id={item.publication_id}>
                 <Link
                   to={`/publication/${item.publication_id}?page=${item.last_page_read}`}
                   state={{
