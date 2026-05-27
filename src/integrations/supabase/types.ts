@@ -386,6 +386,7 @@ export type Database = {
           file_url: string | null
           id: string
           is_published: boolean
+          publication_number: string | null
           summary: string | null
           title: string
           updated_at: string
@@ -402,6 +403,7 @@ export type Database = {
           file_url?: string | null
           id?: string
           is_published?: boolean
+          publication_number?: string | null
           summary?: string | null
           title: string
           updated_at?: string
@@ -418,6 +420,7 @@ export type Database = {
           file_url?: string | null
           id?: string
           is_published?: boolean
+          publication_number?: string | null
           summary?: string | null
           title?: string
           updated_at?: string
@@ -612,7 +615,8 @@ export type Database = {
       }
       increment_views: { Args: { publication_id: string }; Returns: undefined }
       is_premium: { Args: { _user_id: string }; Returns: boolean }
-      next_certificate_number: { Args: { _category: string }; Returns: string }
+      next_certificate_number: { Args: { _category?: string }; Returns: string }
+      next_publication_number: { Args: { _category: string }; Returns: string }
     }
     Enums: {
       app_role: "admin"
