@@ -2,7 +2,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 import QRCode from "npm:qrcode@1.5.4";
-import { PDFDocument, StandardFonts, rgb, degrees } from "npm:pdf-lib@1.17.1";
+import { buildCertificatePdf, pickTemplate } from "./pdf.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
