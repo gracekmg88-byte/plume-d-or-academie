@@ -465,6 +465,10 @@ export default function Publication() {
             <CertificationSection
               publicationId={id!}
               certificationStatus={(displayPub as any).certification_status}
+              publicationTitle={displayPub.title}
+              publicationAuthor={displayPub.author}
+              publicationCategory={displayPub.category}
+              publicationDate={(displayPub as any).created_at}
             />
 
             {/* AI Summary */}
