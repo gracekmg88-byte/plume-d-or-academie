@@ -59,6 +59,7 @@ const DepotMemoire = lazy(loadDepotMemoirePage);
 const Chat = lazy(loadChatPage);
 const InstallApp = lazy(loadInstallAppPage);
 const NotFound = lazy(loadNotFoundPage);
+const VerifyCertificate = lazy(() => import("./pages/VerifyCertificate"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -242,6 +243,7 @@ function AnimatedRoutes() {
         <Route path="/depot-memoire" element={<DepotMemoire />} />
         <Route path="/chat" element={<Chat />} />
         <Route path="/installer" element={<InstallApp />} />
+        <Route path="/verify/:number" element={<VerifyCertificate />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Suspense>
