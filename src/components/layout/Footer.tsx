@@ -30,6 +30,7 @@ export function Footer() {
               <li><Link to="/bibliotheque" className="hover:text-primary transition-colors">{t("nav.library")}</Link></li>
               <li><Link to="/a-propos" className="hover:text-primary transition-colors">{t("nav.about")}</Link></li>
               <li><Link to="/contact" className="hover:text-primary transition-colors">{t("nav.contact")}</Link></li>
+              <li><Link to="/verification" className="hover:text-primary transition-colors">Vérifier un certificat</Link></li>
             </ul>
           </div>
 
