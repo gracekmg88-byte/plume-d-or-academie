@@ -248,7 +248,6 @@ function AnimatedRoutes() {
         <Route path="/installer" element={<InstallApp />} />
         <Route path="/verify/:number" element={<VerifyCertificate />} />
         <Route path="/verification" element={<VerifyHome />} />
-        <Route path="/publication/:number" element={<PublicationByNumber />} />
         <Route path="/admin/certificates" element={<AdminCertificates />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
