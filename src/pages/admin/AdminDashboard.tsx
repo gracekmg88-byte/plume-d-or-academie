@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { useBillingConfig } from "@/hooks/useBillingConfig";
 import { AdminReadingStatsCard } from "@/components/admin/AdminReadingStatsCard";
 import { GlobalStatsCard } from "@/components/admin/GlobalStatsCard";
+import { CertificationsCard } from "@/components/admin/CertificationsCard";
 import { Badge } from "@/components/ui/badge";
 import {
   Tooltip,
@@ -268,9 +269,10 @@ export default function AdminDashboard() {
           </Link>
         </div>
 
-        {/* Reading Statistics */}
-        <div className="mb-8">
+        {/* Reading Statistics + Certifications */}
+        <div className="grid lg:grid-cols-2 gap-6 mb-8">
           <AdminReadingStatsCard />
+          <CertificationsCard />
         </div>
 
         {/* Actions */}

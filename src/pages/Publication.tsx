@@ -22,6 +22,7 @@ import { FavoriteButton } from "@/components/publications/FavoriteButton";
 import { ShareButtons } from "@/components/publications/ShareButtons";
 import { cn } from "@/lib/utils";
 import { CommentsList } from "@/components/publications/CommentsList";
+import { CertificationSection } from "@/components/publications/CertificationSection";
 import { format } from "date-fns";
 import { fr, enUS } from "date-fns/locale";
 import { toast } from "sonner";
@@ -438,6 +439,12 @@ export default function Publication() {
                 </p>
               </div>
             )}
+
+            {/* Certification numérique */}
+            <CertificationSection
+              publicationId={id!}
+              certificationStatus={(displayPub as any).certification_status}
+            />
 
             {/* AI Summary */}
             <AISummary
