@@ -88,6 +88,63 @@ export type Database = {
         }
         Relationships: []
       }
+      certificates: {
+        Row: {
+          certificate_number: string
+          certificate_pdf_url: string | null
+          created_at: string
+          id: string
+          issued_at: string
+          issued_by: string
+          publication_author: string
+          publication_category: string
+          publication_date: string
+          publication_id: string
+          publication_number: string
+          publication_title: string
+          qr_code_url: string | null
+          status: string
+          updated_at: string
+          verification_url: string
+        }
+        Insert: {
+          certificate_number: string
+          certificate_pdf_url?: string | null
+          created_at?: string
+          id?: string
+          issued_at?: string
+          issued_by: string
+          publication_author: string
+          publication_category: string
+          publication_date: string
+          publication_id: string
+          publication_number: string
+          publication_title: string
+          qr_code_url?: string | null
+          status?: string
+          updated_at?: string
+          verification_url: string
+        }
+        Update: {
+          certificate_number?: string
+          certificate_pdf_url?: string | null
+          created_at?: string
+          id?: string
+          issued_at?: string
+          issued_by?: string
+          publication_author?: string
+          publication_category?: string
+          publication_date?: string
+          publication_id?: string
+          publication_number?: string
+          publication_title?: string
+          qr_code_url?: string | null
+          status?: string
+          updated_at?: string
+          verification_url?: string
+        }
+        Relationships: []
+      }
       chat_messages: {
         Row: {
           content: string
@@ -322,6 +379,7 @@ export type Database = {
           allow_download: boolean
           author: string
           category: Database["public"]["Enums"]["content_category"]
+          certification_status: Database["public"]["Enums"]["certification_status"]
           cover_image_url: string | null
           created_at: string
           description: string | null
@@ -337,6 +395,7 @@ export type Database = {
           allow_download?: boolean
           author: string
           category: Database["public"]["Enums"]["content_category"]
+          certification_status?: Database["public"]["Enums"]["certification_status"]
           cover_image_url?: string | null
           created_at?: string
           description?: string | null
@@ -352,6 +411,7 @@ export type Database = {
           allow_download?: boolean
           author?: string
           category?: Database["public"]["Enums"]["content_category"]
+          certification_status?: Database["public"]["Enums"]["certification_status"]
           cover_image_url?: string | null
           created_at?: string
           description?: string | null
@@ -552,9 +612,11 @@ export type Database = {
       }
       increment_views: { Args: { publication_id: string }; Returns: undefined }
       is_premium: { Args: { _user_id: string }; Returns: boolean }
+      next_certificate_number: { Args: { _category: string }; Returns: string }
     }
     Enums: {
       app_role: "admin"
+      certification_status: "not_certified" | "pending" | "certified"
       content_category: "livre" | "memoire" | "tfc" | "article"
       subscription_type: "free" | "premium"
     }
@@ -685,6 +747,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin"],
+      certification_status: ["not_certified", "pending", "certified"],
       content_category: ["livre", "memoire", "tfc", "article"],
       subscription_type: ["free", "premium"],
     },
