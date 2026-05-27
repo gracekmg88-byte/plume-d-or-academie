@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 export interface AuditEntry {
@@ -13,8 +13,6 @@ export interface AuditEntry {
 }
 
 export function useAuditLog() {
-  const queryClient = useQueryClient();
-
   const { data: logs = [], isLoading } = useQuery({
     queryKey: ["audit-log"],
     queryFn: async () => {
@@ -28,30 +26,6 @@ export function useAuditLog() {
     },
   });
 
-  const addLog = useMutation({
-    mutationFn: async (entry: {
-      action: string;
-      table_name: string;
-      record_id?: string;
-      old_value?: string;
-      new_value?: string;
-    }) => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Non authentifié");
-      const { error } = await supabase.from("audit_log").insert({
-        user_id: user.id,
-        action: entry.action,
-        table_name: entry.table_name,
-        record_id: entry.record_id || null,
-        old_value: entry.old_value || null,
-        new_value: entry.new_value || null,
-      });
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["audit-log"] });
-    },
-  });
-
-  return { logs, isLoading, addLog };
+  // Audit log writes are reserved for SECURITY DEFINER database triggers only.
+  return { logs, isLoading };
 }
