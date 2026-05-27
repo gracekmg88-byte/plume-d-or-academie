@@ -61,7 +61,6 @@ const InstallApp = lazy(loadInstallAppPage);
 const NotFound = lazy(loadNotFoundPage);
 const VerifyCertificate = lazy(() => import("./pages/VerifyCertificate"));
 const VerifyHome = lazy(() => import("./pages/VerifyHome"));
-const PublicationByNumber = lazy(() => import("./pages/PublicationByNumber"));
 const AdminCertificates = lazy(() => import("./pages/admin/AdminCertificates"));
 
 const queryClient = new QueryClient({
