@@ -1,5 +1,5 @@
 import { useEffect, useCallback, useState, useMemo, useRef } from "react";
-import { useParams, Link, useSearchParams, useLocation } from "react-router-dom";
+import { useParams, Link, useSearchParams, useLocation, Navigate } from "react-router-dom";
 import { ArrowLeft, Book, FileText, GraduationCap, Newspaper, Eye, Calendar, User, Lock, Download, WifiOff, CheckCircle, Heart } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
@@ -37,13 +37,34 @@ const categoryConfig: Record<Category, { label: string; icon: typeof Book; class
   article: { label: "Article", icon: Newspaper, className: "bg-muted text-muted-foreground" },
 };
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export default function Publication() {
-  const { id } = useParams<{ id: string }>();
+  const { id: rawId } = useParams<{ id: string }>();
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const pageFromUrl = parseInt(searchParams.get("page") || "0", 10);
   const isOnline = useOnlineStatus();
-  const { data: publication, isLoading, error } = usePublication(id || "");
+
+  // Si le paramètre n'est pas un UUID, c'est un numéro de publication → résolution
+  const isUuid = !!rawId && UUID_RE.test(rawId);
+  const [resolvedUuid, setResolvedUuid] = useState<string | null | undefined>(isUuid ? rawId : undefined);
+  useEffect(() => {
+    if (isUuid || !rawId) return;
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("publications")
+        .select("id")
+        .eq("publication_number", rawId.toUpperCase())
+        .maybeSingle();
+      if (!cancelled) setResolvedUuid(data?.id ?? null);
+    })();
+    return () => { cancelled = true; };
+  }, [rawId, isUuid]);
+
+  const id = isUuid ? rawId : (resolvedUuid || "");
+  const { data: publication, isLoading, error } = usePublication(id);
   const incrementViews = useIncrementViews();
   const { user } = useAuth();
   const { isPremium, isLoading: subscriptionLoading } = useSubscription();
