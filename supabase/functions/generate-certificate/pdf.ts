@@ -2,8 +2,8 @@
 // Module isolé pour la génération du PDF du certificat.
 // Utilise une police Unicode (DejaVu Sans) embarquée via fontkit pour
 // éviter les erreurs WinAnsi sur les caractères spéciaux (★, ✅, accents, etc.).
-import { PDFDocument, rgb, degrees } from "npm:pdf-lib@1.17.1";
-import fontkit from "npm:@pdf-lib/fontkit@1.1.1";
+import { PDFDocument, rgb, degrees } from "https://esm.sh/pdf-lib@1.17.1";
+import fontkit from "https://esm.sh/@pdf-lib/fontkit@1.1.1";
 
 const DEJAVU_REGULAR_URL =
   "https://cdn.jsdelivr.net/npm/dejavu-fonts-ttf@2.37.3/ttf/DejaVuSans.ttf";
