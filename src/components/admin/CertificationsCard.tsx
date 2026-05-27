@@ -66,6 +66,16 @@ export function CertificationsCard() {
             ))}
           </ul>
         )}
+
+        <div className="mt-4 pt-3 border-t border-border">
+          <Link
+            to="/admin/certificates"
+            className="text-xs text-primary hover:underline inline-flex items-center gap-1"
+          >
+            Voir le registre complet
+            <ExternalLink className="h-3 w-3" />
+          </Link>
+        </div>
       </CardContent>
     </Card>
   );
