@@ -60,6 +60,8 @@ const Chat = lazy(loadChatPage);
 const InstallApp = lazy(loadInstallAppPage);
 const NotFound = lazy(loadNotFoundPage);
 const VerifyCertificate = lazy(() => import("./pages/VerifyCertificate"));
+const VerifyHome = lazy(() => import("./pages/VerifyHome"));
+const AdminCertificates = lazy(() => import("./pages/admin/AdminCertificates"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -244,6 +246,8 @@ function AnimatedRoutes() {
         <Route path="/chat" element={<Chat />} />
         <Route path="/installer" element={<InstallApp />} />
         <Route path="/verify/:number" element={<VerifyCertificate />} />
+        <Route path="/verification" element={<VerifyHome />} />
+        <Route path="/admin/certificates" element={<AdminCertificates />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Suspense>
