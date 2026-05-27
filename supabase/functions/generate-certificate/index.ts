@@ -224,7 +224,7 @@ async function buildCertificatePdf(opts: {
   drawCentered(page, meta.label.toUpperCase(), width / 2, headerY - 98, 10, helvBold, muted);
 
   // Badge catégorie (pill)
-  const badgeText = `★  ${categoryLabel(opts.category)}  ★`;
+  const badgeText = `*  ${categoryLabel(opts.category)}  *`;
   const badgeSize = 11;
   const badgeWidth = helvBold.widthOfTextAtSize(badgeText, badgeSize) + 28;
   const badgeX = width / 2 - badgeWidth / 2;
