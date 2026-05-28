@@ -40,9 +40,32 @@ const clearBrowserCaches = async () => {
   return true;
 };
 
+const clearVersionedStorage = () => {
+  try {
+    const storageKeys = [
+      "scroll:entry:",
+      "scroll:path:",
+      "plume-cache-reset-reload-done",
+      "plume-bfcache-reload-done",
+      "vite:cache-buster",
+    ];
+
+    for (let i = sessionStorage.length - 1; i >= 0; i -= 1) {
+      const key = sessionStorage.key(i);
+      if (key && storageKeys.some((prefix) => key.startsWith(prefix))) {
+        sessionStorage.removeItem(key);
+      }
+    }
+  } catch {
+    // ignore storage cleanup failures during boot
+  }
+};
+
 const cleanupLegacyRuntime = async () => {
   let removedRegistration = false;
   let clearedCaches = false;
+
+  clearVersionedStorage();
 
   if ("serviceWorker" in navigator) {
     try {
