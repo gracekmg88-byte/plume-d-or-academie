@@ -2,7 +2,8 @@ import { BookOpen, Clock, BarChart3, TrendingUp } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useReadingHistory } from "@/hooks/useReadingHistory";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+import { saveScrollPosition } from "@/lib/scroll-restoration";
 import { Bar, BarChart, XAxis, YAxis, ResponsiveContainer } from "recharts";
 
 const categoryLabels: Record<string, Record<string, string>> = {
