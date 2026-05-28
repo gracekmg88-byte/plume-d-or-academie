@@ -68,6 +68,13 @@ export function FavoritesSection() {
               >
                 <Link
                   to={`/publication/${pub.id}`}
+                  state={{
+                    returnTo: `${pathname}${window.location.search}`,
+                    returnKey: window.history.state?.key ?? null,
+                    returnPublicationId: pub.id,
+                  }}
+                  data-publication-card-id={pub.id}
+                  onPointerDown={saveScroll}
                   onClickCapture={saveScroll}
                   className="min-w-0 flex-1 mr-3 hover:text-primary transition-colors"
                 >
