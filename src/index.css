@@ -126,18 +126,16 @@
 
   h1, h2, h3, h4, h5, h6 {
     @apply font-serif;
-    font-weight: 700;
-    letter-spacing: -0.01em;
   }
 }
 
 @layer utilities {
   .font-serif {
-    font-family: 'Libre Baskerville', 'Playfair Display', Georgia, serif;
+    font-family: 'Playfair Display', Georgia, serif;
   }
 
   .font-sans {
-    font-family: 'Lora', 'Libre Baskerville', Georgia, serif;
+    font-family: 'Source Sans 3', system-ui, sans-serif;
   }
 
   .text-gold {
