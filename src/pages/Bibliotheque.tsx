@@ -28,10 +28,13 @@ export default function Bibliotheque() {
   const location = useLocation();
   const initialCategory = (searchParams.get("categorie") as Category) || "all";
   const initialPage = Math.max(1, Number.parseInt(searchParams.get("page") || "1", 10) || 1);
-  
+  const initialSearch = searchParams.get("q") || "";
+  const initialAuthor = searchParams.get("auteur") || "";
+  const initialSort = (searchParams.get("tri") as SortOption) || "date_desc";
+
   const [category, setCategory] = useState<Category>(initialCategory);
-  const [search, setSearch] = useState("");
-  const [filters, setFilters] = useState<AdvancedFilterValues>({ author: "", sortBy: "date_desc" });
+  const [search, setSearch] = useState(initialSearch);
+  const [filters, setFilters] = useState<AdvancedFilterValues>({ author: initialAuthor, sortBy: initialSort });
   const [currentPage, setCurrentPage] = useState(initialPage);
   const ITEMS_PER_PAGE = 12;
   const isOnline = useOnlineStatus();
@@ -127,6 +130,23 @@ export default function Bibliotheque() {
     }
     setCurrentPage(1);
   }, [search, category, filters]);
+
+  // Sync filters/search/sort to URL so that returning here via back restores exact state.
+  useEffect(() => {
+    const next = new URLSearchParams(searchParams);
+    const set = (key: string, value: string | null) => {
+      if (value && value.length > 0) next.set(key, value);
+      else next.delete(key);
+    };
+    set("categorie", category === "all" ? null : category);
+    set("q", search.trim() || null);
+    set("auteur", filters.author || null);
+    set("tri", filters.sortBy && filters.sortBy !== "date_desc" ? filters.sortBy : null);
+    set("page", currentPage > 1 ? String(currentPage) : null);
+    if (next.toString() !== searchParams.toString()) {
+      setSearchParams(next, { replace: true });
+    }
+  }, [category, search, filters, currentPage, searchParams, setSearchParams]);
 
   const totalPages = Math.ceil(filteredPublications.length / ITEMS_PER_PAGE);
   const paginatedPublications = useMemo(() => {
