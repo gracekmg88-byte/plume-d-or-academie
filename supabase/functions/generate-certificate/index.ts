@@ -14,7 +14,6 @@ Deno.serve(async (req) => {
 
   let publicationId: string | null = null;
   let publicationNumberAssigned = false;
-  let statusSetToPending = false;
   let wasRegeneration = false;
 
   try {
@@ -57,7 +56,6 @@ Deno.serve(async (req) => {
     if (!pub.is_published) return json({ error: "La publication doit être publiée avant certification" }, 400);
 
     await admin.from("publications").update({ certification_status: "pending" }).eq("id", publicationId);
-    statusSetToPending = true;
 
     // Numéro de publication : réutilise s'il est réellement libre, sinon régénère
     let publicationNumber: string = pub.publication_number;
