@@ -25,6 +25,11 @@ function formatDuration(seconds: number, lang: string): string {
 export function ReadingStatsCard() {
   const { stats, isLoading } = useReadingHistory();
   const { language } = useLanguage();
+  const { pathname } = useLocation();
+
+  const saveScroll = () => {
+    saveScrollPosition(window.history.state?.key, pathname, window.scrollY);
+  };
 
   if (isLoading) {
     return (
