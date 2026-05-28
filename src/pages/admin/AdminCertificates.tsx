@@ -140,19 +140,45 @@ export default function AdminCertificates() {
                       </div>
                     </div>
                     <div className="flex items-center gap-1 shrink-0">
-                      {c.certificate_pdf_url && (
-                        <Button size="icon" variant="ghost" asChild title="Télécharger">
-                          <a href={c.certificate_pdf_url} target="_blank" rel="noopener noreferrer" download>
+                      {c.certificate_pdf_url ? (
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          title="Télécharger le PDF"
+                          disabled={downloadingId === c.id}
+                          onClick={() => handleDownload(c.certificate_pdf_url!, c.certificate_number, c.id)}
+                        >
+                          {downloadingId === c.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
                             <Download className="h-4 w-4" />
-                          </a>
+                          )}
                         </Button>
-                      )}
+                      ) : null}
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        title={c.certificate_pdf_url ? "Régénérer le PDF" : "Générer le PDF"}
+                        disabled={regenerate.isPending}
+                        onClick={() =>
+                          regenerate.mutate({ publicationId: c.publication_id, regenerate: true })
+                        }
+                      >
+                        {regenerate.isPending && regenerate.variables &&
+                        typeof regenerate.variables === "object" &&
+                        regenerate.variables.publicationId === c.publication_id ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <RefreshCw className="h-4 w-4" />
+                        )}
+                      </Button>
                       <Button size="icon" variant="ghost" asChild title="Vérifier">
                         <Link to={`/verify/${c.certificate_number}`} target="_blank">
                           <ExternalLink className="h-4 w-4" />
                         </Link>
                       </Button>
                     </div>
+
                   </li>
                 ))}
               </ul>
