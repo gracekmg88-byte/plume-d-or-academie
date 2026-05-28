@@ -54,16 +54,22 @@ export function useCertificateByNumber(number?: string) {
 export function useGenerateCertificate() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (publicationId: string) => {
+    mutationFn: async (input: string | { publicationId: string; regenerate?: boolean }) => {
+      const payload =
+        typeof input === "string"
+          ? { publication_id: input, regenerate: false }
+          : { publication_id: input.publicationId, regenerate: !!input.regenerate };
       const { data, error } = await supabase.functions.invoke("generate-certificate", {
-        body: { publication_id: publicationId },
+        body: payload,
       });
       if (error) throw new Error(error.message);
       if ((data as any)?.error) throw new Error((data as any).error);
-      return (data as any).certificate as Certificate;
+      return { cert: (data as any).certificate as Certificate, regenerated: payload.regenerate };
     },
-    onSuccess: (cert) => {
-      toast.success("Certificat généré", { description: cert.certificate_number });
+    onSuccess: ({ cert, regenerated }) => {
+      toast.success(regenerated ? "Certificat régénéré" : "Certificat généré", {
+        description: cert.certificate_number,
+      });
       qc.invalidateQueries({ queryKey: ["certificate", cert.publication_id] });
       qc.invalidateQueries({ queryKey: ["publication", cert.publication_id] });
       qc.invalidateQueries({ queryKey: ["publications"] });
@@ -75,6 +81,7 @@ export function useGenerateCertificate() {
     },
   });
 }
+
 
 export function useRecentCertificates(limit = 10) {
   return useQuery({
