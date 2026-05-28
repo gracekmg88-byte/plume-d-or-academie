@@ -32,16 +32,18 @@ Deno.serve(async (req) => {
 
     const body = await req.json().catch(() => ({}));
     const publicationId = body?.publication_id;
+    const regenerate = body?.regenerate === true;
     if (!publicationId || typeof publicationId !== "string") {
       return json({ error: "publication_id requis" }, 400);
     }
 
     const { data: existing } = await admin
-      .from("certificates").select("id, certificate_number")
+      .from("certificates").select("*")
       .eq("publication_id", publicationId).maybeSingle();
-    if (existing) {
+    if (existing && !regenerate) {
       return json({ error: "Cette publication possède déjà un certificat", certificate: existing }, 409);
     }
+
 
     const { data: pub, error: pubErr } = await admin
       .from("publications").select("*").eq("id", publicationId).maybeSingle();
