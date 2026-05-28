@@ -131,11 +131,11 @@
 
 @layer utilities {
   .font-serif {
-    font-family: 'Playfair Display', Georgia, serif;
+    font-family: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
   }
 
   .font-sans {
-    font-family: 'Playfair Display', Georgia, serif;
+    font-family: 'Lora', 'Cormorant Garamond', Georgia, serif;
   }
 
   .text-gold {
