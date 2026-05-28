@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { ShieldCheck, Search, Download, ExternalLink, ArrowLeft } from "lucide-react";
+import { ShieldCheck, Search, Download, ExternalLink, ArrowLeft, RefreshCw, Loader2 } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { SEO } from "@/components/seo/SEO";
 import { Input } from "@/components/ui/input";
@@ -8,14 +8,41 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
-import { useRecentCertificates } from "@/hooks/useCertificate";
+import { useRecentCertificates, useGenerateCertificate } from "@/hooks/useCertificate";
+import { toast } from "sonner";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
 export default function AdminCertificates() {
   const { isAdmin, loading } = useAuth();
   const { data: certs = [], isLoading } = useRecentCertificates(500);
+  const regenerate = useGenerateCertificate();
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [q, setQ] = useState("");
+
+  const handleDownload = async (url: string, certNumber: string, id: string) => {
+    try {
+      setDownloadingId(id);
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Téléchargement impossible");
+      const blob = await res.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = objectUrl;
+      a.download = `${certNumber}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(objectUrl);
+    } catch (e) {
+      toast.error("Échec du téléchargement", {
+        description: e instanceof Error ? e.message : "Erreur inconnue",
+      });
+    } finally {
+      setDownloadingId(null);
+    }
+  };
+
 
   const filtered = useMemo(() => {
     const term = q.trim().toLowerCase();
@@ -113,19 +140,45 @@ export default function AdminCertificates() {
                       </div>
                     </div>
                     <div className="flex items-center gap-1 shrink-0">
-                      {c.certificate_pdf_url && (
-                        <Button size="icon" variant="ghost" asChild title="Télécharger">
-                          <a href={c.certificate_pdf_url} target="_blank" rel="noopener noreferrer" download>
+                      {c.certificate_pdf_url ? (
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          title="Télécharger le PDF"
+                          disabled={downloadingId === c.id}
+                          onClick={() => handleDownload(c.certificate_pdf_url!, c.certificate_number, c.id)}
+                        >
+                          {downloadingId === c.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
                             <Download className="h-4 w-4" />
-                          </a>
+                          )}
                         </Button>
-                      )}
+                      ) : null}
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        title={c.certificate_pdf_url ? "Régénérer le PDF" : "Générer le PDF"}
+                        disabled={regenerate.isPending}
+                        onClick={() =>
+                          regenerate.mutate({ publicationId: c.publication_id, regenerate: true })
+                        }
+                      >
+                        {regenerate.isPending && regenerate.variables &&
+                        typeof regenerate.variables === "object" &&
+                        regenerate.variables.publicationId === c.publication_id ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <RefreshCw className="h-4 w-4" />
+                        )}
+                      </Button>
                       <Button size="icon" variant="ghost" asChild title="Vérifier">
                         <Link to={`/verify/${c.certificate_number}`} target="_blank">
                           <ExternalLink className="h-4 w-4" />
                         </Link>
                       </Button>
                     </div>
+
                   </li>
                 ))}
               </ul>

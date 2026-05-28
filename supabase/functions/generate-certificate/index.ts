@@ -32,16 +32,18 @@ Deno.serve(async (req) => {
 
     const body = await req.json().catch(() => ({}));
     const publicationId = body?.publication_id;
+    const regenerate = body?.regenerate === true;
     if (!publicationId || typeof publicationId !== "string") {
       return json({ error: "publication_id requis" }, 400);
     }
 
     const { data: existing } = await admin
-      .from("certificates").select("id, certificate_number")
+      .from("certificates").select("*")
       .eq("publication_id", publicationId).maybeSingle();
-    if (existing) {
+    if (existing && !regenerate) {
       return json({ error: "Cette publication possède déjà un certificat", certificate: existing }, 409);
     }
+
 
     const { data: pub, error: pubErr } = await admin
       .from("publications").select("*").eq("id", publicationId).maybeSingle();
@@ -60,11 +62,16 @@ Deno.serve(async (req) => {
       await admin.from("publications").update({ publication_number: publicationNumber }).eq("id", publicationId);
     }
 
-    // Numéro de certificat distinct (CERT-YYYY-NNN)
-    const { data: certNum, error: numErr } = await admin
-      .rpc("next_certificate_number", { _category: pub.category });
-    if (numErr || !certNum) throw new Error("Erreur numéro cert: " + numErr?.message);
-    const certificateNumber: string = certNum;
+    // Numéro de certificat : réutilise celui existant si régénération, sinon en génère un nouveau
+    let certificateNumber: string;
+    if (existing?.certificate_number) {
+      certificateNumber = existing.certificate_number;
+    } else {
+      const { data: certNum, error: numErr } = await admin
+        .rpc("next_certificate_number", { _category: pub.category });
+      if (numErr || !certNum) throw new Error("Erreur numéro cert: " + numErr?.message);
+      certificateNumber = certNum;
+    }
 
     // L'URL publique pointe vers la page de la publication par son numéro
     const verificationUrl = `${PUBLIC_BASE_URL}/publication/${publicationNumber}`;
@@ -102,31 +109,54 @@ Deno.serve(async (req) => {
     if (pdfUpErr) throw pdfUpErr;
     const certificatePdfUrl = admin.storage.from("certificates").getPublicUrl(pdfPath).data.publicUrl;
 
-    const { data: cert, error: insErr } = await admin
-      .from("certificates").insert({
-        publication_id: publicationId,
-        certificate_number: certificateNumber,
-        publication_number: publicationNumber,
-        verification_url: verificationUrl,
-        qr_code_url: qrCodeUrl,
-        certificate_pdf_url: certificatePdfUrl,
-        status: "certified",
-        publication_title: pub.title,
-        publication_author: pub.author,
-        publication_category: pub.category,
-        publication_date: pub.created_at,
-        issued_by: userId,
-      }).select().single();
-    if (insErr) throw insErr;
+    let cert;
+    if (existing) {
+      const { data: updated, error: updErr } = await admin
+        .from("certificates").update({
+          publication_number: publicationNumber,
+          verification_url: verificationUrl,
+          qr_code_url: qrCodeUrl,
+          certificate_pdf_url: certificatePdfUrl,
+          publication_title: pub.title,
+          publication_author: pub.author,
+          publication_category: pub.category,
+          publication_date: pub.created_at,
+          updated_at: new Date().toISOString(),
+        }).eq("id", existing.id).select().single();
+      if (updErr) throw updErr;
+      cert = updated;
+    } else {
+      const { data: inserted, error: insErr } = await admin
+        .from("certificates").insert({
+          publication_id: publicationId,
+          certificate_number: certificateNumber,
+          publication_number: publicationNumber,
+          verification_url: verificationUrl,
+          qr_code_url: qrCodeUrl,
+          certificate_pdf_url: certificatePdfUrl,
+          status: "certified",
+          publication_title: pub.title,
+          publication_author: pub.author,
+          publication_category: pub.category,
+          publication_date: pub.created_at,
+          issued_by: userId,
+        }).select().single();
+      if (insErr) throw insErr;
+      cert = inserted;
+    }
 
     await admin.from("publications").update({ certification_status: "certified" }).eq("id", publicationId);
 
     await admin.from("audit_log").insert({
-      user_id: userId, action: "generate_certificate", table_name: "certificates",
-      record_id: cert.id, new_value: `${publicationNumber} / ${certificateNumber}`,
+      user_id: userId,
+      action: existing ? "regenerate_certificate" : "generate_certificate",
+      table_name: "certificates",
+      record_id: cert.id,
+      new_value: `${publicationNumber} / ${certificateNumber}`,
     });
 
     return json({ success: true, certificate: cert });
+
   } catch (e) {
     console.error("generate-certificate error", e);
     return json({ error: e instanceof Error ? e.message : "Erreur inconnue" }, 500);
