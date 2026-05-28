@@ -9,8 +9,39 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
 const PUBLIC_BASE_URL = "https://plume-d-or-academie.lovable.app";
 
+function publicationPrefix(category?: string) {
+  const c = category?.toLowerCase();
+  const year = new Date().getFullYear();
+  const catCode = c === "livre" ? "LIV" : c === "memoire" ? "MEM" : c === "tfc" ? "TFC" : c === "article" ? "ART" : "PUB";
+  return `KMG-${catCode}-${year}-`;
+}
+
+async function nextAvailablePublicationNumber(admin: ReturnType<typeof createClient>, category?: string) {
+  const prefix = publicationPrefix(category);
+
+  const [{ data: publications }, { data: certificates }] = await Promise.all([
+    admin.from("publications").select("publication_number").like("publication_number", `${prefix}%`),
+    admin.from("certificates").select("publication_number").like("publication_number", `${prefix}%`),
+  ]);
+
+  const maxSeq = [...(publications ?? []), ...(certificates ?? [])]
+    .map((row) => row.publication_number)
+    .filter((value): value is string => typeof value === "string")
+    .reduce((max, value) => {
+      const match = value.match(/(\d+)$/);
+      if (!match) return max;
+      return Math.max(max, Number.parseInt(match[1], 10) || 0);
+    }, 0);
+
+  return `${prefix}${String(maxSeq + 1).padStart(3, "0")}`;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+
+  let publicationId: string | null = null;
+  let publicationNumberAssigned = false;
+  let wasRegeneration = false;
 
   try {
     const authHeader = req.headers.get("Authorization");
@@ -31,8 +62,9 @@ Deno.serve(async (req) => {
     if (!roleRow) return json({ error: "Accès réservé aux administrateurs" }, 403);
 
     const body = await req.json().catch(() => ({}));
-    const publicationId = body?.publication_id;
+    publicationId = body?.publication_id;
     const regenerate = body?.regenerate === true;
+    wasRegeneration = regenerate;
     if (!publicationId || typeof publicationId !== "string") {
       return json({ error: "publication_id requis" }, 400);
     }
@@ -52,13 +84,37 @@ Deno.serve(async (req) => {
 
     await admin.from("publications").update({ certification_status: "pending" }).eq("id", publicationId);
 
-    // Numéro de publication (réutilise s'il existe déjà)
+    // Numéro de publication : réutilise s'il est réellement libre, sinon régénère
     let publicationNumber: string = pub.publication_number;
+    if (existing?.publication_number) {
+      publicationNumber = existing.publication_number;
+    }
+
+    if (publicationNumber) {
+      const { data: conflictingCert } = await admin
+        .from("certificates")
+        .select("id, publication_id")
+        .eq("publication_number", publicationNumber)
+        .neq("publication_id", publicationId)
+        .maybeSingle();
+
+      const { data: conflictingPublication } = await admin
+        .from("publications")
+        .select("id")
+        .eq("publication_number", publicationNumber)
+        .neq("id", publicationId)
+        .maybeSingle();
+
+      if (conflictingCert || conflictingPublication) {
+        publicationNumber = "";
+      }
+    }
+
     if (!publicationNumber) {
-      const { data: pubNum, error: pubNumErr } = await admin
-        .rpc("next_publication_number", { _category: pub.category });
-      if (pubNumErr || !pubNum) throw new Error("Erreur numéro pub: " + pubNumErr?.message);
-      publicationNumber = pubNum;
+      publicationNumber = await nextAvailablePublicationNumber(admin, pub.category);
+      await admin.from("publications").update({ publication_number: publicationNumber }).eq("id", publicationId);
+      publicationNumberAssigned = true;
+    } else if (pub.publication_number !== publicationNumber) {
       await admin.from("publications").update({ publication_number: publicationNumber }).eq("id", publicationId);
     }
 
@@ -159,6 +215,22 @@ Deno.serve(async (req) => {
 
   } catch (e) {
     console.error("generate-certificate error", e);
+
+    if (publicationId) {
+      try {
+        const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+        await admin
+          .from("publications")
+          .update({
+            certification_status: wasRegeneration ? "certified" : "not_certified",
+            ...(publicationNumberAssigned ? { publication_number: null } : {}),
+          })
+          .eq("id", publicationId);
+      } catch (rollbackError) {
+        console.error("generate-certificate rollback error", rollbackError);
+      }
+    }
+
     return json({ error: e instanceof Error ? e.message : "Erreur inconnue" }, 500);
   }
 });

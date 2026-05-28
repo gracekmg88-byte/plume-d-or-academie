@@ -44,6 +44,7 @@ export default function Bibliotheque() {
   const [offlinePubs, setOfflinePubs] = useState<OfflinePublication[]>([]);
   const [offlineLoading, setOfflineLoading] = useState(!isOnline);
   const restoredCardRef = useRef<string | null>(null);
+  const restorationAttemptRef = useRef(0);
 
   useEffect(() => {
     if (!isOnline) {
@@ -183,13 +184,26 @@ export default function Bibliotheque() {
       return true;
     };
 
-    if (restoreCard()) return;
+    let raf = 0;
+    let cancelled = false;
+    restorationAttemptRef.current = 0;
 
-    const raf = window.requestAnimationFrame(() => {
-      restoreCard();
-    });
+    const attemptRestore = () => {
+      if (cancelled) return;
+      if (restoreCard()) return;
 
-    return () => window.cancelAnimationFrame(raf);
+      restorationAttemptRef.current += 1;
+      if (restorationAttemptRef.current < 24) {
+        raf = window.requestAnimationFrame(attemptRestore);
+      }
+    };
+
+    raf = window.requestAnimationFrame(attemptRestore);
+
+    return () => {
+      cancelled = true;
+      if (raf) window.cancelAnimationFrame(raf);
+    };
   }, [actualLoading, location.state, paginatedPublications]);
 
   return (
