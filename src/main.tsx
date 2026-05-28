@@ -5,6 +5,8 @@ import "./index.css";
 
 const CACHE_RESET_RELOAD_FLAG = "plume-cache-reset-reload-done";
 const BF_CACHE_RELOAD_FLAG = "plume-bfcache-reload-done";
+const APP_RUNTIME_VERSION = "2026-05-28-02";
+const RUNTIME_VERSION_KEY = "plume-runtime-version";
 
 const isInIframe = (() => {
   try {
@@ -40,13 +42,25 @@ const clearBrowserCaches = async () => {
   return true;
 };
 
+const hasRuntimeVersionChanged = () => {
+  try {
+    return localStorage.getItem(RUNTIME_VERSION_KEY) !== APP_RUNTIME_VERSION;
+  } catch {
+    return false;
+  }
+};
+
+const markRuntimeVersion = () => {
+  try {
+    localStorage.setItem(RUNTIME_VERSION_KEY, APP_RUNTIME_VERSION);
+  } catch {
+    // ignore version mark failures during boot
+  }
+};
+
 const clearVersionedStorage = () => {
   try {
-    const storageKeys = [
-      "scroll:entry:",
-      "scroll:path:",
-      "vite:cache-buster",
-    ];
+    const storageKeys = ["vite:cache-buster"];
 
     for (let i = sessionStorage.length - 1; i >= 0; i -= 1) {
       const key = sessionStorage.key(i);
@@ -62,8 +76,11 @@ const clearVersionedStorage = () => {
 const cleanupLegacyRuntime = async () => {
   let removedRegistration = false;
   let clearedCaches = false;
+  const runtimeChanged = hasRuntimeVersionChanged();
 
-  clearVersionedStorage();
+  if (runtimeChanged) {
+    clearVersionedStorage();
+  }
 
   if ("serviceWorker" in navigator) {
     try {
@@ -95,6 +112,8 @@ const cleanupLegacyRuntime = async () => {
   if (hadCleanupQuery) {
     window.history.replaceState(window.history.state, "", normalizedCurrentUrl());
   }
+
+  markRuntimeVersion();
 
   if (removedRegistration || clearedCaches || hadCleanupQuery) {
     forceFreshReloadOnce(CACHE_RESET_RELOAD_FLAG);
