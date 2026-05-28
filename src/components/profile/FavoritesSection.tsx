@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useFavorites } from "@/hooks/useFavorites";
 import { FavoriteButton } from "@/components/publications/FavoriteButton";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { saveScrollPosition } from "@/lib/scroll-restoration";
 
 export function FavoritesSection() {
   const { favorites, isLoading } = useFavorites();
@@ -10,7 +11,7 @@ export function FavoritesSection() {
   const { pathname } = useLocation();
 
   const saveScroll = () => {
-    sessionStorage.setItem(`scroll:${pathname}`, String(window.scrollY));
+    saveScrollPosition(window.history.state?.key, pathname, window.scrollY);
   };
 
   if (isLoading) {
@@ -67,6 +68,13 @@ export function FavoritesSection() {
               >
                 <Link
                   to={`/publication/${pub.id}`}
+                  state={{
+                    returnTo: `${pathname}${window.location.search}`,
+                    returnKey: window.history.state?.key ?? null,
+                    returnPublicationId: pub.id,
+                  }}
+                  data-publication-card-id={pub.id}
+                  onPointerDown={saveScroll}
                   onClickCapture={saveScroll}
                   className="min-w-0 flex-1 mr-3 hover:text-primary transition-colors"
                 >

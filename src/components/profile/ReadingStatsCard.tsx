@@ -2,7 +2,8 @@ import { BookOpen, Clock, BarChart3, TrendingUp } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useReadingHistory } from "@/hooks/useReadingHistory";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+import { saveScrollPosition } from "@/lib/scroll-restoration";
 import { Bar, BarChart, XAxis, YAxis, ResponsiveContainer } from "recharts";
 
 const categoryLabels: Record<string, Record<string, string>> = {
@@ -24,6 +25,11 @@ function formatDuration(seconds: number, lang: string): string {
 export function ReadingStatsCard() {
   const { stats, isLoading } = useReadingHistory();
   const { language } = useLanguage();
+  const { pathname } = useLocation();
+
+  const saveScroll = () => {
+    saveScrollPosition(window.history.state?.key, pathname, window.scrollY);
+  };
 
   if (isLoading) {
     return (
@@ -165,6 +171,14 @@ export function ReadingStatsCard() {
                 <Link
                   key={r.publication_id}
                   to={`/publication/${r.publication_id}`}
+                  state={{
+                    returnTo: `${pathname}${window.location.search}`,
+                    returnKey: window.history.state?.key ?? null,
+                    returnPublicationId: r.publication_id,
+                  }}
+                  data-publication-card-id={r.publication_id}
+                  onPointerDown={saveScroll}
+                  onClickCapture={saveScroll}
                   className="flex items-center gap-3 bg-muted/50 rounded-lg px-3 py-2.5 hover:bg-muted transition-colors"
                 >
                   <div className="min-w-0 flex-1">
