@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { ShieldCheck, Search, Download, ExternalLink, ArrowLeft } from "lucide-react";
+import { ShieldCheck, Search, Download, ExternalLink, ArrowLeft, RefreshCw, Loader2 } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { SEO } from "@/components/seo/SEO";
 import { Input } from "@/components/ui/input";
@@ -8,14 +8,41 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
-import { useRecentCertificates } from "@/hooks/useCertificate";
+import { useRecentCertificates, useGenerateCertificate } from "@/hooks/useCertificate";
+import { toast } from "sonner";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
 export default function AdminCertificates() {
   const { isAdmin, loading } = useAuth();
   const { data: certs = [], isLoading } = useRecentCertificates(500);
+  const regenerate = useGenerateCertificate();
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [q, setQ] = useState("");
+
+  const handleDownload = async (url: string, certNumber: string, id: string) => {
+    try {
+      setDownloadingId(id);
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Téléchargement impossible");
+      const blob = await res.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = objectUrl;
+      a.download = `${certNumber}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(objectUrl);
+    } catch (e) {
+      toast.error("Échec du téléchargement", {
+        description: e instanceof Error ? e.message : "Erreur inconnue",
+      });
+    } finally {
+      setDownloadingId(null);
+    }
+  };
+
 
   const filtered = useMemo(() => {
     const term = q.trim().toLowerCase();
