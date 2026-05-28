@@ -112,8 +112,8 @@ async function renderPremium(doc: any, opts: CertificatePdfInput, fR: any, fB: a
 
   // En-tête prestigieux
   const headerY = height - 70;
-  drawCentered(page, "❦  PLUME D'OR KMG  ❦", width / 2, headerY, 14, fO, gold);
-  drawCentered(page, "PLUME D'OR KMG", width / 2, headerY - 32, 34, fB, navy);
+  drawCentered(page, "❦  KMG BIBLIOTHÈQUE  ❦", width / 2, headerY, 14, fO, gold);
+  drawCentered(page, "KMG BIBLIOTHÈQUE", width / 2, headerY - 32, 34, fB, navy);
   // Trait doré décoratif
   page.drawLine({ start: { x: width/2 - 140, y: headerY - 44 }, end: { x: width/2 - 30, y: headerY - 44 }, color: gold, thickness: 1.2 });
   page.drawCircle({ x: width/2, y: headerY - 44, size: 3, color: gold });
@@ -136,7 +136,7 @@ async function renderPremium(doc: any, opts: CertificatePdfInput, fR: any, fB: a
   drawCentered(page, truncate(opts.title, 70), width / 2, headerY - 215, 20, fB, navy);
   drawCentered(page, `de ${opts.author}`, width / 2, headerY - 240, 14, fO, dark);
   drawCentered(page, "a été officiellement enregistré et certifié dans le registre prestigieux", width / 2, headerY - 268, 11, fR, dark);
-  drawCentered(page, "de Plume d'Or KMG, avec tous les droits et garanties associés.", width / 2, headerY - 282, 11, fR, dark);
+  drawCentered(page, "de KMG Bibliothèque, avec tous les droits et garanties associés.", width / 2, headerY - 282, 11, fR, dark);
 
   // Infos
   const ix = 70; let iy = 195;
@@ -155,7 +155,7 @@ async function renderPremium(doc: any, opts: CertificatePdfInput, fR: any, fB: a
   const sy = 90;
   page.drawLine({ start: { x: ix, y: sy + 22 }, end: { x: ix + 220, y: sy + 22 }, color: gold, thickness: 0.8 });
   page.drawText("SIGNÉ NUMÉRIQUEMENT", { x: ix, y: sy + 8, size: 8, font: fB, color: navy });
-  page.drawText("Direction Plume d'Or KMG", { x: ix, y: sy - 4, size: 9, font: fO, color: dark });
+  page.drawText("Direction KMG Bibliothèque", { x: ix, y: sy - 4, size: 9, font: fO, color: dark });
   page.drawText(`${new Date().toLocaleString("fr-FR")} • ${opts.certificateNumber}`, { x: ix, y: sy - 16, size: 7, font: fR, color: muted });
 
   // Cachet doré
@@ -167,7 +167,7 @@ async function renderPremium(doc: any, opts: CertificatePdfInput, fR: any, fB: a
   page.drawImage(qrImg, { x: qrX, y: 70, width: qrSize, height: qrSize });
   drawCentered(page, "Scannez pour vérifier", qrX + qrSize / 2, 55, 8, fO, muted);
 
-  drawCentered(page, "Ce certificat atteste la publication officielle de cet ouvrage au sein de Plume d'Or KMG. Toute falsification est interdite.", width / 2, 42, 7, fO, muted);
+  drawCentered(page, "Ce certificat atteste la publication officielle de cet ouvrage au sein de KMG Bibliothèque. Toute falsification est interdite.", width / 2, 42, 7, fO, muted);
 
   return await doc.save();
 }
@@ -177,7 +177,7 @@ function drawStampPremium(page: any, cx: number, cy: number, gold: any, navy: an
   page.drawCircle({ x: cx, y: cy, size: 53, borderColor: gold, borderWidth: 0.6 });
   page.drawCircle({ x: cx, y: cy, size: 46, borderColor: navy, borderWidth: 0.4 });
   drawCentered(page, "❦", cx, cy + 30, 12, fB, gold);
-  drawCentered(page, "PLUME D'OR KMG", cx, cy + 14, 8.5, fB, navy);
+  drawCentered(page, "KMG BIBLIOTHÈQUE", cx, cy + 14, 8.5, fB, navy);
   drawCentered(page, "LIVRE", cx, cy + 2, 11, fB, gold);
   drawCentered(page, "CERTIFIÉ", cx, cy - 12, 10, fB, gold);
   drawCentered(page, new Date(pubDate).getFullYear().toString(), cx, cy - 28, 10, fB, navy);
@@ -208,7 +208,7 @@ async function renderAcademique(doc: any, opts: CertificatePdfInput, fR: any, fB
   page.drawRectangle({ x: 0, y: 0, width, height: 32, color: blueDark });
 
   // Texte en-tête (blanc)
-  drawCentered(page, "PLUME D'OR KMG", width / 2, height - 40, 24, fB, rgb(1, 1, 1));
+  drawCentered(page, "KMG BIBLIOTHÈQUE", width / 2, height - 40, 24, fB, rgb(1, 1, 1));
   drawCentered(page, "BIBLIOTHÈQUE NUMÉRIQUE ACADÉMIQUE", width / 2, height - 62, 10, fR, rgb(0.85, 0.9, 1));
   drawCentered(page, "Registre Officiel des Travaux de Recherche", width / 2, height - 78, 9, fO, rgb(0.75, 0.82, 0.95));
 
@@ -230,7 +230,7 @@ async function renderAcademique(doc: any, opts: CertificatePdfInput, fR: any, fB
   drawCentered(page, truncate(opts.title, 78), width / 2, cy - 115, 17, fB, blueDark);
   drawCentered(page, `présenté par ${opts.author}`, width / 2, cy - 138, 12, fO, dark);
   drawCentered(page, "a été déposé, enregistré et archivé dans le registre académique officiel", width / 2, cy - 165, 10, fR, dark);
-  drawCentered(page, "de Plume d'Or KMG conformément aux exigences scientifiques en vigueur.", width / 2, cy - 178, 10, fR, dark);
+  drawCentered(page, "de KMG Bibliothèque conformément aux exigences scientifiques en vigueur.", width / 2, cy - 178, 10, fR, dark);
 
   // Tableau infos (gauche)
   const ix = 70; let iy = 195;
@@ -252,7 +252,7 @@ async function renderAcademique(doc: any, opts: CertificatePdfInput, fR: any, fB
   // Signature
   const sy = 65;
   page.drawLine({ start: { x: ix, y: sy + 22 }, end: { x: ix + 200, y: sy + 22 }, color: blue, thickness: 0.8 });
-  page.drawText("SIGNÉ NUMÉRIQUEMENT — Direction Plume d'Or KMG", { x: ix, y: sy + 8, size: 8, font: fB, color: blueDark });
+  page.drawText("SIGNÉ NUMÉRIQUEMENT — Direction KMG Bibliothèque", { x: ix, y: sy + 8, size: 8, font: fB, color: blueDark });
   page.drawText(`${new Date().toLocaleString("fr-FR")} • ${opts.certificateNumber}`, { x: ix, y: sy - 4, size: 7, font: fR, color: muted });
 
   // Cachet académique (bleu)
@@ -265,7 +265,7 @@ async function renderAcademique(doc: any, opts: CertificatePdfInput, fR: any, fB
   drawCentered(page, "Vérification publique", qrX + qrSize / 2, 65, 8, fO, muted);
 
   // Pied
-  drawCentered(page, "Document académique officiel — Plume d'Or KMG — Toute reproduction frauduleuse est interdite.", width / 2, 12, 7, fO, rgb(0.85, 0.9, 1));
+  drawCentered(page, "Document académique officiel — KMG Bibliothèque — Toute reproduction frauduleuse est interdite.", width / 2, 12, 7, fO, rgb(0.85, 0.9, 1));
 
   return await doc.save();
 }
@@ -273,7 +273,7 @@ async function renderAcademique(doc: any, opts: CertificatePdfInput, fR: any, fB
 function drawStampAcademique(page: any, cx: number, cy: number, blue: any, blueDark: any, fB: any, pubDate: string) {
   page.drawCircle({ x: cx, y: cy, size: 52, borderColor: blue, borderWidth: 2 });
   page.drawCircle({ x: cx, y: cy, size: 45, borderColor: blue, borderWidth: 0.4 });
-  drawCentered(page, "PLUME D'OR KMG", cx, cy + 18, 7.5, fB, blueDark);
+  drawCentered(page, "KMG BIBLIOTHÈQUE", cx, cy + 18, 7.5, fB, blueDark);
   drawCentered(page, "ACADÉMIQUE", cx, cy + 4, 8.5, fB, blue);
   drawCentered(page, "CERTIFIÉ", cx, cy - 8, 9, fB, blue);
   drawCentered(page, new Date(pubDate).getFullYear().toString(), cx, cy - 24, 9, fB, blueDark);
@@ -301,7 +301,7 @@ async function renderStandard(doc: any, opts: CertificatePdfInput, fR: any, fB: 
 
   // En-tête sobre
   const hy = height - 60;
-  page.drawText("PLUME D'OR KMG", { x: 60, y: hy, size: 18, font: fB, color: navy });
+  page.drawText("KMG BIBLIOTHÈQUE", { x: 60, y: hy, size: 18, font: fB, color: navy });
   page.drawText("Bibliothèque Numérique Académique", { x: 60, y: hy - 16, size: 9, font: fO, color: muted });
 
   // Bloc titre droite
@@ -327,7 +327,7 @@ async function renderStandard(doc: any, opts: CertificatePdfInput, fR: any, fB: 
   drawCentered(page, "Nous certifions que l'article scientifique intitulé :", width / 2, ty - 85, 11, fR, dark);
   drawCentered(page, truncate(opts.title, 80), width / 2, ty - 110, 16, fB, navy);
   drawCentered(page, `par ${opts.author}`, width / 2, ty - 132, 12, fO, dark);
-  drawCentered(page, "a été enregistré et certifié dans le registre de Plume d'Or KMG.", width / 2, ty - 158, 10, fR, dark);
+  drawCentered(page, "a été enregistré et certifié dans le registre de KMG Bibliothèque.", width / 2, ty - 158, 10, fR, dark);
 
   // Bloc infos compact horizontal
   const blockY = 180;
@@ -350,7 +350,7 @@ async function renderStandard(doc: any, opts: CertificatePdfInput, fR: any, fB: 
   const sy = 90;
   page.drawLine({ start: { x: 60, y: sy + 22 }, end: { x: 280, y: sy + 22 }, color: navy, thickness: 0.6 });
   page.drawText("SIGNÉ NUMÉRIQUEMENT", { x: 60, y: sy + 8, size: 8, font: fB, color: navy });
-  page.drawText("Direction Plume d'Or KMG", { x: 60, y: sy - 4, size: 9, font: fO, color: dark });
+  page.drawText("Direction KMG Bibliothèque", { x: 60, y: sy - 4, size: 9, font: fO, color: dark });
   page.drawText(`${new Date().toLocaleString("fr-FR")} • ${opts.certificateNumber}`, { x: 60, y: sy - 16, size: 7, font: fR, color: muted });
 
   // Cachet centre
@@ -369,7 +369,7 @@ async function renderStandard(doc: any, opts: CertificatePdfInput, fR: any, fB: 
 function drawStampStandard(page: any, cx: number, cy: number, accent: any, navy: any, fB: any, pubDate: string) {
   page.drawCircle({ x: cx, y: cy, size: 45, borderColor: accent, borderWidth: 1.5 });
   page.drawCircle({ x: cx, y: cy, size: 39, borderColor: accent, borderWidth: 0.4 });
-  drawCentered(page, "PLUME D'OR KMG", cx, cy + 14, 7, fB, navy);
+  drawCentered(page, "KMG BIBLIOTHÈQUE", cx, cy + 14, 7, fB, navy);
   drawCentered(page, "ARTICLE", cx, cy + 2, 8.5, fB, accent);
   drawCentered(page, "CERTIFIÉ", cx, cy - 10, 8.5, fB, accent);
   drawCentered(page, new Date(pubDate).getFullYear().toString(), cx, cy - 22, 8.5, fB, navy);
