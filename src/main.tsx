@@ -45,8 +45,6 @@ const clearVersionedStorage = () => {
     const storageKeys = [
       "scroll:entry:",
       "scroll:path:",
-      "plume-cache-reset-reload-done",
-      "plume-bfcache-reload-done",
       "vite:cache-buster",
     ];
 
