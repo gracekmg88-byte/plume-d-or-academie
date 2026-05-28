@@ -9,6 +9,33 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
 const PUBLIC_BASE_URL = "https://plume-d-or-academie.lovable.app";
 
+function publicationPrefix(category?: string) {
+  const c = category?.toLowerCase();
+  const year = new Date().getFullYear();
+  const catCode = c === "livre" ? "LIV" : c === "memoire" ? "MEM" : c === "tfc" ? "TFC" : c === "article" ? "ART" : "PUB";
+  return `KMG-${catCode}-${year}-`;
+}
+
+async function nextAvailablePublicationNumber(admin: ReturnType<typeof createClient>, category?: string) {
+  const prefix = publicationPrefix(category);
+
+  const [{ data: publications }, { data: certificates }] = await Promise.all([
+    admin.from("publications").select("publication_number").like("publication_number", `${prefix}%`),
+    admin.from("certificates").select("publication_number").like("publication_number", `${prefix}%`),
+  ]);
+
+  const maxSeq = [...(publications ?? []), ...(certificates ?? [])]
+    .map((row) => row.publication_number)
+    .filter((value): value is string => typeof value === "string")
+    .reduce((max, value) => {
+      const match = value.match(/(\d+)$/);
+      if (!match) return max;
+      return Math.max(max, Number.parseInt(match[1], 10) || 0);
+    }, 0);
+
+  return `${prefix}${String(maxSeq + 1).padStart(3, "0")}`;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
@@ -84,10 +111,7 @@ Deno.serve(async (req) => {
     }
 
     if (!publicationNumber) {
-      const { data: pubNum, error: pubNumErr } = await admin
-        .rpc("next_publication_number", { _category: pub.category });
-      if (pubNumErr || !pubNum) throw new Error("Erreur numéro pub: " + pubNumErr?.message);
-      publicationNumber = pubNum;
+      publicationNumber = await nextAvailablePublicationNumber(admin, pub.category);
       await admin.from("publications").update({ publication_number: publicationNumber }).eq("id", publicationId);
       publicationNumberAssigned = true;
     } else if (pub.publication_number !== publicationNumber) {
