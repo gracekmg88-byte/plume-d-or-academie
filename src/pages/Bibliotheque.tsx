@@ -28,10 +28,13 @@ export default function Bibliotheque() {
   const location = useLocation();
   const initialCategory = (searchParams.get("categorie") as Category) || "all";
   const initialPage = Math.max(1, Number.parseInt(searchParams.get("page") || "1", 10) || 1);
-  
+  const initialSearch = searchParams.get("q") || "";
+  const initialAuthor = searchParams.get("auteur") || "";
+  const initialSort = (searchParams.get("tri") as SortOption) || "date_desc";
+
   const [category, setCategory] = useState<Category>(initialCategory);
-  const [search, setSearch] = useState("");
-  const [filters, setFilters] = useState<AdvancedFilterValues>({ author: "", sortBy: "date_desc" });
+  const [search, setSearch] = useState(initialSearch);
+  const [filters, setFilters] = useState<AdvancedFilterValues>({ author: initialAuthor, sortBy: initialSort });
   const [currentPage, setCurrentPage] = useState(initialPage);
   const ITEMS_PER_PAGE = 12;
   const isOnline = useOnlineStatus();
