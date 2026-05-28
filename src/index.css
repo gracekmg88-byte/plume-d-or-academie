@@ -125,15 +125,15 @@
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-serif;
-    font-weight: 500;
-    letter-spacing: 0;
+    @apply font-sans;
+    font-weight: 600;
+    letter-spacing: -0.01em;
   }
 }
 
 @layer utilities {
   .font-serif {
-    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-family: 'Source Sans 3', system-ui, sans-serif;
   }
 
   .font-sans {
