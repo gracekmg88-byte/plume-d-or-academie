@@ -171,6 +171,14 @@ export function ReadingStatsCard() {
                 <Link
                   key={r.publication_id}
                   to={`/publication/${r.publication_id}`}
+                  state={{
+                    returnTo: `${pathname}${window.location.search}`,
+                    returnKey: window.history.state?.key ?? null,
+                    returnPublicationId: r.publication_id,
+                  }}
+                  data-publication-card-id={r.publication_id}
+                  onPointerDown={saveScroll}
+                  onClickCapture={saveScroll}
                   className="flex items-center gap-3 bg-muted/50 rounded-lg px-3 py-2.5 hover:bg-muted transition-colors"
                 >
                   <div className="min-w-0 flex-1">
