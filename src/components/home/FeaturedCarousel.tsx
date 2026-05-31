@@ -162,6 +162,7 @@ export function FeaturedCarousel({ preview = false, publications: override }: Fe
   );
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [scrollSnaps, setScrollSnaps] = useState<number[]>([]);
+  const [highlightedId, setHighlightedId] = useState<string | null>(null);
 
   const handleNavigate = useCallback(
     (id: string) => {
@@ -169,8 +170,11 @@ export function FeaturedCarousel({ preview = false, publications: override }: Fe
       const clickAllowed = (emblaApi as any)?.clickAllowed?.();
       if (emblaApi && clickAllowed === false) return;
 
-
       saveScrollPosition(window.history.state?.key, location.pathname, window.scrollY);
+      try {
+        sessionStorage.setItem(LAST_FEATURED_PICK_KEY, id);
+        sessionStorage.setItem(LAST_FEATURED_PICK_AT, String(Date.now()));
+      } catch {}
       preloadPublicationFlow();
       queryClient
         .prefetchQuery({
@@ -200,16 +204,61 @@ export function FeaturedCarousel({ preview = false, publications: override }: Fe
     }
   }, [publications]);
 
-  useEffect(() => {
-    if (!emblaApi || !publications?.length) return;
+  // Compute the id we should restore to — either from router state or sessionStorage fallback.
+  const restoreId = (() => {
     const navState = location.state as { restoredFromPublication?: boolean; returnPublicationId?: string | null } | null;
-    if (!navState?.restoredFromPublication || !navState.returnPublicationId) return;
-    const idx = publications.findIndex((p) => p.id === navState.returnPublicationId);
-    if (idx >= 0) {
-      emblaApi.scrollTo(idx, true);
-      autoplay.current?.stop?.();
+    if (navState?.restoredFromPublication && navState.returnPublicationId) {
+      return navState.returnPublicationId;
     }
-  }, [emblaApi, publications, location.state]);
+    try {
+      const id = sessionStorage.getItem(LAST_FEATURED_PICK_KEY);
+      const at = Number(sessionStorage.getItem(LAST_FEATURED_PICK_AT) || 0);
+      if (id && Date.now() - at < LAST_FEATURED_TTL_MS) return id;
+    } catch {}
+    return null;
+  })();
+
+  // Robust restore: works as soon as publications data is available, even after slow network.
+  useEffect(() => {
+    if (!emblaApi || !publications?.length || !restoreId) return;
+    const idx = publications.findIndex((p) => p.id === restoreId);
+    if (idx < 0) return;
+
+    emblaApi.scrollTo(idx, true);
+    autoplay.current?.stop?.();
+    setHighlightedId(restoreId);
+
+    // Bring the actual DOM card into view in case the page also needs to scroll.
+    const bringIntoView = () => {
+      const el = document.querySelector<HTMLElement>(`[data-publication-card-id="${restoreId}"]`);
+      if (el) {
+        const rect = el.getBoundingClientRect();
+        const offscreen = rect.top < 80 || rect.bottom > window.innerHeight;
+        if (offscreen) {
+          el.scrollIntoView({ block: "center", behavior: "instant" as ScrollBehavior });
+        }
+      }
+    };
+    const raf1 = requestAnimationFrame(() => {
+      bringIntoView();
+      const raf2 = requestAnimationFrame(bringIntoView);
+      (bringIntoView as any).__raf = raf2;
+    });
+
+    const clearTO = window.setTimeout(() => setHighlightedId(null), 2800);
+    const clearStorageTO = window.setTimeout(() => {
+      try {
+        sessionStorage.removeItem(LAST_FEATURED_PICK_KEY);
+        sessionStorage.removeItem(LAST_FEATURED_PICK_AT);
+      } catch {}
+    }, 500);
+
+    return () => {
+      cancelAnimationFrame(raf1);
+      window.clearTimeout(clearTO);
+      window.clearTimeout(clearStorageTO);
+    };
+  }, [emblaApi, publications, restoreId]);
 
   useEffect(() => {
     if (!emblaApi) return;
@@ -222,6 +271,7 @@ export function FeaturedCarousel({ preview = false, publications: override }: Fe
       emblaApi.off("select", onSelect);
     };
   }, [emblaApi, publications]);
+
 
 
   // Loading state
