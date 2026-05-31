@@ -383,6 +383,7 @@ export type Database = {
           cover_image_url: string | null
           created_at: string
           description: string | null
+          downloads_count: number
           file_url: string | null
           id: string
           is_featured: boolean
@@ -401,6 +402,7 @@ export type Database = {
           cover_image_url?: string | null
           created_at?: string
           description?: string | null
+          downloads_count?: number
           file_url?: string | null
           id?: string
           is_featured?: boolean
@@ -419,6 +421,7 @@ export type Database = {
           cover_image_url?: string | null
           created_at?: string
           description?: string | null
+          downloads_count?: number
           file_url?: string | null
           id?: string
           is_featured?: boolean
@@ -615,6 +618,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      increment_downloads: {
+        Args: { publication_id: string }
+        Returns: undefined
       }
       increment_views: { Args: { publication_id: string }; Returns: undefined }
       is_premium: { Args: { _user_id: string }; Returns: boolean }

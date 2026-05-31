@@ -1,12 +1,11 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
-import { ChevronLeft, ChevronRight, Sparkles, Eye } from "lucide-react";
-import { useFeaturedPublications } from "@/hooks/useFeaturedPublications";
+import { ChevronLeft, ChevronRight, Sparkles, Eye, Download, AlertCircle, RefreshCw } from "lucide-react";
+import { useFeaturedPublications, type FeaturedPublication } from "@/hooks/useFeaturedPublications";
 import { CachedImage, preloadImages } from "@/components/ui/cached-image";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { useState } from "react";
+import { Button } from "@/components/ui/button";
 
 const categoryLabel: Record<string, string> = {
   livre: "Livre",
@@ -15,9 +14,102 @@ const categoryLabel: Record<string, string> = {
   article: "Article",
 };
 
-export function FeaturedCarousel() {
-  const { data: publications, isLoading } = useFeaturedPublications(8);
-  const { t } = useLanguage();
+interface FeaturedCarouselProps {
+  /** When true, links are disabled (preview mode in admin). */
+  preview?: boolean;
+  /** Optional override of publications (used by admin preview). */
+  publications?: FeaturedPublication[];
+}
+
+function CarouselSkeleton() {
+  return (
+    <div className="flex gap-4 -mx-2 px-2 overflow-hidden">
+      {[...Array(5)].map((_, i) => (
+        <div
+          key={i}
+          className="flex-shrink-0 w-[70%] sm:w-[45%] md:w-[32%] lg:w-[24%]"
+        >
+          <div className="rounded-xl overflow-hidden bg-card border border-border">
+            <div className="aspect-[3/4] bg-gradient-to-br from-muted via-muted/60 to-muted animate-pulse" />
+            <div className="p-3 space-y-2">
+              <div className="h-4 w-5/6 rounded bg-muted animate-pulse" />
+              <div className="h-3 w-2/3 rounded bg-muted animate-pulse" />
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function CoverFallback({ title }: { title: string }) {
+  return (
+    <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-secondary via-secondary/80 to-primary/30 p-4">
+      <span className="font-serif text-sm text-secondary-foreground/90 text-center line-clamp-4">
+        {title}
+      </span>
+    </div>
+  );
+}
+
+function CarouselCard({ pub, preview }: { pub: FeaturedPublication; preview: boolean }) {
+  const [imgError, setImgError] = useState(false);
+  const content = (
+    <div className="group block rounded-xl overflow-hidden bg-card border border-border hover:border-primary/50 hover:shadow-elegant transition-all duration-300 h-full">
+      <div className="relative aspect-[3/4] overflow-hidden bg-muted">
+        {pub.cover_image_url && !imgError ? (
+          <CachedImage
+            src={pub.cover_image_url}
+            alt={pub.title}
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            onError={() => setImgError(true)}
+          />
+        ) : (
+          <CoverFallback title={pub.title} />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+        <div className="absolute top-2 left-2 flex gap-1.5">
+          <span className="px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider rounded-full bg-primary/90 text-primary-foreground backdrop-blur-sm">
+            {categoryLabel[pub.category] || pub.category}
+          </span>
+          {(pub as any).is_featured && (
+            <span className="px-1.5 py-0.5 text-[10px] rounded-full bg-yellow-500/90 text-black backdrop-blur-sm flex items-center gap-0.5">
+              <Sparkles className="h-2.5 w-2.5" />
+            </span>
+          )}
+        </div>
+        <div className="absolute bottom-2 right-2 flex items-center gap-1.5">
+          <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/60 text-white text-[10px] backdrop-blur-sm">
+            <Eye className="h-3 w-3" />
+            {pub.views_count}
+          </span>
+          {((pub as any).downloads_count ?? 0) > 0 && (
+            <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/60 text-white text-[10px] backdrop-blur-sm">
+              <Download className="h-3 w-3" />
+              {(pub as any).downloads_count}
+            </span>
+          )}
+        </div>
+      </div>
+      <div className="p-3 space-y-1">
+        <h3 className="font-serif text-sm md:text-base font-semibold text-foreground line-clamp-2 group-hover:text-primary transition-colors">
+          {pub.title}
+        </h3>
+        <p className="text-xs text-muted-foreground line-clamp-1">{pub.author}</p>
+      </div>
+    </div>
+  );
+
+  if (preview) return <div className="cursor-default">{content}</div>;
+  return <Link to={`/publication/${pub.id}`}>{content}</Link>;
+}
+
+export function FeaturedCarousel({ preview = false, publications: override }: FeaturedCarouselProps = {}) {
+  const query = useFeaturedPublications(8);
+  const publications = override ?? query.data;
+  const isLoading = override ? false : query.isLoading;
+  const isError = override ? false : query.isError;
+
   const autoplay = useRef(
     Autoplay({ delay: 4000, stopOnInteraction: false, stopOnMouseEnter: true })
   );
@@ -47,19 +139,37 @@ export function FeaturedCarousel() {
     return () => {
       emblaApi.off("select", onSelect);
     };
-  }, [emblaApi]);
+  }, [emblaApi, publications]);
 
+  // Loading state
   if (isLoading) {
     return (
       <section className="py-8 md:py-12 bg-background">
         <div className="container">
-          <div className="flex gap-4 overflow-hidden">
-            {[...Array(4)].map((_, i) => (
-              <div
-                key={i}
-                className="min-w-[60%] sm:min-w-[40%] md:min-w-[28%] lg:min-w-[22%] aspect-[3/4] bg-muted animate-pulse rounded-xl"
-              />
-            ))}
+          <div className="space-y-2 mb-6">
+            <div className="h-5 w-24 rounded-full bg-muted animate-pulse" />
+            <div className="h-8 w-64 rounded bg-muted animate-pulse" />
+          </div>
+          <CarouselSkeleton />
+        </div>
+      </section>
+    );
+  }
+
+  // Error state
+  if (isError) {
+    return (
+      <section className="py-8 md:py-12 bg-background">
+        <div className="container">
+          <div className="rounded-xl border border-destructive/20 bg-destructive/5 p-6 text-center max-w-md mx-auto">
+            <AlertCircle className="h-8 w-8 mx-auto text-destructive mb-2" />
+            <p className="text-sm text-foreground mb-3">
+              Impossible de charger la sélection du moment
+            </p>
+            <Button size="sm" variant="outline" onClick={() => query.refetch()} className="gap-2">
+              <RefreshCw className="h-3.5 w-3.5" />
+              Réessayer
+            </Button>
           </div>
         </div>
       </section>
@@ -76,7 +186,7 @@ export function FeaturedCarousel() {
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/20">
               <Sparkles className="h-3.5 w-3.5" />
               <span className="text-xs font-medium uppercase tracking-wider">
-                À la une
+                {preview ? "Aperçu — À la une" : "À la une"}
               </span>
             </div>
             <h2 className="font-serif text-2xl md:text-3xl lg:text-4xl font-bold text-foreground">
@@ -85,6 +195,7 @@ export function FeaturedCarousel() {
           </div>
           <div className="hidden md:flex gap-2">
             <button
+              type="button"
               onClick={() => emblaApi?.scrollPrev()}
               className="h-10 w-10 rounded-full bg-card border border-border flex items-center justify-center hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all"
               aria-label="Précédent"
@@ -92,6 +203,7 @@ export function FeaturedCarousel() {
               <ChevronLeft className="h-5 w-5" />
             </button>
             <button
+              type="button"
               onClick={() => emblaApi?.scrollNext()}
               className="h-10 w-10 rounded-full bg-card border border-border flex items-center justify-center hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all"
               aria-label="Suivant"
@@ -108,42 +220,7 @@ export function FeaturedCarousel() {
                 key={pub.id}
                 className="flex-[0_0_70%] sm:flex-[0_0_45%] md:flex-[0_0_32%] lg:flex-[0_0_24%] px-2"
               >
-                <Link
-                  to={`/publication/${pub.id}`}
-                  className="group block rounded-xl overflow-hidden bg-card border border-border hover:border-primary/50 hover:shadow-elegant transition-all duration-300"
-                >
-                  <div className="relative aspect-[3/4] overflow-hidden bg-muted">
-                    {pub.cover_image_url ? (
-                      <CachedImage
-                        src={pub.cover_image_url}
-                        alt={pub.title}
-                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center text-muted-foreground text-sm">
-                        {pub.title}
-                      </div>
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                    <div className="absolute top-2 left-2">
-                      <span className="px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider rounded-full bg-primary/90 text-primary-foreground backdrop-blur-sm">
-                        {categoryLabel[pub.category] || pub.category}
-                      </span>
-                    </div>
-                    <div className="absolute bottom-2 right-2 flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/60 text-white text-[10px] backdrop-blur-sm">
-                      <Eye className="h-3 w-3" />
-                      {pub.views_count}
-                    </div>
-                  </div>
-                  <div className="p-3 space-y-1">
-                    <h3 className="font-serif text-sm md:text-base font-semibold text-foreground line-clamp-2 group-hover:text-primary transition-colors">
-                      {pub.title}
-                    </h3>
-                    <p className="text-xs text-muted-foreground line-clamp-1">
-                      {pub.author}
-                    </p>
-                  </div>
-                </Link>
+                <CarouselCard pub={pub} preview={preview} />
               </div>
             ))}
           </div>
@@ -154,6 +231,7 @@ export function FeaturedCarousel() {
             {scrollSnaps.map((_, i) => (
               <button
                 key={i}
+                type="button"
                 onClick={() => emblaApi?.scrollTo(i)}
                 className={`h-1.5 rounded-full transition-all ${
                   i === selectedIndex

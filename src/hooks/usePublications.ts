@@ -151,3 +151,13 @@ export function useIncrementViews() {
     },
   });
 }
+
+export function useIncrementDownloads() {
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.rpc("increment_downloads" as any, { publication_id: id });
+      if (error) throw error;
+    },
+  });
+}
+
