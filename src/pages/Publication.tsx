@@ -8,7 +8,7 @@ import { CachedImage } from "@/components/ui/cached-image";
 import { ProtectedPdfViewer } from "@/components/publications/ProtectedPdfViewer";
 import { AnnotationsPanel } from "@/components/publications/AnnotationsPanel";
 import { AISummary } from "@/components/publications/AISummary";
-import { usePublication, useIncrementViews } from "@/hooks/usePublications";
+import { usePublication, useIncrementViews, useIncrementDownloads } from "@/hooks/usePublications";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useBillingConfig } from "@/hooks/useBillingConfig";
@@ -66,6 +66,7 @@ export default function Publication() {
   const id = isUuid ? rawId : (resolvedUuid || "");
   const { data: publication, isLoading, error } = usePublication(id);
   const incrementViews = useIncrementViews();
+  const incrementDownloads = useIncrementDownloads();
   const { user } = useAuth();
   const { isPremium, isLoading: subscriptionLoading } = useSubscription();
   const { hidePremiumUI } = useBillingConfig();
@@ -401,7 +402,13 @@ export default function Publication() {
               {/* Download Button */}
               <div className="mt-6 space-y-3">
                 {displayPub.file_url && hasFullAccess && isOnline && allowDownloads && (displayPub as any).allow_download !== false && (
-                  <a href={displayPub.file_url} download>
+                  <a
+                    href={displayPub.file_url}
+                    download
+                    onClick={() => {
+                      incrementDownloads.mutate(displayPub.id);
+                    }}
+                  >
                     <Button className="w-full gap-2">
                       <Download className="h-4 w-4" />
                       {t("pub.download")}
