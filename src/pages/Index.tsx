@@ -13,6 +13,7 @@ import { useOnlineStatus } from "@/hooks/useOffline";
 import { ContinueReadingSection } from "@/components/home/ContinueReadingSection";
 import { RecommendationsSection } from "@/components/home/RecommendationsSection";
 import { SEO } from "@/components/seo/SEO";
+import { FeaturedCarousel } from "@/components/home/FeaturedCarousel";
 import heroImage from "@/assets/hero-library.webp";
 
 export default function Index() {
