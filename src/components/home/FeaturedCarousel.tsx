@@ -61,10 +61,12 @@ function CarouselCard({
   pub,
   preview,
   onNavigate,
+  highlighted,
 }: {
   pub: FeaturedPublication;
   preview: boolean;
   onNavigate?: (id: string) => void;
+  highlighted?: boolean;
 }) {
   const [imgError, setImgError] = useState(false);
 
@@ -81,9 +83,16 @@ function CarouselCard({
       className={preview ? "cursor-default block" : "block"}
       draggable={false}
       data-publication-card-id={pub.id}
+      data-highlighted={highlighted ? "true" : undefined}
     >
 
-      <div className="group block rounded-xl overflow-hidden bg-card border border-border hover:border-primary/50 hover:shadow-elegant transition-all duration-300 h-full">
+      <div
+        className={`group block rounded-xl overflow-hidden bg-card border transition-all duration-300 h-full ${
+          highlighted
+            ? "border-primary ring-2 ring-primary/60 shadow-elegant animate-pulse-slow"
+            : "border-border hover:border-primary/50 hover:shadow-elegant"
+        }`}
+      >
         <div className="relative aspect-[3/4] overflow-hidden bg-muted">
           {pub.cover_image_url && !imgError ? (
             <CachedImage
@@ -129,6 +138,11 @@ function CarouselCard({
     </a>
   );
 }
+
+const LAST_FEATURED_PICK_KEY = "carousel:lastFeaturedPickId";
+const LAST_FEATURED_PICK_AT = "carousel:lastFeaturedPickAt";
+const LAST_FEATURED_TTL_MS = 10 * 60 * 1000; // 10 min — survives slow networks
+
 
 export function FeaturedCarousel({ preview = false, publications: override }: FeaturedCarouselProps = {}) {
   const query = useFeaturedPublications(8);
