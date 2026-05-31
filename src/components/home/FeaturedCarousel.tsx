@@ -80,7 +80,9 @@ function CarouselCard({
       onClick={handleClick}
       className={preview ? "cursor-default block" : "block"}
       draggable={false}
+      data-publication-card-id={pub.id}
     >
+
       <div className="group block rounded-xl overflow-hidden bg-card border border-border hover:border-primary/50 hover:shadow-elegant transition-all duration-300 h-full">
         <div className="relative aspect-[3/4] overflow-hidden bg-muted">
           {pub.cover_image_url && !imgError ? (
