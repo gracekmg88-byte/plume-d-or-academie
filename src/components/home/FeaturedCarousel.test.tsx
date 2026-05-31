@@ -36,6 +36,9 @@ vi.mock("@/components/ui/cached-image", () => ({
 vi.mock("@/lib/route-preload", () => ({ preloadPublicationFlow: () => {} }));
 vi.mock("@/hooks/usePublications", () => ({ fetchPublication: () => Promise.resolve({}) }));
 vi.mock("@/lib/scroll-restoration", () => ({ saveScrollPosition: () => {} }));
+vi.mock("@/integrations/supabase/client", () => ({ supabase: {} }));
+vi.mock("@/hooks/useFeaturedPublications", () => ({ useFeaturedPublications: () => ({ data: undefined, isLoading: false, isError: false, refetch: () => {} }) }));
+
 
 const pubs: FeaturedPublication[] = [
   {
