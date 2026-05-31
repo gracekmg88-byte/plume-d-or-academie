@@ -11,6 +11,7 @@ import { useBillingConfig } from "@/hooks/useBillingConfig";
 import { AdminReadingStatsCard } from "@/components/admin/AdminReadingStatsCard";
 import { GlobalStatsCard } from "@/components/admin/GlobalStatsCard";
 import { CertificationsCard } from "@/components/admin/CertificationsCard";
+import { FeaturedCarouselPreview } from "@/components/admin/FeaturedCarouselPreview";
 import { Badge } from "@/components/ui/badge";
 import {
   Tooltip,
@@ -274,6 +275,9 @@ export default function AdminDashboard() {
           <AdminReadingStatsCard />
           <CertificationsCard />
         </div>
+
+        {/* Featured carousel preview */}
+        <FeaturedCarouselPreview />
 
         {/* Actions */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
