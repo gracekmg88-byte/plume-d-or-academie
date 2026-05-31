@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import useEmblaCarousel from "embla-carousel-react";
-import type { EmblaCarouselType } from "embla-carousel";
+
 import Autoplay from "embla-carousel-autoplay";
 import { ChevronLeft, ChevronRight, Sparkles, Eye, Download, AlertCircle, RefreshCw } from "lucide-react";
 import { useFeaturedPublications, type FeaturedPublication } from "@/hooks/useFeaturedPublications";
