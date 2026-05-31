@@ -104,7 +104,10 @@ describe("FeaturedCarousel", () => {
 
   it("ouvre le document au premier clic (mobile)", () => {
     const { getLocation } = renderWithRouter();
-    const card = screen.getByText("Premier document").closest("a")!;
+    // Title appears in both <h3> and CoverFallback fallback — use the card root.
+    const card = document.querySelector<HTMLAnchorElement>(
+      '[data-publication-card-id="pub-1"]'
+    )!;
     fireEvent.click(card);
     const loc = getLocation();
     expect(loc.pathname).toBe("/publication/pub-1");
@@ -114,7 +117,10 @@ describe("FeaturedCarousel", () => {
 
   it("persiste la sélection dans sessionStorage pour restauration robuste (tablette/3G)", () => {
     renderWithRouter();
-    fireEvent.click(screen.getByText("Deuxième document").closest("a")!);
+    const card = document.querySelector<HTMLAnchorElement>(
+      '[data-publication-card-id="pub-2"]'
+    )!;
+    fireEvent.click(card);
     expect(sessionStorage.getItem("carousel:lastFeaturedPickId")).toBe("pub-2");
   });
 
