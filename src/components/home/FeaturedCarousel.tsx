@@ -277,7 +277,7 @@ export function FeaturedCarousel({ preview = false, publications: override }: Fe
                 key={pub.id}
                 className="flex-[0_0_70%] sm:flex-[0_0_45%] md:flex-[0_0_32%] lg:flex-[0_0_24%] px-2"
               >
-                <CarouselCard pub={pub} preview={preview} />
+                <CarouselCard pub={pub} preview={preview} onNavigate={handleNavigate} />
               </div>
             ))}
           </div>
