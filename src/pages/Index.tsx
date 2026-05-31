@@ -115,6 +115,9 @@ export default function Index() {
         </div>
       </section>
 
+      {/* Featured Carousel - top of homepage */}
+      {isOnline && <FeaturedCarousel />}
+
       {/* Stats Section */}
       <section className="py-12 bg-card border-y border-border">
         <div className="container">
