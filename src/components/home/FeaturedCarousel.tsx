@@ -57,56 +57,75 @@ function CoverFallback({ title }: { title: string }) {
   );
 }
 
-function CarouselCard({ pub, preview }: { pub: FeaturedPublication; preview: boolean }) {
+function CarouselCard({
+  pub,
+  preview,
+  onNavigate,
+}: {
+  pub: FeaturedPublication;
+  preview: boolean;
+  onNavigate?: (id: string) => void;
+}) {
   const [imgError, setImgError] = useState(false);
-  const content = (
-    <div className="group block rounded-xl overflow-hidden bg-card border border-border hover:border-primary/50 hover:shadow-elegant transition-all duration-300 h-full">
-      <div className="relative aspect-[3/4] overflow-hidden bg-muted">
-        {pub.cover_image_url && !imgError ? (
-          <CachedImage
-            src={pub.cover_image_url}
-            alt={pub.title}
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-            onError={() => setImgError(true)}
-          />
-        ) : (
-          <CoverFallback title={pub.title} />
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-        <div className="absolute top-2 left-2 flex gap-1.5">
-          <span className="px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider rounded-full bg-primary/90 text-primary-foreground backdrop-blur-sm">
-            {categoryLabel[pub.category] || pub.category}
-          </span>
-          {(pub as any).is_featured && (
-            <span className="px-1.5 py-0.5 text-[10px] rounded-full bg-yellow-500/90 text-black backdrop-blur-sm flex items-center gap-0.5">
-              <Sparkles className="h-2.5 w-2.5" />
-            </span>
-          )}
-        </div>
-        <div className="absolute bottom-2 right-2 flex items-center gap-1.5">
-          <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/60 text-white text-[10px] backdrop-blur-sm">
-            <Eye className="h-3 w-3" />
-            {pub.views_count}
-          </span>
-          {((pub as any).downloads_count ?? 0) > 0 && (
-            <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/60 text-white text-[10px] backdrop-blur-sm">
-              <Download className="h-3 w-3" />
-              {(pub as any).downloads_count}
-            </span>
-          )}
-        </div>
-      </div>
-      <div className="p-3 space-y-1">
-        <h3 className="font-serif text-sm md:text-base font-semibold text-foreground line-clamp-2 group-hover:text-primary transition-colors">
-          {pub.title}
-        </h3>
-        <p className="text-xs text-muted-foreground line-clamp-1">{pub.author}</p>
-      </div>
-    </div>
-  );
 
-  if (preview) return <div className="cursor-default">{content}</div>;
-  return <Link to={`/publication/${pub.id}`}>{content}</Link>;
+  const handleClick = (e: React.MouseEvent) => {
+    if (preview) return;
+    e.preventDefault();
+    onNavigate?.(pub.id);
+  };
+
+  return (
+    <a
+      href={preview ? undefined : `/publication/${pub.id}`}
+      onClick={handleClick}
+      className={preview ? "cursor-default block" : "block"}
+      draggable={false}
+    >
+      <div className="group block rounded-xl overflow-hidden bg-card border border-border hover:border-primary/50 hover:shadow-elegant transition-all duration-300 h-full">
+        <div className="relative aspect-[3/4] overflow-hidden bg-muted">
+          {pub.cover_image_url && !imgError ? (
+            <CachedImage
+              src={pub.cover_image_url}
+              alt={pub.title}
+              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+              onError={() => setImgError(true)}
+            />
+          ) : (
+            <CoverFallback title={pub.title} />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+          <div className="absolute top-2 left-2 flex gap-1.5">
+            <span className="px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider rounded-full bg-primary/90 text-primary-foreground backdrop-blur-sm">
+              {categoryLabel[pub.category] || pub.category}
+            </span>
+            {(pub as any).is_featured && (
+              <span className="px-1.5 py-0.5 text-[10px] rounded-full bg-yellow-500/90 text-black backdrop-blur-sm flex items-center gap-0.5">
+                <Sparkles className="h-2.5 w-2.5" />
+              </span>
+            )}
+          </div>
+          <div className="absolute bottom-2 right-2 flex items-center gap-1.5">
+            <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/60 text-white text-[10px] backdrop-blur-sm">
+              <Eye className="h-3 w-3" />
+              {pub.views_count}
+            </span>
+            {((pub as any).downloads_count ?? 0) > 0 && (
+              <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/60 text-white text-[10px] backdrop-blur-sm">
+                <Download className="h-3 w-3" />
+                {(pub as any).downloads_count}
+              </span>
+            )}
+          </div>
+        </div>
+        <div className="p-3 space-y-1">
+          <h3 className="font-serif text-sm md:text-base font-semibold text-foreground line-clamp-2 group-hover:text-primary transition-colors">
+            {pub.title}
+          </h3>
+          <p className="text-xs text-muted-foreground line-clamp-1">{pub.author}</p>
+        </div>
+      </div>
+    </a>
+  );
 }
 
 export function FeaturedCarousel({ preview = false, publications: override }: FeaturedCarouselProps = {}) {
