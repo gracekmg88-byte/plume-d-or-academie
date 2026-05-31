@@ -150,11 +150,9 @@ export function FeaturedCarousel({ preview = false, publications: override }: Fe
   const handleNavigate = useCallback(
     (id: string) => {
       // Respect Embla drag/swipe — don't navigate if user was swiping
-      if (emblaApi && !(emblaApi as EmblaCarouselType).internalEngine) {
-        // noop, type guard
-      }
       const clickAllowed = (emblaApi as any)?.clickAllowed?.();
       if (emblaApi && clickAllowed === false) return;
+
 
       saveScrollPosition(window.history.state?.key, location.pathname, window.scrollY);
       preloadPublicationFlow();
