@@ -187,6 +187,17 @@ export function FeaturedCarousel({ preview = false, publications: override }: Fe
   }, [publications]);
 
   useEffect(() => {
+    if (!emblaApi || !publications?.length) return;
+    const navState = location.state as { restoredFromPublication?: boolean; returnPublicationId?: string | null } | null;
+    if (!navState?.restoredFromPublication || !navState.returnPublicationId) return;
+    const idx = publications.findIndex((p) => p.id === navState.returnPublicationId);
+    if (idx >= 0) {
+      emblaApi.scrollTo(idx, true);
+      autoplay.current?.stop?.();
+    }
+  }, [emblaApi, publications, location.state]);
+
+  useEffect(() => {
     if (!emblaApi) return;
     const onSelect = () => setSelectedIndex(emblaApi.selectedScrollSnap());
     setScrollSnaps(emblaApi.scrollSnapList());
@@ -197,6 +208,7 @@ export function FeaturedCarousel({ preview = false, publications: override }: Fe
       emblaApi.off("select", onSelect);
     };
   }, [emblaApi, publications]);
+
 
   // Loading state
   if (isLoading) {
