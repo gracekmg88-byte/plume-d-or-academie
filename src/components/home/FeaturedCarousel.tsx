@@ -133,16 +133,49 @@ export function FeaturedCarousel({ preview = false, publications: override }: Fe
   const publications = override ?? query.data;
   const isLoading = override ? false : query.isLoading;
   const isError = override ? false : query.isError;
+  const navigate = useNavigate();
+  const location = useLocation();
+  const queryClient = useQueryClient();
 
   const autoplay = useRef(
-    Autoplay({ delay: 4000, stopOnInteraction: false, stopOnMouseEnter: true })
+    Autoplay({ delay: 4000, stopOnInteraction: true, stopOnMouseEnter: true, stopOnFocusIn: true })
   );
   const [emblaRef, emblaApi] = useEmblaCarousel(
-    { loop: true, align: "start", dragFree: false },
+    { loop: true, align: "start", dragFree: false, duration: 25 },
     [autoplay.current]
   );
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [scrollSnaps, setScrollSnaps] = useState<number[]>([]);
+
+  const handleNavigate = useCallback(
+    (id: string) => {
+      // Respect Embla drag/swipe — don't navigate if user was swiping
+      if (emblaApi && !(emblaApi as EmblaCarouselType).internalEngine) {
+        // noop, type guard
+      }
+      const clickAllowed = (emblaApi as any)?.clickAllowed?.();
+      if (emblaApi && clickAllowed === false) return;
+
+      saveScrollPosition(window.history.state?.key, location.pathname, window.scrollY);
+      preloadPublicationFlow();
+      queryClient
+        .prefetchQuery({
+          queryKey: ["publication", id],
+          queryFn: () => fetchPublication(id),
+          staleTime: 60_000,
+        })
+        .catch(() => {});
+      navigate(`/publication/${id}`, {
+        state: {
+          returnTo: `${location.pathname}${location.search}`,
+          returnKey: window.history.state?.key ?? null,
+          returnPublicationId: id,
+        },
+      });
+    },
+    [emblaApi, location.pathname, location.search, navigate, queryClient]
+  );
+
 
   useEffect(() => {
     if (publications?.length) {
