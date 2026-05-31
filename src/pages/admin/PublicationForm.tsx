@@ -43,6 +43,7 @@ export default function PublicationForm() {
     category: "livre" as "livre" | "memoire" | "tfc" | "article",
     is_published: false,
     allow_download: true,
+    is_featured: false,
   });
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [pdfFile, setPdfFile] = useState<File | null>(null);
@@ -68,6 +69,7 @@ export default function PublicationForm() {
         category: existingPublication.category as typeof formData.category,
         is_published: existingPublication.is_published,
         allow_download: (existingPublication as any).allow_download !== false,
+        is_featured: (existingPublication as any).is_featured === true,
       });
       if (existingPublication.cover_image_url) {
         setCoverPreview(existingPublication.cover_image_url);
@@ -445,6 +447,19 @@ export default function PublicationForm() {
                 id="allow_download"
                 checked={formData.allow_download}
                 onCheckedChange={(checked) => setFormData({ ...formData, allow_download: checked })}
+              />
+            </div>
+            <div className="border-t border-border pt-4 flex items-center justify-between">
+              <div>
+                <Label htmlFor="is_featured" className="text-base">Mettre à la une ⭐</Label>
+                <p className="text-sm text-muted-foreground">
+                  Afficher cette publication dans le carrousel de la page d'accueil
+                </p>
+              </div>
+              <Switch
+                id="is_featured"
+                checked={formData.is_featured}
+                onCheckedChange={(checked) => setFormData({ ...formData, is_featured: checked })}
               />
             </div>
           </div>

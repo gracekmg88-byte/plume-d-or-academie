@@ -385,6 +385,7 @@ export type Database = {
           description: string | null
           file_url: string | null
           id: string
+          is_featured: boolean
           is_published: boolean
           publication_number: string | null
           summary: string | null
@@ -402,6 +403,7 @@ export type Database = {
           description?: string | null
           file_url?: string | null
           id?: string
+          is_featured?: boolean
           is_published?: boolean
           publication_number?: string | null
           summary?: string | null
@@ -419,6 +421,7 @@ export type Database = {
           description?: string | null
           file_url?: string | null
           id?: string
+          is_featured?: boolean
           is_published?: boolean
           publication_number?: string | null
           summary?: string | null

@@ -13,6 +13,7 @@ import { useOnlineStatus } from "@/hooks/useOffline";
 import { ContinueReadingSection } from "@/components/home/ContinueReadingSection";
 import { RecommendationsSection } from "@/components/home/RecommendationsSection";
 import { SEO } from "@/components/seo/SEO";
+import { FeaturedCarousel } from "@/components/home/FeaturedCarousel";
 import heroImage from "@/assets/hero-library.webp";
 
 export default function Index() {
@@ -113,6 +114,9 @@ export default function Index() {
           </span>
         </div>
       </section>
+
+      {/* Featured Carousel - top of homepage */}
+      {isOnline && <FeaturedCarousel />}
 
       {/* Stats Section */}
       <section className="py-12 bg-card border-y border-border">

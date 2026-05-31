@@ -1,0 +1,2 @@
+ALTER TABLE public.publications ADD COLUMN IF NOT EXISTS is_featured boolean NOT NULL DEFAULT false;
+CREATE INDEX IF NOT EXISTS idx_publications_is_featured ON public.publications(is_featured) WHERE is_featured = true;
