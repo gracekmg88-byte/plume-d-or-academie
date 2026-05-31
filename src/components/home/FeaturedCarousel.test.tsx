@@ -6,26 +6,30 @@ import { FeaturedCarousel } from "./FeaturedCarousel";
 import type { FeaturedPublication } from "@/hooks/useFeaturedPublications";
 
 // --- Mocks for browser-only deps used inside the carousel ---
+// IMPORTANT: keep stable references across renders, otherwise the carousel's
+// useEffect([emblaApi, publications]) re-runs every render, calls setScrollSnaps
+// with a new array, triggers another render… infinite loop → worker OOM.
 vi.mock("embla-carousel-react", () => {
-  const useEmblaCarousel = () => {
-    const api = {
-      scrollTo: vi.fn(),
-      scrollPrev: vi.fn(),
-      scrollNext: vi.fn(),
-      scrollSnapList: () => [0, 0.5],
-      selectedScrollSnap: () => 0,
-      on: vi.fn(),
-      off: vi.fn(),
-      clickAllowed: () => true,
-    };
-    const ref = (_node: HTMLElement | null) => {};
-    return [ref, api];
+  const snaps = [0, 0.5];
+  const stableApi = {
+    scrollTo: () => {},
+    scrollPrev: () => {},
+    scrollNext: () => {},
+    scrollSnapList: () => snaps,
+    selectedScrollSnap: () => 0,
+    on: () => {},
+    off: () => {},
+    clickAllowed: () => true,
   };
+  const stableRef = (_node: HTMLElement | null) => {};
+  const tuple: [typeof stableRef, typeof stableApi] = [stableRef, stableApi];
+  const useEmblaCarousel = () => tuple;
   return { default: useEmblaCarousel };
 });
 
+const stableAutoplay = { stop: () => {}, play: () => {}, reset: () => {} };
 vi.mock("embla-carousel-autoplay", () => ({
-  default: () => ({ stop: vi.fn(), play: vi.fn(), reset: vi.fn() }),
+  default: () => stableAutoplay,
 }));
 
 vi.mock("@/components/ui/cached-image", () => ({
