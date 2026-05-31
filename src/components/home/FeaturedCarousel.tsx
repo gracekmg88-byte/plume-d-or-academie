@@ -1,11 +1,16 @@
-import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useRef, useState, useCallback } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import useEmblaCarousel from "embla-carousel-react";
+import type { EmblaCarouselType } from "embla-carousel";
 import Autoplay from "embla-carousel-autoplay";
 import { ChevronLeft, ChevronRight, Sparkles, Eye, Download, AlertCircle, RefreshCw } from "lucide-react";
 import { useFeaturedPublications, type FeaturedPublication } from "@/hooks/useFeaturedPublications";
 import { CachedImage, preloadImages } from "@/components/ui/cached-image";
 import { Button } from "@/components/ui/button";
+import { saveScrollPosition } from "@/lib/scroll-restoration";
+import { preloadPublicationFlow } from "@/lib/route-preload";
+import { fetchPublication } from "@/hooks/usePublications";
 
 const categoryLabel: Record<string, string> = {
   livre: "Livre",
