@@ -11,6 +11,7 @@ import { saveScrollPosition } from "@/lib/scroll-restoration";
 import { preloadPublicationFlow } from "@/lib/route-preload";
 
 type Category = "livre" | "memoire" | "tfc" | "article";
+export type PublicationCardVariant = "grid" | "compact" | "list" | "magazine-hero";
 
 interface PublicationCardProps {
   id: string;
@@ -20,6 +21,7 @@ interface PublicationCardProps {
   category: Category;
   coverImageUrl?: string;
   viewsCount: number;
+  variant?: PublicationCardVariant;
 }
 
 const categoryConfig: Record<Category, { label: string; icon: typeof Book; className: string }> = {
@@ -37,6 +39,7 @@ export function PublicationCard({
   category,
   coverImageUrl,
   viewsCount,
+  variant = "grid",
 }: PublicationCardProps) {
   const { pathname } = useLocation();
   const queryClient = useQueryClient();
@@ -53,21 +56,161 @@ export function PublicationCard({
     }).catch(() => {});
   };
 
+  const linkProps = {
+    to: `/publication/${id}`,
+    state: {
+      returnTo: `${pathname}${window.location.search}`,
+      returnKey: window.history.state?.key ?? null,
+      returnPublicationId: id,
+    },
+    "data-publication-card-id": id,
+    onPointerDown: prepareNavigation,
+    onMouseEnter: prepareNavigation,
+    onClickCapture: prepareNavigation,
+  } as const;
+
+  // LIST variant — horizontal row with thumbnail + full description
+  if (variant === "list") {
+    return (
+      <Link {...linkProps}>
+        <Card className="group flex gap-4 p-3 sm:p-4 overflow-hidden transition-all duration-300 hover:shadow-elegant hover:-translate-y-0.5 bg-card border-border/50">
+          <div className="relative w-24 sm:w-32 aspect-[3/4] shrink-0 overflow-hidden rounded-md bg-muted">
+            {coverImageUrl ? (
+              <CachedImage
+                src={coverImageUrl}
+                alt={title}
+                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                containerClassName="h-full w-full"
+                fallbackIcon={<Icon className="h-10 w-10 text-muted-foreground/30" />}
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-muted to-accent">
+                <Icon className="h-10 w-10 text-muted-foreground/30" />
+              </div>
+            )}
+          </div>
+          <div className="flex-1 min-w-0 flex flex-col">
+            <div className="flex items-center gap-2 mb-1 flex-wrap">
+              <Badge className={cn("gap-1", config.className)}>
+                <Icon className="h-3 w-3" />
+                {config.label}
+              </Badge>
+              <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                <Eye className="h-3 w-3" />
+                {viewsCount}
+              </span>
+            </div>
+            <h3 className="font-serif text-base sm:text-lg font-semibold leading-tight line-clamp-2 group-hover:text-primary transition-colors">
+              {title}
+            </h3>
+            <p className="mt-1 text-sm text-muted-foreground">{author}</p>
+            {description && (
+              <p className="mt-2 text-sm text-muted-foreground line-clamp-3 leading-relaxed">
+                {description}
+              </p>
+            )}
+            <div className="mt-auto pt-2">
+              <FavoriteButton publicationId={id} className="h-7 w-7" />
+            </div>
+          </div>
+        </Card>
+      </Link>
+    );
+  }
+
+  // MAGAZINE HERO — large featured card (wide image, big title)
+  if (variant === "magazine-hero") {
+    return (
+      <Link {...linkProps}>
+        <Card className="group overflow-hidden transition-all duration-300 hover:shadow-elegant bg-card border-border/50">
+          <div className="grid md:grid-cols-2 gap-0">
+            <div className="relative aspect-[16/10] md:aspect-auto md:min-h-[260px] overflow-hidden bg-muted">
+              {coverImageUrl ? (
+                <CachedImage
+                  src={coverImageUrl}
+                  alt={title}
+                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  containerClassName="h-full w-full"
+                  fallbackIcon={<Icon className="h-16 w-16 text-muted-foreground/30" />}
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-muted to-accent">
+                  <Icon className="h-20 w-20 text-muted-foreground/30" />
+                </div>
+              )}
+              <Badge className={cn("absolute top-3 left-3 z-10", config.className)}>
+                <Icon className="h-3 w-3 mr-1" />
+                {config.label}
+              </Badge>
+              <div className="absolute top-3 right-3 z-10">
+                <FavoriteButton
+                  publicationId={id}
+                  className="h-8 w-8 bg-background/80 backdrop-blur-sm shadow-sm hover:bg-background"
+                />
+              </div>
+            </div>
+            <CardContent className="p-5 md:p-6 flex flex-col justify-center">
+              <span className="text-xs uppercase tracking-wider text-primary font-semibold mb-2">
+                À découvrir
+              </span>
+              <h3 className="font-serif text-2xl md:text-3xl font-bold leading-tight line-clamp-3 group-hover:text-primary transition-colors">
+                {title}
+              </h3>
+              <p className="mt-2 text-base text-muted-foreground">{author}</p>
+              {description && (
+                <p className="mt-3 text-sm text-muted-foreground line-clamp-4 leading-relaxed">
+                  {description}
+                </p>
+              )}
+              <div className="mt-4 flex items-center gap-1 text-xs text-muted-foreground">
+                <Eye className="h-3 w-3" />
+                <span>{viewsCount} consultations</span>
+              </div>
+            </CardContent>
+          </div>
+        </Card>
+      </Link>
+    );
+  }
+
+  // COMPACT — smaller card, title only
+  if (variant === "compact") {
+    return (
+      <Link {...linkProps}>
+        <Card className="group h-full overflow-hidden transition-all duration-300 hover:shadow-elegant hover:-translate-y-1 bg-card border-border/50">
+          <div className="relative aspect-[3/4] overflow-hidden bg-muted">
+            {coverImageUrl ? (
+              <CachedImage
+                src={coverImageUrl}
+                alt={title}
+                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                containerClassName="h-full w-full"
+                fallbackIcon={<Icon className="h-10 w-10 text-muted-foreground/30" />}
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-muted to-accent">
+                <Icon className="h-10 w-10 text-muted-foreground/30" />
+              </div>
+            )}
+            <Badge className={cn("absolute top-2 left-2 z-10 text-[10px] px-1.5 py-0", config.className)}>
+              {config.label}
+            </Badge>
+          </div>
+          <CardContent className="p-2.5">
+            <h3 className="font-serif text-sm font-semibold leading-tight line-clamp-2 group-hover:text-primary transition-colors">
+              {title}
+            </h3>
+            <p className="mt-0.5 text-xs text-muted-foreground line-clamp-1">{author}</p>
+          </CardContent>
+        </Card>
+      </Link>
+    );
+  }
+
+  // Default GRID variant (existing behavior)
   return (
-    <Link
-      to={`/publication/${id}`}
-      state={{
-        returnTo: `${pathname}${window.location.search}`,
-        returnKey: window.history.state?.key ?? null,
-        returnPublicationId: id,
-      }}
-      data-publication-card-id={id}
-      onPointerDown={prepareNavigation}
-      onMouseEnter={prepareNavigation}
-      onClickCapture={prepareNavigation}
-    >
+    <Link {...linkProps}>
       <Card className="group h-full overflow-hidden transition-all duration-300 hover:shadow-elegant hover:-translate-y-1 bg-card border-border/50">
-        {/* Cover Image */}
         <div className="relative aspect-[3/4] overflow-hidden bg-muted">
           {coverImageUrl ? (
             <CachedImage
@@ -94,7 +237,6 @@ export function PublicationCard({
           </div>
         </div>
 
-        {/* Content */}
         <CardContent className="p-4">
           <h3 className="font-serif text-lg font-semibold leading-tight line-clamp-2 group-hover:text-primary transition-colors">
             {title}
@@ -110,7 +252,7 @@ export function PublicationCard({
             <span>{viewsCount} consultations</span>
           </div>
         </CardContent>
-      </Card>
+      </Link>
     </Link>
   );
 }
