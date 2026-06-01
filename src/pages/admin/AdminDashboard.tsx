@@ -373,6 +373,7 @@ export default function AdminDashboard() {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-1">
+                          <AdjustViewsButton publicationId={pub.id} currentViews={pub.views_count ?? 0} />
                           <TooltipProvider>
                             <Tooltip>
                               <TooltipTrigger asChild>
