@@ -12,6 +12,8 @@ import { AdminReadingStatsCard } from "@/components/admin/AdminReadingStatsCard"
 import { GlobalStatsCard } from "@/components/admin/GlobalStatsCard";
 import { CertificationsCard } from "@/components/admin/CertificationsCard";
 import { FeaturedCarouselPreview } from "@/components/admin/FeaturedCarouselPreview";
+import { LibraryLayoutSettings } from "@/components/admin/LibraryLayoutSettings";
+import { AdjustViewsButton } from "@/components/admin/AdjustViewsButton";
 import { Badge } from "@/components/ui/badge";
 import {
   Tooltip,
