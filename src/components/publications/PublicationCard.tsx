@@ -252,7 +252,7 @@ export function PublicationCard({
             <span>{viewsCount} consultations</span>
           </div>
         </CardContent>
-      </Link>
+      </Card>
     </Link>
   );
 }
