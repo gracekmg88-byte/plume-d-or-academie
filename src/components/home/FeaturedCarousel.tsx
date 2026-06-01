@@ -154,7 +154,14 @@ export function FeaturedCarousel({ preview = false, publications: override }: Fe
   const queryClient = useQueryClient();
 
   const autoplay = useRef(
-    Autoplay({ delay: 4000, stopOnInteraction: true, stopOnMouseEnter: true, stopOnFocusIn: true })
+    Autoplay({
+      delay: 4000,
+      stopOnInteraction: false,
+      stopOnMouseEnter: false,
+      stopOnFocusIn: false,
+      stopOnLastSnap: false,
+playOnInit: true,
+    })
   );
   const [emblaRef, emblaApi] = useEmblaCarousel(
     { loop: true, align: "start", dragFree: false, duration: 25 },
