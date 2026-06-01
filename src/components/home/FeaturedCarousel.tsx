@@ -154,7 +154,14 @@ export function FeaturedCarousel({ preview = false, publications: override }: Fe
   const queryClient = useQueryClient();
 
   const autoplay = useRef(
-    Autoplay({ delay: 4000, stopOnInteraction: true, stopOnMouseEnter: true, stopOnFocusIn: true })
+    Autoplay({
+      delay: 4000,
+      stopOnInteraction: false,
+      stopOnMouseEnter: false,
+      stopOnFocusIn: false,
+      stopOnLastSnap: false,
+playOnInit: true,
+    })
   );
   const [emblaRef, emblaApi] = useEmblaCarousel(
     { loop: true, align: "start", dragFree: false, duration: 25 },
@@ -225,7 +232,7 @@ export function FeaturedCarousel({ preview = false, publications: override }: Fe
     if (idx < 0) return;
 
     emblaApi.scrollTo(idx, true);
-    autoplay.current?.stop?.();
+    // Keep autoplay running — user wants the carousel to never pause.
     setHighlightedId(restoreId);
 
     // Bring the actual DOM card into view in case the page also needs to scroll.
