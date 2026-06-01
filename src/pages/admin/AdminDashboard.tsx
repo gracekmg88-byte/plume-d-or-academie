@@ -281,6 +281,9 @@ export default function AdminDashboard() {
         {/* Featured carousel preview */}
         <FeaturedCarouselPreview />
 
+        {/* Library layout selector */}
+        <LibraryLayoutSettings />
+
         {/* Actions */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <h1 className="font-serif text-2xl font-bold text-foreground">
