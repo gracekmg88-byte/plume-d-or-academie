@@ -40,6 +40,8 @@ export default function Bibliotheque() {
   const ITEMS_PER_PAGE = 12;
   const isOnline = useOnlineStatus();
   const { t } = useLanguage();
+  const { layout } = useLibraryLayout();
+  
   
 
   const { data: publications, isLoading } = usePublications(category === "all" ? undefined : category);
