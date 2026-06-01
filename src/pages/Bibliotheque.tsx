@@ -341,20 +341,85 @@ export default function Bibliotheque() {
                     </span>
                   )}
                 </p>
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {paginatedPublications.map((pub) => (
-                    <PublicationCard
-                      key={pub.id}
-                      id={pub.id}
-                      title={pub.title}
-                      author={pub.author}
-                      description={pub.description || undefined}
-                      category={pub.category as "livre" | "memoire" | "tfc" | "article"}
-                      coverImageUrl={pub.cover_image_url || undefined}
-                      viewsCount={pub.views_count}
-                    />
-                  ))}
-                </div>
+                {layout === "list" ? (
+                  <div className="flex flex-col gap-4">
+                    {paginatedPublications.map((pub) => (
+                      <PublicationCard
+                        key={pub.id}
+                        id={pub.id}
+                        title={pub.title}
+                        author={pub.author}
+                        description={pub.description || undefined}
+                        category={pub.category as "livre" | "memoire" | "tfc" | "article"}
+                        coverImageUrl={pub.cover_image_url || undefined}
+                        viewsCount={pub.views_count}
+                        variant="list"
+                      />
+                    ))}
+                  </div>
+                ) : layout === "magazine" ? (
+                  <div className="space-y-6">
+                    {paginatedPublications[0] && (
+                      <PublicationCard
+                        key={paginatedPublications[0].id}
+                        id={paginatedPublications[0].id}
+                        title={paginatedPublications[0].title}
+                        author={paginatedPublications[0].author}
+                        description={paginatedPublications[0].description || undefined}
+                        category={paginatedPublications[0].category as "livre" | "memoire" | "tfc" | "article"}
+                        coverImageUrl={paginatedPublications[0].cover_image_url || undefined}
+                        viewsCount={paginatedPublications[0].views_count}
+                        variant="magazine-hero"
+                      />
+                    )}
+                    {paginatedPublications.length > 1 && (
+                      <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        {paginatedPublications.slice(1).map((pub) => (
+                          <PublicationCard
+                            key={pub.id}
+                            id={pub.id}
+                            title={pub.title}
+                            author={pub.author}
+                            description={pub.description || undefined}
+                            category={pub.category as "livre" | "memoire" | "tfc" | "article"}
+                            coverImageUrl={pub.cover_image_url || undefined}
+                            viewsCount={pub.views_count}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ) : layout === "compact" ? (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
+                    {paginatedPublications.map((pub) => (
+                      <PublicationCard
+                        key={pub.id}
+                        id={pub.id}
+                        title={pub.title}
+                        author={pub.author}
+                        category={pub.category as "livre" | "memoire" | "tfc" | "article"}
+                        coverImageUrl={pub.cover_image_url || undefined}
+                        viewsCount={pub.views_count}
+                        variant="compact"
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {paginatedPublications.map((pub) => (
+                      <PublicationCard
+                        key={pub.id}
+                        id={pub.id}
+                        title={pub.title}
+                        author={pub.author}
+                        description={pub.description || undefined}
+                        category={pub.category as "livre" | "memoire" | "tfc" | "article"}
+                        coverImageUrl={pub.cover_image_url || undefined}
+                        viewsCount={pub.views_count}
+                      />
+                    ))}
+                  </div>
+                )}
 
                 {/* Pagination */}
                 {totalPages > 1 && (
