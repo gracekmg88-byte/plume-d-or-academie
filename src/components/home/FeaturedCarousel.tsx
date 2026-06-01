@@ -232,7 +232,7 @@ playOnInit: true,
     if (idx < 0) return;
 
     emblaApi.scrollTo(idx, true);
-    autoplay.current?.stop?.();
+    // Keep autoplay running — user wants the carousel to never pause.
     setHighlightedId(restoreId);
 
     // Bring the actual DOM card into view in case the page also needs to scroll.
