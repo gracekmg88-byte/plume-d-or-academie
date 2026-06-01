@@ -17,6 +17,7 @@ import { preloadAndCacheImages } from "@/lib/image-cache";
 import { useOnlineStatus } from "@/hooks/useOffline";
 import { getAllOfflinePublications, type OfflinePublication } from "@/lib/offline-storage";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useLibraryLayout } from "@/hooks/useLibraryLayout";
 import { SEO } from "@/components/seo/SEO";
 import heroBiblioImage from "@/assets/hero-bibliotheque.webp";
 
