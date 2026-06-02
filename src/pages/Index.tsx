@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowRight, Book, FileText, GraduationCap, Newspaper, Users, Award, BookOpen, WifiOff, RefreshCw, FolderDown } from "lucide-react";
+import { ArrowRight, Book, BookOpen, Users, Award, WifiOff, RefreshCw, FolderDown } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { PublicationCard } from "@/components/publications/PublicationCard";
@@ -10,6 +10,7 @@ import { preloadAndCacheImages } from "@/lib/image-cache";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useOnlineStatus } from "@/hooks/useOffline";
+import { useHomepageLayout } from "@/hooks/useHomepageLayout";
 import { ContinueReadingSection } from "@/components/home/ContinueReadingSection";
 import { RecommendationsSection } from "@/components/home/RecommendationsSection";
 import { SEO } from "@/components/seo/SEO";
@@ -20,16 +21,15 @@ export default function Index() {
   const isOnline = useOnlineStatus();
   const navigate = useNavigate();
   const { data: publications, isLoading } = usePublications();
-  const recentPublications = publications?.slice(0, 4) || [];
   const { t } = useLanguage();
   const { user } = useAuth();
+  const { layout: homepageLayout } = useHomepageLayout();
 
-  const stats = [
-    { icon: Book, label: t("stats.books"), value: "50.000+" },
-    { icon: GraduationCap, label: t("stats.memoirs"), value: "10.000+" },
-    { icon: FileText, label: t("stats.tfc"), value: "20.000+" },
-    { icon: Newspaper, label: t("stats.articles"), value: "150.000+" },
-  ];
+  const recentCount = homepageLayout === "focus-catalogue" ? 8 : 4;
+  const recentPublications = publications?.slice(0, recentCount) || [];
+  const showFeatures = homepageLayout === "complet";
+  const showCTA = homepageLayout !== "epure";
+  const recentAsMagazine = homepageLayout === "magazine";
 
   const features = [
     { icon: BookOpen, title: t("features.freeAccess"), description: t("features.freeAccessDesc") },
@@ -118,24 +118,6 @@ export default function Index() {
       {/* Featured Carousel - top of homepage */}
       {isOnline && <FeaturedCarousel />}
 
-      {/* Stats Section */}
-      <section className="py-12 bg-card border-y border-border">
-        <div className="container">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {stats.map((stat) => {
-              const Icon = stat.icon;
-              return (
-                <div key={stat.label} className="text-center space-y-2">
-                  <Icon className="h-8 w-8 mx-auto text-primary" />
-                  <div className="font-serif text-3xl md:text-4xl font-bold text-foreground">{stat.value}</div>
-                  <div className="text-sm text-muted-foreground">{stat.label}</div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
       {/* Continue Reading - only for logged-in users & online */}
       {isOnline && user && <ContinueReadingSection />}
 
@@ -177,28 +159,30 @@ export default function Index() {
       )}
 
       {/* Features Section */}
-      <section className="py-16 md:py-24 bg-background">
-        <div className="container">
-          <div className="text-center max-w-2xl mx-auto mb-12">
-            <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-4">{t("features.title")}</h2>
-            <p className="text-muted-foreground leading-relaxed">{t("features.subtitle")}</p>
-          </div>
-          <div className="grid md:grid-cols-3 gap-8">
-            {features.map((feature) => {
-              const Icon = feature.icon;
-              return (
-                <div key={feature.title} className="group p-6 rounded-xl bg-card border border-border hover:shadow-elegant transition-all duration-300">
-                  <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                    <Icon className="h-6 w-6 text-primary group-hover:text-primary-foreground" />
+      {showFeatures && (
+        <section className="py-16 md:py-24 bg-background">
+          <div className="container">
+            <div className="text-center max-w-2xl mx-auto mb-12">
+              <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground mb-4">{t("features.title")}</h2>
+              <p className="text-muted-foreground leading-relaxed">{t("features.subtitle")}</p>
+            </div>
+            <div className="grid md:grid-cols-3 gap-8">
+              {features.map((feature) => {
+                const Icon = feature.icon;
+                return (
+                  <div key={feature.title} className="group p-6 rounded-xl bg-card border border-border hover:shadow-elegant transition-all duration-300">
+                    <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                      <Icon className="h-6 w-6 text-primary group-hover:text-primary-foreground" />
+                    </div>
+                    <h3 className="font-serif text-xl font-semibold text-foreground mb-2">{feature.title}</h3>
+                    <p className="text-muted-foreground leading-relaxed">{feature.description}</p>
                   </div>
-                  <h3 className="font-serif text-xl font-semibold text-foreground mb-2">{feature.title}</h3>
-                  <p className="text-muted-foreground leading-relaxed">{feature.description}</p>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Recent Publications - only online */}
       {isOnline && (
@@ -227,20 +211,52 @@ export default function Index() {
                 ))}
               </div>
             ) : recentPublications.length > 0 ? (
-              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {recentPublications.map((pub) => (
+              recentAsMagazine ? (
+                <div className="space-y-6">
                   <PublicationCard
-                    key={pub.id}
-                    id={pub.id}
-                    title={pub.title}
-                    author={pub.author}
-                    description={pub.description || undefined}
-                    category={pub.category as "livre" | "memoire" | "tfc" | "article"}
-                    coverImageUrl={pub.cover_image_url || undefined}
-                    viewsCount={pub.views_count}
+                    key={recentPublications[0].id}
+                    id={recentPublications[0].id}
+                    title={recentPublications[0].title}
+                    author={recentPublications[0].author}
+                    description={recentPublications[0].description || undefined}
+                    category={recentPublications[0].category as "livre" | "memoire" | "tfc" | "article"}
+                    coverImageUrl={recentPublications[0].cover_image_url || undefined}
+                    viewsCount={recentPublications[0].views_count}
+                    variant="magazine-hero"
                   />
-                ))}
-              </div>
+                  {recentPublications.length > 1 && (
+                    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {recentPublications.slice(1).map((pub) => (
+                        <PublicationCard
+                          key={pub.id}
+                          id={pub.id}
+                          title={pub.title}
+                          author={pub.author}
+                          description={pub.description || undefined}
+                          category={pub.category as "livre" | "memoire" | "tfc" | "article"}
+                          coverImageUrl={pub.cover_image_url || undefined}
+                          viewsCount={pub.views_count}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {recentPublications.map((pub) => (
+                    <PublicationCard
+                      key={pub.id}
+                      id={pub.id}
+                      title={pub.title}
+                      author={pub.author}
+                      description={pub.description || undefined}
+                      category={pub.category as "livre" | "memoire" | "tfc" | "article"}
+                      coverImageUrl={pub.cover_image_url || undefined}
+                      viewsCount={pub.views_count}
+                    />
+                  ))}
+                </div>
+              )
             ) : (
               <div className="text-center py-12 text-muted-foreground">
                 <BookOpen className="h-12 w-12 mx-auto mb-4 opacity-50" />
@@ -252,20 +268,22 @@ export default function Index() {
       )}
 
       {/* CTA Section */}
-      <section className="py-16 md:py-24 bg-secondary">
-        <div className="container text-center">
-          <div className="max-w-2xl mx-auto space-y-6">
-            <h2 className="font-serif text-3xl md:text-4xl font-bold text-secondary-foreground">{t("cta.title")}</h2>
-            <p className="text-secondary-foreground/80 text-lg leading-relaxed">{t("cta.description")}</p>
-            <Link to="/bibliotheque">
-              <Button size="lg" className="gap-2 mt-4">
-                {t("cta.button")}
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-            </Link>
+      {showCTA && (
+        <section className="py-16 md:py-24 bg-secondary">
+          <div className="container text-center">
+            <div className="max-w-2xl mx-auto space-y-6">
+              <h2 className="font-serif text-3xl md:text-4xl font-bold text-secondary-foreground">{t("cta.title")}</h2>
+              <p className="text-secondary-foreground/80 text-lg leading-relaxed">{t("cta.description")}</p>
+              <Link to="/bibliotheque">
+                <Button size="lg" className="gap-2 mt-4">
+                  {t("cta.button")}
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+              </Link>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
     </Layout>
   );
 }
