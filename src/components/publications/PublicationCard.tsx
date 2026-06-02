@@ -124,7 +124,7 @@ export function PublicationCard({
       <Link {...linkProps}>
         <Card className="group overflow-hidden transition-all duration-300 hover:shadow-elegant bg-card border-border/50">
           <div className="grid md:grid-cols-2 gap-0">
-            <div className="relative aspect-[16/10] md:aspect-auto md:min-h-[260px] overflow-hidden bg-muted">
+            <div className="relative aspect-[16/10] min-h-[220px] md:aspect-auto md:min-h-[280px] overflow-hidden bg-muted">
               {coverImageUrl ? (
                 <CachedImage
                   src={coverImageUrl}
