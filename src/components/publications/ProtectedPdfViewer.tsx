@@ -1,8 +1,8 @@
-import { useState, useCallback, useEffect, useMemo } from "react";
+import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
 import "react-pdf/dist/esm/Page/TextLayer.css";
-import { Lock, ZoomIn, ZoomOut, ChevronLeft, ChevronRight, AlertCircle, RefreshCw } from "lucide-react";
+import { Lock, ZoomIn, ZoomOut, ChevronLeft, ChevronRight, AlertCircle, RefreshCw, Maximize2, Minimize2, BookmarkCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -22,14 +22,27 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
   const [scale, setScale] = useState(0.5);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showResumeBadge, setShowResumeBadge] = useState(!!initialPage && initialPage > 1);
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const documentSource = useMemo(() => ({ url: fileUrl, withCredentials: false }), [fileUrl]);
 
   // Sync with initialPage when it changes (e.g. from DB fetch)
   useEffect(() => {
     if (initialPage && initialPage > 1) {
       setCurrentPage(initialPage);
+      setShowResumeBadge(true);
+      const t = setTimeout(() => setShowResumeBadge(false), 5000);
+      return () => clearTimeout(t);
     }
   }, [initialPage]);
+
+  // Track native fullscreen state (handles ESC key)
+  useEffect(() => {
+    const handler = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener("fullscreenchange", handler);
+    return () => document.removeEventListener("fullscreenchange", handler);
+  }, []);
 
   const onDocumentLoadSuccess = useCallback(({ numPages }: { numPages: number }) => {
     setNumPages(numPages);
@@ -45,6 +58,23 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
   const goToNext = () => setCurrentPage((p) => { const next = Math.min(numPages, p + 1); onPageChange?.(next); return next; });
   const zoomIn = () => setScale((s) => Math.min(2.5, s + 0.25));
   const zoomOut = () => setScale((s) => Math.max(0.5, s - 0.25));
+
+  const toggleFullscreen = async () => {
+    try {
+      if (!document.fullscreenElement && containerRef.current?.requestFullscreen) {
+        await containerRef.current.requestFullscreen();
+        setIsFullscreen(true);
+        // Auto zoom for better readability in fullscreen
+        setScale((s) => (s < 1 ? 1 : s));
+      } else if (document.fullscreenElement && document.exitFullscreen) {
+        await document.exitFullscreen();
+        setIsFullscreen(false);
+      }
+    } catch {
+      // Fallback: toggle a CSS-only fullscreen flag
+      setIsFullscreen((v) => !v);
+    }
+  };
 
   const retry = () => {
     setError(false);
@@ -67,7 +97,11 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
 
   return (
     <div
-      className="rounded-xl overflow-hidden border border-border bg-muted relative select-none"
+      ref={containerRef}
+      className={cn(
+        "rounded-xl overflow-hidden border border-border bg-muted relative select-none",
+        isFullscreen && "fixed inset-0 z-[100] rounded-none border-0",
+      )}
       style={{
         WebkitUserSelect: "none",
         MozUserSelect: "none" as any,
@@ -101,11 +135,34 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
           <Button variant="ghost" size="icon" onClick={zoomIn} disabled={scale >= 2.5} className="h-8 w-8">
             <ZoomIn className="h-4 w-4" />
           </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleFullscreen}
+            className="h-8 w-8"
+            aria-label={isFullscreen ? "Quitter le plein écran" : "Mode plein écran"}
+            title={isFullscreen ? "Quitter le plein écran" : "Mode plein écran"}
+          >
+            {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+          </Button>
         </div>
       </div>
 
+      {/* Resume badge */}
+      {showResumeBadge && (
+        <div className="absolute top-14 left-1/2 -translate-x-1/2 z-30 bg-primary text-primary-foreground text-xs px-3 py-1.5 rounded-full shadow-elegant flex items-center gap-1.5 animate-slide-up">
+          <BookmarkCheck className="h-3.5 w-3.5" />
+          Reprise à la page {currentPage}
+        </div>
+      )}
+
       {/* PDF Content */}
-      <div className="overflow-auto max-h-[70vh] min-h-[50vh] flex justify-center py-4 bg-muted/50">
+      <div
+        className={cn(
+          "overflow-auto flex justify-center py-4 bg-muted/50",
+          isFullscreen ? "h-[calc(100vh-48px)]" : "max-h-[70vh] min-h-[50vh]",
+        )}
+      >
         {loading && (
           <div className="absolute inset-0 z-10 bg-background/70 backdrop-blur-[1px]" aria-hidden="true">
             <div className="h-full w-full animate-pulse bg-gradient-to-b from-background/0 via-background/10 to-background/0" />
