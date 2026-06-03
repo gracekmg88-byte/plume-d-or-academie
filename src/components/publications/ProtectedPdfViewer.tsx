@@ -157,6 +157,14 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
         </div>
       </div>
 
+      {/* Fullscreen hint — disappears once fullscreen is active */}
+      {!isFullscreen && (
+        <div className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-primary/10 border-b border-primary/20 text-[11px] sm:text-xs text-primary font-medium animate-fade-in">
+          <Maximize2 className="h-3 w-3 shrink-0" />
+          <span>Astuce : appuyez sur « Lire en plein écran » pour une meilleure lecture</span>
+        </div>
+      )}
+
       {/* Resume badge */}
       {showResumeBadge && (
         <div className="absolute top-14 left-1/2 -translate-x-1/2 z-30 bg-primary text-primary-foreground text-xs px-3 py-1.5 rounded-full shadow-elegant flex items-center gap-1.5 animate-slide-up">
