@@ -25,11 +25,19 @@ export default function Index() {
   const { user } = useAuth();
   const { layout: homepageLayout } = useHomepageLayout();
 
-  const recentCount = homepageLayout === "focus-catalogue" ? 8 : 4;
+  const recentCount = homepageLayout === "focus-catalogue" ? 12 : homepageLayout === "epure" ? 6 : 4;
   const recentPublications = publications?.slice(0, recentCount) || [];
   const showFeatures = homepageLayout === "complet";
-  const showCTA = homepageLayout !== "epure";
+  const showCTA = homepageLayout === "complet" || homepageLayout === "magazine";
+  const showCarousel = homepageLayout !== "focus-catalogue";
+  const showRecommendations = homepageLayout === "complet" || homepageLayout === "magazine";
   const recentAsMagazine = homepageLayout === "magazine";
+  const recentGridCols = homepageLayout === "focus-catalogue"
+    ? "sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
+    : homepageLayout === "epure"
+      ? "sm:grid-cols-2 lg:grid-cols-3"
+      : "sm:grid-cols-2 lg:grid-cols-4";
+  const skeletonCount = homepageLayout === "focus-catalogue" ? 8 : homepageLayout === "epure" ? 6 : 4;
 
   const features = [
     { icon: BookOpen, title: t("features.freeAccess"), description: t("features.freeAccessDesc") },
@@ -116,13 +124,13 @@ export default function Index() {
       </section>
 
       {/* Featured Carousel - top of homepage */}
-      {isOnline && <FeaturedCarousel />}
+      {isOnline && showCarousel && <FeaturedCarousel />}
 
       {/* Continue Reading - only for logged-in users & online */}
       {isOnline && user && <ContinueReadingSection />}
 
       {/* Recommendations - only online */}
-      {isOnline && <RecommendationsSection />}
+      {isOnline && showRecommendations && <RecommendationsSection />}
 
       {/* Offline notice */}
       {!isOnline && (
@@ -201,8 +209,8 @@ export default function Index() {
               </Link>
             </div>
             {isLoading ? (
-              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {[...Array(4)].map((_, i) => (
+              <div className={`grid ${recentGridCols} gap-6`}>
+                {[...Array(skeletonCount)].map((_, i) => (
                   <div key={i} className="animate-pulse">
                     <div className="aspect-[3/4] bg-muted rounded-lg mb-4" />
                     <div className="h-4 bg-muted rounded w-3/4 mb-2" />
@@ -242,7 +250,7 @@ export default function Index() {
                   )}
                 </div>
               ) : (
-                <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className={`grid ${recentGridCols} gap-6`}>
                   {recentPublications.map((pub) => (
                     <PublicationCard
                       key={pub.id}

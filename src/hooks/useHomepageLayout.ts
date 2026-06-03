@@ -31,7 +31,9 @@ export function useHomepageLayout() {
       if (error) throw error;
       return isLayout(data?.value as any) ? ((data!.value as any) as HomepageLayout) : "complet";
     },
-    staleTime: 60_000,
+    staleTime: 10_000,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: true,
   });
 
   const setLayout = useMutation({

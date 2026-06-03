@@ -136,14 +136,20 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
             <ZoomIn className="h-4 w-4" />
           </Button>
           <Button
-            variant="ghost"
-            size="icon"
+            variant={isFullscreen ? "secondary" : "default"}
+            size="sm"
             onClick={toggleFullscreen}
-            className="h-8 w-8"
-            aria-label={isFullscreen ? "Quitter le plein écran" : "Mode plein écran"}
-            title={isFullscreen ? "Quitter le plein écran" : "Mode plein écran"}
+            className="h-8 gap-1.5 px-2.5 shadow-md"
+            aria-label={isFullscreen ? "Quitter le plein écran" : "Lire en plein écran"}
+            title={isFullscreen ? "Quitter le plein écran" : "Lire en plein écran"}
           >
             {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+            <span className="text-xs font-semibold hidden sm:inline">
+              {isFullscreen ? "Quitter" : "Lire en plein écran"}
+            </span>
+            <span className="text-xs font-semibold sm:hidden">
+              {isFullscreen ? "Quitter" : "Plein écran"}
+            </span>
           </Button>
         </div>
       </div>
