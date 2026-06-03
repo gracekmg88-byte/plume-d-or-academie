@@ -25,11 +25,19 @@ export default function Index() {
   const { user } = useAuth();
   const { layout: homepageLayout } = useHomepageLayout();
 
-  const recentCount = homepageLayout === "focus-catalogue" ? 8 : 4;
+  const recentCount = homepageLayout === "focus-catalogue" ? 12 : homepageLayout === "epure" ? 6 : 4;
   const recentPublications = publications?.slice(0, recentCount) || [];
   const showFeatures = homepageLayout === "complet";
-  const showCTA = homepageLayout !== "epure";
+  const showCTA = homepageLayout === "complet" || homepageLayout === "magazine";
+  const showCarousel = homepageLayout !== "focus-catalogue";
+  const showRecommendations = homepageLayout === "complet" || homepageLayout === "magazine";
   const recentAsMagazine = homepageLayout === "magazine";
+  const recentGridCols = homepageLayout === "focus-catalogue"
+    ? "sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
+    : homepageLayout === "epure"
+      ? "sm:grid-cols-2 lg:grid-cols-3"
+      : "sm:grid-cols-2 lg:grid-cols-4";
+  const skeletonCount = homepageLayout === "focus-catalogue" ? 8 : homepageLayout === "epure" ? 6 : 4;
 
   const features = [
     { icon: BookOpen, title: t("features.freeAccess"), description: t("features.freeAccessDesc") },
