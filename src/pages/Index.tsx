@@ -250,7 +250,7 @@ export default function Index() {
                   )}
                 </div>
               ) : (
-                <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className={`grid ${recentGridCols} gap-6`}>
                   {recentPublications.map((pub) => (
                     <PublicationCard
                       key={pub.id}
