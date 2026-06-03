@@ -16,6 +16,8 @@ interface ProtectedPdfViewerProps {
   onPageChange?: (page: number) => void;
 }
 
+const FULLSCREEN_PREF_PREFIX = "pdfViewer:fullscreen:";
+
 export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }: ProtectedPdfViewerProps) {
   const [numPages, setNumPages] = useState<number>(0);
   const [currentPage, setCurrentPage] = useState(initialPage || 1);
@@ -24,8 +26,10 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
   const [error, setError] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showResumeBadge, setShowResumeBadge] = useState(!!initialPage && initialPage > 1);
+  const [needsFullscreenGesture, setNeedsFullscreenGesture] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const documentSource = useMemo(() => ({ url: fileUrl, withCredentials: false }), [fileUrl]);
+  const prefKey = useMemo(() => `${FULLSCREEN_PREF_PREFIX}${fileUrl}`, [fileUrl]);
 
   // Sync with initialPage when it changes (e.g. from DB fetch)
   useEffect(() => {
@@ -37,12 +41,59 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
     }
   }, [initialPage]);
 
-  // Track native fullscreen state (handles ESC key)
+  // Track native fullscreen state (handles ESC key) & persist preference per document
   useEffect(() => {
-    const handler = () => setIsFullscreen(!!document.fullscreenElement);
+    const handler = () => {
+      const active = !!document.fullscreenElement;
+      setIsFullscreen(active);
+      try {
+        if (active) localStorage.setItem(prefKey, "1");
+        else localStorage.removeItem(prefKey);
+      } catch {
+        // ignore storage errors
+      }
+    };
     document.addEventListener("fullscreenchange", handler);
     return () => document.removeEventListener("fullscreenchange", handler);
+  }, [prefKey]);
+
+  const enterFullscreen = useCallback(async () => {
+    if (document.fullscreenElement || !containerRef.current?.requestFullscreen) return false;
+    try {
+      await containerRef.current.requestFullscreen();
+      setIsFullscreen(true);
+      setScale((s) => (s < 1 ? 1 : s));
+      setNeedsFullscreenGesture(false);
+      return true;
+    } catch {
+      return false;
+    }
   }, []);
+
+  // Auto-restore fullscreen preference for this document once loaded
+  useEffect(() => {
+    if (loading) return;
+    let stored: string | null = null;
+    try {
+      stored = localStorage.getItem(prefKey);
+    } catch {
+      stored = null;
+    }
+    if (stored !== "1" || document.fullscreenElement) return;
+    enterFullscreen().then((ok) => {
+      if (!ok) setNeedsFullscreenGesture(true);
+    });
+  }, [loading, prefKey, enterFullscreen]);
+
+  // If the browser blocked auto fullscreen (needs gesture), retry on first tap in the viewer
+  useEffect(() => {
+    if (!needsFullscreenGesture) return;
+    const el = containerRef.current;
+    if (!el) return;
+    const handler = () => { enterFullscreen(); };
+    el.addEventListener("pointerdown", handler, { once: true });
+    return () => el.removeEventListener("pointerdown", handler);
+  }, [needsFullscreenGesture, enterFullscreen]);
 
   const onDocumentLoadSuccess = useCallback(({ numPages }: { numPages: number }) => {
     setNumPages(numPages);
@@ -61,17 +112,16 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
 
   const toggleFullscreen = async () => {
     try {
-      if (!document.fullscreenElement && containerRef.current?.requestFullscreen) {
-        await containerRef.current.requestFullscreen();
-        setIsFullscreen(true);
-        // Auto zoom for better readability in fullscreen
-        setScale((s) => (s < 1 ? 1 : s));
-      } else if (document.fullscreenElement && document.exitFullscreen) {
+      if (!document.fullscreenElement) {
+        const ok = await enterFullscreen();
+        if (!ok) setIsFullscreen((v) => !v);
+        try { localStorage.setItem(prefKey, "1"); } catch { /* ignore */ }
+      } else if (document.exitFullscreen) {
         await document.exitFullscreen();
         setIsFullscreen(false);
+        try { localStorage.removeItem(prefKey); } catch { /* ignore */ }
       }
     } catch {
-      // Fallback: toggle a CSS-only fullscreen flag
       setIsFullscreen((v) => !v);
     }
   };
@@ -161,7 +211,11 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
       {!isFullscreen && (
         <div className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-primary/10 border-b border-primary/20 text-[11px] sm:text-xs text-primary font-medium animate-fade-in">
           <Maximize2 className="h-3 w-3 shrink-0" />
-          <span>Astuce : appuyez sur « Lire en plein écran » pour une meilleure lecture</span>
+          <span>
+            {needsFullscreenGesture
+              ? "Touchez le document pour reprendre le plein écran"
+              : "Astuce : appuyez sur « Lire en plein écran » pour une meilleure lecture"}
+          </span>
         </div>
       )}
 
