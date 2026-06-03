@@ -211,7 +211,11 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
       {!isFullscreen && (
         <div className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-primary/10 border-b border-primary/20 text-[11px] sm:text-xs text-primary font-medium animate-fade-in">
           <Maximize2 className="h-3 w-3 shrink-0" />
-          <span>Astuce : appuyez sur « Lire en plein écran » pour une meilleure lecture</span>
+          <span>
+            {needsFullscreenGesture
+              ? "Touchez le document pour reprendre le plein écran"
+              : "Astuce : appuyez sur « Lire en plein écran » pour une meilleure lecture"}
+          </span>
         </div>
       )}
 
