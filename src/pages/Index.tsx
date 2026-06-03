@@ -209,8 +209,8 @@ export default function Index() {
               </Link>
             </div>
             {isLoading ? (
-              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {[...Array(4)].map((_, i) => (
+              <div className={`grid ${recentGridCols} gap-6`}>
+                {[...Array(skeletonCount)].map((_, i) => (
                   <div key={i} className="animate-pulse">
                     <div className="aspect-[3/4] bg-muted rounded-lg mb-4" />
                     <div className="h-4 bg-muted rounded w-3/4 mb-2" />
