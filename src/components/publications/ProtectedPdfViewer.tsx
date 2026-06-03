@@ -113,23 +113,23 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
       onDragStart={(e) => e.preventDefault()}
     >
       {/* Toolbar */}
-      <div className="flex items-center justify-between bg-card border-b border-border px-4 py-2">
+      <div className="flex items-center justify-between gap-2 bg-card border-b border-border px-3 py-2 flex-wrap">
         <div className="flex items-center gap-1">
           <Button variant="ghost" size="icon" onClick={goToPrev} disabled={currentPage <= 1} className="h-8 w-8">
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <span className="text-sm text-muted-foreground min-w-[80px] text-center">
+          <span className="text-sm text-muted-foreground min-w-[70px] text-center">
             {currentPage} / {numPages || "…"}
           </span>
           <Button variant="ghost" size="icon" onClick={goToNext} disabled={currentPage >= numPages} className="h-8 w-8">
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1.5">
           <Button variant="ghost" size="icon" onClick={zoomOut} disabled={scale <= 0.5} className="h-8 w-8">
             <ZoomOut className="h-4 w-4" />
           </Button>
-          <span className="text-xs text-muted-foreground min-w-[40px] text-center">
+          <span className="text-xs text-muted-foreground min-w-[36px] text-center">
             {Math.round(scale * 100)}%
           </span>
           <Button variant="ghost" size="icon" onClick={zoomIn} disabled={scale >= 2.5} className="h-8 w-8">
@@ -139,7 +139,10 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
             variant={isFullscreen ? "secondary" : "default"}
             size="sm"
             onClick={toggleFullscreen}
-            className="h-8 gap-1.5 px-2.5 shadow-md"
+            className={cn(
+              "h-9 gap-1.5 px-3 font-semibold shadow-lg ring-2 ring-primary/40",
+              !isFullscreen && "bg-primary text-primary-foreground hover:bg-primary/90",
+            )}
             aria-label={isFullscreen ? "Quitter le plein écran" : "Lire en plein écran"}
             title={isFullscreen ? "Quitter le plein écran" : "Lire en plein écran"}
           >
@@ -153,6 +156,14 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
           </Button>
         </div>
       </div>
+
+      {/* Fullscreen hint — disappears once fullscreen is active */}
+      {!isFullscreen && (
+        <div className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-primary/10 border-b border-primary/20 text-[11px] sm:text-xs text-primary font-medium animate-fade-in">
+          <Maximize2 className="h-3 w-3 shrink-0" />
+          <span>Astuce : appuyez sur « Lire en plein écran » pour une meilleure lecture</span>
+        </div>
+      )}
 
       {/* Resume badge */}
       {showResumeBadge && (
