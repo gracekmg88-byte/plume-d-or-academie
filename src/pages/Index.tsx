@@ -124,13 +124,13 @@ export default function Index() {
       </section>
 
       {/* Featured Carousel - top of homepage */}
-      {isOnline && <FeaturedCarousel />}
+      {isOnline && showCarousel && <FeaturedCarousel />}
 
       {/* Continue Reading - only for logged-in users & online */}
       {isOnline && user && <ContinueReadingSection />}
 
       {/* Recommendations - only online */}
-      {isOnline && <RecommendationsSection />}
+      {isOnline && showRecommendations && <RecommendationsSection />}
 
       {/* Offline notice */}
       {!isOnline && (
