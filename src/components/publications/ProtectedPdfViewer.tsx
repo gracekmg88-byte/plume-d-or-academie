@@ -347,47 +347,22 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
         <Document
           key={resolvedUrl}
           file={documentSource}
+          options={pdfOptions}
           onLoadSuccess={onDocumentLoadSuccess}
           onLoadError={onDocumentLoadError}
           loading={null}
           className="select-none"
         >
           <Page
+            key={`page-${currentPage}`}
             pageNumber={currentPage}
             scale={scale}
             renderTextLayer={false}
             renderAnnotationLayer={false}
-            devicePixelRatio={Math.min(typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1, 1.5)}
+            devicePixelRatio={canvasDpr}
             loading={null}
             className="shadow-lg"
           />
-          {/* Hidden preloaded neighbours — keeps next/prev page warm in pdf.js cache */}
-          {numPages > 0 && (
-            <div aria-hidden="true" style={{ position: "absolute", width: 0, height: 0, overflow: "hidden", opacity: 0, pointerEvents: "none" }}>
-              {currentPage < numPages && (
-                <Page
-                  key={`preload-next-${currentPage}`}
-                  pageNumber={currentPage + 1}
-                  scale={scale}
-                  renderTextLayer={false}
-                  renderAnnotationLayer={false}
-                  devicePixelRatio={Math.min(typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1, 1.5)}
-                  loading={null}
-                />
-              )}
-              {currentPage > 1 && (
-                <Page
-                  key={`preload-prev-${currentPage}`}
-                  pageNumber={currentPage - 1}
-                  scale={scale}
-                  renderTextLayer={false}
-                  renderAnnotationLayer={false}
-                  devicePixelRatio={Math.min(typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1, 1.5)}
-                  loading={null}
-                />
-              )}
-            </div>
-          )}
         </Document>
         )}
       </div>
