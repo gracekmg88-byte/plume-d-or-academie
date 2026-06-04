@@ -1,9 +1,11 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { getAuthUser, isServiceRoleRequest, unauthorized, forbidden } from "../_shared/auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
 
 interface ServiceAccount {
   client_email: string;
