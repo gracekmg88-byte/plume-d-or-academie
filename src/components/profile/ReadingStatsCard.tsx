@@ -173,7 +173,7 @@ export function ReadingStatsCard() {
                   to={`/publication/${r.publication_id}`}
                   state={{
                     returnTo: `${pathname}${window.location.search}`,
-                    returnKey: window.history.state?.key ?? null,
+                    returnKey: getCurrentHistoryEntryKey(),
                     returnPublicationId: r.publication_id,
                   }}
                   data-publication-card-id={r.publication_id}
