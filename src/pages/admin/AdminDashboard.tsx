@@ -233,6 +233,19 @@ export default function AdminDashboard() {
               </div>
             </div>
           </Link>
+          <Link to="/admin/seo" className="block">
+            <div className="bg-card rounded-xl border border-border p-6 hover:shadow-elegant transition-all">
+              <div className="flex items-center gap-4">
+                <div className="h-12 w-12 rounded-lg bg-amber-500/10 flex items-center justify-center">
+                  <Eye className="h-6 w-6 text-amber-600" />
+                </div>
+                <div>
+                  <div className="font-semibold text-foreground">SEO Google</div>
+                  <div className="text-sm text-muted-foreground">Sitemap & indexation</div>
+                </div>
+              </div>
+            </div>
+          </Link>
           <div
             onClick={handleSendNewsletter}
             className={cn(
