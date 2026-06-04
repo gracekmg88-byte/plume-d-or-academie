@@ -625,6 +625,34 @@ export default function Publication() {
               <CommentsList publicationId={id!} />
             </div>
 
+            {/* Maillage interne SEO : auteur, catégorie, bibliothèque */}
+            <nav
+              aria-label="Explorer davantage"
+              className="mt-10 border-t border-border pt-6 flex flex-wrap gap-2 text-sm"
+            >
+              {authorPath && (
+                <Link
+                  to={authorPath}
+                  className="px-3 py-1.5 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                  rel="author"
+                >
+                  Toutes les publications de {displayPub.author}
+                </Link>
+              )}
+              <Link
+                to={`/bibliotheque?category=${displayPub.category}`}
+                className="px-3 py-1.5 rounded-full bg-muted text-foreground hover:bg-muted/70 transition-colors"
+              >
+                Plus de {categoryLabel.toLowerCase()}
+              </Link>
+              <Link
+                to="/bibliotheque"
+                className="px-3 py-1.5 rounded-full bg-muted text-foreground hover:bg-muted/70 transition-colors"
+              >
+                Explorer toute la bibliothèque
+              </Link>
+            </nav>
+
             {/* Livres similaires — maillage interne SEO */}
             <SimilarBooks
               id={displayPub.id}
