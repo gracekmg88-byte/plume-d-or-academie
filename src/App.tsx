@@ -62,6 +62,7 @@ const NotFound = lazy(loadNotFoundPage);
 const VerifyCertificate = lazy(() => import("./pages/VerifyCertificate"));
 const VerifyHome = lazy(() => import("./pages/VerifyHome"));
 const AdminCertificates = lazy(() => import("./pages/admin/AdminCertificates"));
+const AdminSeo = lazy(() => import("./pages/admin/AdminSeo"));
 const Auteur = lazy(() => import("./pages/Auteur"));
 
 const queryClient = new QueryClient({
@@ -254,6 +255,7 @@ function AnimatedRoutes() {
         <Route path="/verify/:number" element={<VerifyCertificate />} />
         <Route path="/verification" element={<VerifyHome />} />
         <Route path="/admin/certificates" element={<AdminCertificates />} />
+        <Route path="/admin/seo" element={<AdminSeo />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Suspense>
