@@ -212,11 +212,7 @@ function PageLoader() {
 
 function NavigationWarmup() {
   useEffect(() => {
-    const warmup = window.setTimeout(() => {
-      preloadCommonRoutes();
-    }, 300);
-
-    return () => window.clearTimeout(warmup);
+    preloadCommonRoutes();
   }, []);
 
   return null;
