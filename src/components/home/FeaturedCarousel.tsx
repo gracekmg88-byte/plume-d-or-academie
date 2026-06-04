@@ -73,6 +73,7 @@ function CarouselCard({
   const handleClick = (e: React.MouseEvent) => {
     if (preview) return;
     e.preventDefault();
+    e.stopPropagation();
     onNavigate?.(pub.id);
   };
 
@@ -191,12 +192,13 @@ playOnInit: true,
           staleTime: 60_000,
         })
         .catch(() => {});
-      navigate(`/publication/${id}`, {
+       navigate(`/publication/${id}`, {
         state: {
           returnTo: `${location.pathname}${location.search}`,
           returnKey: entryKey,
           returnPublicationId: id,
         },
+         preventScrollReset: true,
       });
     },
     [emblaApi, location.pathname, location.search, navigate, queryClient]
