@@ -345,7 +345,7 @@ export default function Publication() {
     ? offlineData.local_pdf_uri
     : displayPub.file_url;
 
-  const pubCategory = publication?.category as Category | undefined;
+  const pubCategory = displayPub.category as Category | undefined;
   const pubType: "book" | "article" =
     pubCategory === "livre" ? "book" : "article";
   const schemaType =
@@ -354,38 +354,95 @@ export default function Publication() {
       : pubCategory === "article"
         ? "ScholarlyArticle"
         : "CreativeWork";
-  const pubDescription = publication?.description
-    ? publication.description.slice(0, 200)
-    : `${publication?.title ?? ""} — ${publication?.author ?? ""} sur Plume d'Or KMG.`;
+  const pubDescription = displayPub.description
+    ? displayPub.description.slice(0, 200)
+    : `${displayPub.title} — ${displayPub.author || ""} sur Plume d'Or KMG. Lecture en ligne gratuite.`;
+
+  // Canonical SEO-friendly path
+  const canonicalPath = buildPublicationPath({
+    id: displayPub.id,
+    title: displayPub.title,
+    category: displayPub.category,
+  });
+  const canonicalUrl = `https://plume-d-or-academie.lovable.app${canonicalPath}`;
+  const authorPath = displayPub.author ? buildAuthorPath(displayPub.author) : null;
+  const coverAlt = displayPub.author
+    ? `Couverture de "${displayPub.title}" par ${displayPub.author}`
+    : `Couverture de "${displayPub.title}"`;
+  const datePublished = displayPub.created_at
+    ? new Date(displayPub.created_at).toISOString().slice(0, 10)
+    : undefined;
+
+  const categoryLabel = config.label;
+  const categoryRoute = categoryPath(displayPub.category);
+
+  const bookJsonLd: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": schemaType,
+    name: displayPub.title,
+    headline: displayPub.title,
+    author: displayPub.author
+      ? {
+          "@type": "Person",
+          name: displayPub.author,
+          url: authorPath ? `https://plume-d-or-academie.lovable.app${authorPath}` : undefined,
+        }
+      : undefined,
+    description: displayPub.description || pubDescription,
+    image: displayPub.cover_image_url || undefined,
+    url: canonicalUrl,
+    inLanguage: "fr",
+    isAccessibleForFree: true,
+    bookFormat: schemaType === "Book" ? "https://schema.org/EBook" : undefined,
+    datePublished,
+    publisher: {
+      "@type": "Organization",
+      name: "Plume d'Or KMG",
+      url: "https://plume-d-or-academie.lovable.app",
+    },
+  };
+
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Accueil", item: "https://plume-d-or-academie.lovable.app" },
+      { "@type": "ListItem", position: 2, name: "Bibliothèque", item: "https://plume-d-or-academie.lovable.app/bibliotheque" },
+      { "@type": "ListItem", position: 3, name: categoryLabel, item: `https://plume-d-or-academie.lovable.app/bibliotheque?category=${displayPub.category}` },
+      { "@type": "ListItem", position: 4, name: displayPub.title, item: canonicalUrl },
+    ],
+  };
+
+  const seoKeywords = [
+    displayPub.title,
+    displayPub.author || "",
+    categoryLabel,
+    "Plume d'Or KMG",
+    "KMG Bibliothèque",
+    "lecture en ligne",
+    pubCategory === "livre" ? "livre numérique" : "",
+    pubCategory === "memoire" ? "mémoire académique" : "",
+    pubCategory === "tfc" ? "travail de fin de cycle" : "",
+    pubCategory === "article" ? "article scientifique" : "",
+  ].filter(Boolean);
+
+  const extraMeta: Array<{ property?: string; name?: string; content: string }> = [];
+  if (displayPub.author) extraMeta.push({ property: "book:author", content: displayPub.author });
+  if (datePublished) extraMeta.push({ property: "book:release_date", content: datePublished });
 
   return (
     <Layout>
-      {publication && (
-        <SEO
-          title={`${publication.title}${publication.author ? ` — ${publication.author}` : ""}`}
-          description={pubDescription}
-          path={`/publication/${publication.id}`}
-          type={pubType}
-          image={publication.cover_image_url || undefined}
-          jsonLd={{
-            "@context": "https://schema.org",
-            "@type": schemaType,
-            name: publication.title,
-            headline: publication.title,
-            author: publication.author
-              ? { "@type": "Person", name: publication.author }
-              : undefined,
-            description: publication.description || undefined,
-            image: publication.cover_image_url || undefined,
-            url: `https://plume-d-or-academie.lovable.app/publication/${publication.id}`,
-            inLanguage: "fr",
-            publisher: {
-              "@type": "Organization",
-              name: "KMG Multi Services",
-            },
-          }}
-        />
-      )}
+      <SEO
+        title={`${displayPub.title}${displayPub.author ? ` — ${displayPub.author}` : ""}`}
+        description={pubDescription}
+        path={canonicalPath}
+        type={pubType}
+        image={displayPub.cover_image_url || undefined}
+        keywords={seoKeywords}
+        extraMeta={extraMeta}
+        jsonLd={[bookJsonLd, breadcrumbJsonLd]}
+      />
+
       <div className="container py-8 md:py-12">
         {/* Offline banner */}
         {!isOnline && (
