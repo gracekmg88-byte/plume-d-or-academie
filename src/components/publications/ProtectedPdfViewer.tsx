@@ -81,6 +81,23 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
 
   const documentSource = useMemo(() => ({ url: resolvedUrl, withCredentials: false }), [resolvedUrl]);
 
+  // pdf.js options: enable range/stream so pages render before the full file is downloaded,
+  // and ship cMap + standard fonts from the CDN to avoid missing-glyph warnings/retries.
+  const pdfOptions = useMemo(() => ({
+    cMapUrl: `https://unpkg.com/pdfjs-dist@${pdfjs.version}/cmaps/`,
+    cMapPacked: true,
+    standardFontDataUrl: `https://unpkg.com/pdfjs-dist@${pdfjs.version}/standard_fonts/`,
+    disableAutoFetch: true,   // don't prefetch the entire PDF up front
+    disableStream: false,     // allow chunked streaming as the user navigates
+    isEvalSupported: false,
+  }), []);
+
+  // Device pixel ratio capped for canvas rendering (memory + speed)
+  const canvasDpr = useMemo(
+    () => Math.min(typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1, 1.25),
+    [],
+  );
+
   // Persist current page locally on every change
   useEffect(() => {
     try {
@@ -330,47 +347,22 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
         <Document
           key={resolvedUrl}
           file={documentSource}
+          options={pdfOptions}
           onLoadSuccess={onDocumentLoadSuccess}
           onLoadError={onDocumentLoadError}
           loading={null}
           className="select-none"
         >
           <Page
+            key={`page-${currentPage}`}
             pageNumber={currentPage}
             scale={scale}
             renderTextLayer={false}
             renderAnnotationLayer={false}
-            devicePixelRatio={Math.min(typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1, 1.5)}
+            devicePixelRatio={canvasDpr}
             loading={null}
             className="shadow-lg"
           />
-          {/* Hidden preloaded neighbours — keeps next/prev page warm in pdf.js cache */}
-          {numPages > 0 && (
-            <div aria-hidden="true" style={{ position: "absolute", width: 0, height: 0, overflow: "hidden", opacity: 0, pointerEvents: "none" }}>
-              {currentPage < numPages && (
-                <Page
-                  key={`preload-next-${currentPage}`}
-                  pageNumber={currentPage + 1}
-                  scale={scale}
-                  renderTextLayer={false}
-                  renderAnnotationLayer={false}
-                  devicePixelRatio={Math.min(typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1, 1.5)}
-                  loading={null}
-                />
-              )}
-              {currentPage > 1 && (
-                <Page
-                  key={`preload-prev-${currentPage}`}
-                  pageNumber={currentPage - 1}
-                  scale={scale}
-                  renderTextLayer={false}
-                  renderAnnotationLayer={false}
-                  devicePixelRatio={Math.min(typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1, 1.5)}
-                  loading={null}
-                />
-              )}
-            </div>
-          )}
         </Document>
         )}
       </div>
