@@ -295,7 +295,10 @@ export default function Publication() {
 
   // Use offline data when not online
   const displayPub = isOnline ? publication : (offlineData || publication);
-  const actualLoading = isOnline ? (isLoading || subscriptionLoading) : offlineLoading;
+  // While we're still resolving a slug/publication_number to a UUID, keep the
+  // loading skeleton visible to avoid a "not found" flash before the fetch runs.
+  const resolvingId = !isUuid && resolvedUuid === undefined;
+  const actualLoading = resolvingId || (isOnline ? (isLoading || subscriptionLoading || !id) : offlineLoading);
 
   if (actualLoading) {
     return (
