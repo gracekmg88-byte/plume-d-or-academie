@@ -4,7 +4,7 @@ import { CachedImage } from "@/components/ui/cached-image";
 import { useContinueReading } from "@/hooks/useContinueReading";
 import { cn } from "@/lib/utils";
 import { preloadPublicationFlow } from "@/lib/route-preload";
-import { saveScrollPosition } from "@/lib/scroll-restoration";
+import { getCurrentHistoryEntryKey, saveScrollPosition } from "@/lib/scroll-restoration";
 
 const categoryConfig: Record<string, { label: string; icon: typeof Book; className: string }> = {
   livre: { label: "Livre", icon: Book, className: "bg-primary/10 text-primary" },
@@ -18,7 +18,7 @@ export function ContinueReadingSection() {
   const { pathname } = useLocation();
 
   const saveScroll = () => {
-    saveScrollPosition(window.history.state?.key, pathname, window.scrollY);
+    saveScrollPosition(getCurrentHistoryEntryKey(), pathname, window.scrollY);
     preloadPublicationFlow();
   };
 
@@ -71,7 +71,7 @@ export function ContinueReadingSection() {
                   to={`/publication/${item.publication_id}?page=${item.last_page_read}`}
                   state={{
                     returnTo: `${pathname}${window.location.search}`,
-                    returnKey: window.history.state?.key ?? null,
+                        returnKey: getCurrentHistoryEntryKey(),
                     returnPublicationId: item.publication_id,
                   }}
                   onPointerDown={saveScroll}

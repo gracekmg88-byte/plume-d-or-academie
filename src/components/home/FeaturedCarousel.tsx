@@ -8,7 +8,7 @@ import { ChevronLeft, ChevronRight, Sparkles, Eye, Download, AlertCircle, Refres
 import { useFeaturedPublications, type FeaturedPublication } from "@/hooks/useFeaturedPublications";
 import { CachedImage, preloadImages } from "@/components/ui/cached-image";
 import { Button } from "@/components/ui/button";
-import { saveScrollPosition } from "@/lib/scroll-restoration";
+import { getCurrentHistoryEntryKey, saveScrollPosition } from "@/lib/scroll-restoration";
 import { preloadPublicationFlow } from "@/lib/route-preload";
 import { fetchPublication } from "@/hooks/usePublications";
 
@@ -177,7 +177,8 @@ playOnInit: true,
       const clickAllowed = (emblaApi as any)?.clickAllowed?.();
       if (emblaApi && clickAllowed === false) return;
 
-      saveScrollPosition(window.history.state?.key, location.pathname, window.scrollY);
+      const entryKey = getCurrentHistoryEntryKey();
+      saveScrollPosition(entryKey, location.pathname, window.scrollY);
       try {
         sessionStorage.setItem(LAST_FEATURED_PICK_KEY, id);
         sessionStorage.setItem(LAST_FEATURED_PICK_AT, String(Date.now()));
@@ -193,7 +194,7 @@ playOnInit: true,
       navigate(`/publication/${id}`, {
         state: {
           returnTo: `${location.pathname}${location.search}`,
-          returnKey: window.history.state?.key ?? null,
+          returnKey: entryKey,
           returnPublicationId: id,
         },
       });

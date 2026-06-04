@@ -7,7 +7,7 @@ import { CachedImage } from "@/components/ui/cached-image";
 import { FavoriteButton } from "@/components/publications/FavoriteButton";
 import { cn } from "@/lib/utils";
 import { fetchPublication } from "@/hooks/usePublications";
-import { saveScrollPosition } from "@/lib/scroll-restoration";
+import { getCurrentHistoryEntryKey, saveScrollPosition } from "@/lib/scroll-restoration";
 import { preloadPublicationFlow } from "@/lib/route-preload";
 import { buildPublicationPath } from "@/lib/slug";
 
@@ -48,7 +48,8 @@ export function PublicationCard({
   const Icon = config.icon;
 
   const prepareNavigation = () => {
-    saveScrollPosition(window.history.state?.key, pathname, window.scrollY);
+    const entryKey = getCurrentHistoryEntryKey();
+    saveScrollPosition(entryKey, pathname, window.scrollY);
     preloadPublicationFlow();
     queryClient.prefetchQuery({
       queryKey: ["publication", id],
@@ -61,7 +62,7 @@ export function PublicationCard({
     to: buildPublicationPath({ id, title, category }),
     state: {
       returnTo: `${pathname}${window.location.search}`,
-      returnKey: window.history.state?.key ?? null,
+      returnKey: getCurrentHistoryEntryKey(),
       returnPublicationId: id,
     },
     "data-publication-card-id": id,

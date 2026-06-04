@@ -86,6 +86,7 @@ function ScrollManager() {
   const { pathname, key } = location;
   const navType = useNavigationType();
   const prevRef = useRef({ pathname, key });
+  const lastScrollYRef = useRef(0);
   const isRestoringRef = useRef(false);
   const rafRef = useRef<number | null>(null);
   const cancelRestoreRef = useRef<(() => void) | null>(null);
@@ -111,7 +112,7 @@ function ScrollManager() {
     prevRef.current = { pathname, key };
 
     if ((prev.pathname !== pathname || prev.key !== key) && prev.pathname) {
-      saveScrollPosition(prev.key, prev.pathname, window.scrollY);
+      saveScrollPosition(prev.key, prev.pathname, lastScrollYRef.current);
     }
 
     const navState = location.state as {
@@ -151,6 +152,7 @@ function ScrollManager() {
 
         if (target > 0 && Math.abs(window.scrollY - target) > 2) {
           window.scrollTo({ top: target, left: 0, behavior: "instant" as ScrollBehavior });
+          lastScrollYRef.current = target;
         }
 
         const needMoreHeight = maxScroll < desired;
@@ -176,12 +178,14 @@ function ScrollManager() {
         };
       } else if (!isReturnFromPublication) {
         window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
+        lastScrollYRef.current = 0;
         isRestoringRef.current = false;
       } else {
         isRestoringRef.current = false;
       }
     } else if (prev.pathname !== pathname) {
       window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
+      lastScrollYRef.current = 0;
     }
 
     return () => {
@@ -194,7 +198,10 @@ function ScrollManager() {
 
   // Continuously save scroll position, but not during restoration
   useEffect(() => {
+    lastScrollYRef.current = window.scrollY;
+
     const handleScroll = () => {
+      lastScrollYRef.current = window.scrollY;
       if (!isRestoringRef.current) {
         saveScrollPosition(key, pathname, window.scrollY);
       }
