@@ -101,6 +101,7 @@ export function PublicationCard({
   }, [id, coverImageUrl]);
 
   const linkProps = {
+    ref: rootRef,
     to: buildPublicationPath({ id, title, category }),
     state: {
       returnTo: `${pathname}${window.location.search}`,
@@ -110,6 +111,7 @@ export function PublicationCard({
     "data-publication-card-id": id,
     onPointerDown: prepareNavigation,
     onMouseEnter: prepareNavigation,
+    onTouchStart: prepareNavigation,
     onClickCapture: prepareNavigation,
   } as const;
 
