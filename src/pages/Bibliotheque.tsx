@@ -51,6 +51,7 @@ export default function Bibliotheque() {
   const [offlineLoading, setOfflineLoading] = useState(!isOnline);
   const restoredCardRef = useRef<string | null>(null);
   const restorationAttemptRef = useRef(0);
+  const hasConsumedRestoreStateRef = useRef(false);
 
   useEffect(() => {
     if (!isOnline) {
@@ -190,7 +191,7 @@ export default function Bibliotheque() {
     const navState = location.state as { restoredFromPublication?: boolean; returnPublicationId?: string | null } | null;
     const targetPublicationId = navState?.restoredFromPublication ? navState.returnPublicationId : null;
 
-    if (!targetPublicationId || actualLoading || restoredCardRef.current === targetPublicationId) {
+    if (!targetPublicationId || actualLoading || restoredCardRef.current === targetPublicationId || hasConsumedRestoreStateRef.current) {
       return;
     }
 
@@ -204,6 +205,21 @@ export default function Bibliotheque() {
 
       window.scrollTo({ top: targetTop, left: 0, behavior: "instant" as ScrollBehavior });
       restoredCardRef.current = targetPublicationId;
+      hasConsumedRestoreStateRef.current = true;
+
+      if (window.history.state?.usr?.restoredFromPublication) {
+        window.history.replaceState(
+          {
+            ...window.history.state,
+            usr: {
+              ...window.history.state.usr,
+              restoredFromPublication: false,
+            },
+          },
+          "",
+          window.location.href,
+        );
+      }
       return true;
     };
 
@@ -228,6 +244,13 @@ export default function Bibliotheque() {
       if (raf) window.cancelAnimationFrame(raf);
     };
   }, [actualLoading, location.state, paginatedPublications]);
+
+  useEffect(() => {
+    const navState = location.state as { restoredFromPublication?: boolean } | null;
+    if (!navState?.restoredFromPublication) {
+      hasConsumedRestoreStateRef.current = false;
+    }
+  }, [location.key, location.state]);
 
   return (
     <Layout>
