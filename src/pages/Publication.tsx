@@ -284,8 +284,10 @@ export default function Publication() {
   }, [savePageProgress]);
 
   useEffect(() => {
-    // Scroll to top when opening the publication
-    window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
+    const openedViaHistoryBack = window.history.state?.idx > 0 && Boolean(returnState?.returnKey);
+    if (!openedViaHistoryBack) {
+      window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
+    }
 
     if (id) incrementViews.mutate(id);
 
@@ -310,7 +312,7 @@ export default function Publication() {
       document.body.style.webkitUserSelect = '';
       document.body.style.userSelect = '';
     };
-  }, [id, preventCopy, preventKeyboardShortcuts, preventTouchMenu, preventDrag]);
+  }, [id, incrementViews, preventCopy, preventKeyboardShortcuts, preventTouchMenu, preventDrag, returnState?.returnKey]);
 
   // Use offline data when not online
   const displayPub = isOnline ? publication : (offlineData || publication);
