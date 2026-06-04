@@ -74,6 +74,13 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Auth: DB trigger (service role) or admin user only.
+    if (!isServiceRoleRequest(req)) {
+      const user = await getAuthUser(req);
+      if (!user) return unauthorized(corsHeaders);
+      if (!(await isAdmin(user.userId))) return forbidden(corsHeaders, "Admin only");
+    }
+
     const { publication_id, title, author, category } = await req.json();
 
     if (!title) {
