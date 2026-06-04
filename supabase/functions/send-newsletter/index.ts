@@ -1,5 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { getAuthUser, isAdmin, isServiceRoleRequest, unauthorized, forbidden } from "../_shared/auth.ts";
+import { getAuthUser, isAdmin, isServiceRoleRequest, unauthorized, forbidden, escapeHtml } from "../_shared/auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -81,12 +81,12 @@ Deno.serve(async (req) => {
               <tr>
                 <td style="vertical-align: top;">
                   <span style="display: inline-block; background: #d4a574; color: #1a1a2e; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 4px; margin-bottom: 6px;">
-                    ${categoryLabels[pub.category] || pub.category}
+                    ${escapeHtml(categoryLabels[pub.category] || pub.category)}
                   </span>
                   <h3 style="margin: 6px 0 4px; font-size: 16px; color: #1a1a2e;">
-                    <a href="${siteUrl}/publication/${pub.id}" style="color: #1a1a2e; text-decoration: none;">${pub.title}</a>
+                    <a href="${siteUrl}/publication/${encodeURIComponent(pub.id)}" style="color: #1a1a2e; text-decoration: none;">${escapeHtml(pub.title)}</a>
                   </h3>
-                  <p style="margin: 0; font-size: 13px; color: #6b7280;">par ${pub.author}</p>
+                  <p style="margin: 0; font-size: 13px; color: #6b7280;">par ${escapeHtml(pub.author)}</p>
                 </td>
               </tr>
             </table>
