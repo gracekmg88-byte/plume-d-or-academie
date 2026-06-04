@@ -483,7 +483,8 @@ export default function Publication() {
                     className="h-full w-full object-cover"
                     containerClassName="h-full w-full"
                     fallbackIcon={<Icon className="h-24 w-24 text-muted-foreground/30" />}
-                    eager
+                    loading="eager"
+                    fetchPriority="high"
                   />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-muted to-accent">
