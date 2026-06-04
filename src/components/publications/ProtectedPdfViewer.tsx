@@ -5,6 +5,7 @@ import "react-pdf/dist/esm/Page/TextLayer.css";
 import { Lock, ZoomIn, ZoomOut, ChevronLeft, ChevronRight, AlertCircle, RefreshCw, Maximize2, Minimize2, BookmarkCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { getCachedPdfBlobUrl } from "@/lib/pdf-cache";
 
 // Configure pdf.js worker
 pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
