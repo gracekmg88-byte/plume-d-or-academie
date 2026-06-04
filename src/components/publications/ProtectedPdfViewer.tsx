@@ -50,18 +50,29 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
     catch { return false; }
   });
   const containerRef = useRef<HTMLDivElement | null>(null);
+  // Start rendering immediately with the direct URL; only swap to a blob URL if the PDF is
+  // already in Cache Storage. Otherwise warm the cache in the background so the next open is
+  // instant, without delaying the first paint behind a full download.
   const [resolvedUrl, setResolvedUrl] = useState<string>(fileUrl);
 
-  // Resolve via Cache Storage so subsequent loads of the same PDF are instant
   useEffect(() => {
+    setResolvedUrl(fileUrl);
     let revoke: string | null = null;
     let cancelled = false;
-    setResolvedUrl(fileUrl);
-    getCachedPdfBlobUrl(fileUrl).then((u) => {
-      if (cancelled) return;
-      if (u.startsWith("blob:")) revoke = u;
-      setResolvedUrl(u);
-    });
+    if (typeof caches !== "undefined") {
+      caches.open("pdf-binary-cache-v1").then(async (cache) => {
+        const hit = await cache.match(fileUrl).catch(() => null);
+        if (hit && !cancelled) {
+          const blob = await hit.blob();
+          const url = URL.createObjectURL(blob);
+          revoke = url;
+          setResolvedUrl(url);
+          return;
+        }
+        // Not cached: warm in the background, don't block initial render
+        getCachedPdfBlobUrl(fileUrl).catch(() => {});
+      }).catch(() => {});
+    }
     return () => {
       cancelled = true;
       if (revoke) URL.revokeObjectURL(revoke);
