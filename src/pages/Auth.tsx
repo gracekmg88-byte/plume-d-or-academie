@@ -147,8 +147,8 @@ export default function Auth() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-parchment p-4">
       <SEO
-        title="Connexion / Inscription — Plume d'Or KMG"
-        description="Connectez-vous ou créez un compte gratuit pour accéder à la bibliothèque académique Plume d'Or KMG."
+        title="Connexion / Inscription — KMG Bibliothèque"
+        description="Connectez-vous ou créez un compte gratuit pour accéder à la bibliothèque académique KMG Bibliothèque."
         path="/auth"
         noindex
       />
@@ -160,7 +160,7 @@ export default function Auth() {
               <Feather className="h-8 w-8" />
             </div>
             <h1 className="font-serif text-2xl font-bold text-foreground">
-              Plume d'Or KMG
+              KMG Bibliothèque
             </h1>
             <p className="text-muted-foreground text-sm mt-1">
               Bibliothèque Académique Numérique

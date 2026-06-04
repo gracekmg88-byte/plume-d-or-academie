@@ -13,7 +13,7 @@ const NotFound = () => {
     <div className="flex min-h-screen items-center justify-center bg-muted">
       <SEO
         title="Page introuvable (404)"
-        description="La page demandée est introuvable sur Plume d'Or KMG."
+        description="La page demandée est introuvable sur KMG Bibliothèque."
         path={location.pathname}
         noindex
       />

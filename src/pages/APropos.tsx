@@ -19,8 +19,8 @@ export default function APropos() {
   return (
     <Layout>
       <SEO
-        title="À propos — Plume d'Or KMG"
-        description="Mission, valeurs et équipe de Plume d'Or KMG, bibliothèque numérique académique francophone éditée par KMG Multi Services en RDC."
+        title="À propos — KMG Bibliothèque"
+        description="Mission, valeurs et équipe de KMG Bibliothèque, bibliothèque numérique académique francophone éditée par KMG Multi Services en RDC."
         path="/a-propos"
       />
       <section className="relative overflow-hidden py-12 md:py-16">

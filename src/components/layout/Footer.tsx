@@ -16,7 +16,7 @@ export function Footer() {
                 <Feather className="h-5 w-5" />
               </div>
               <div className="flex flex-col">
-                <span className="font-serif text-lg font-bold leading-tight">Plume d'Or</span>
+                <span className="font-serif text-lg font-bold leading-tight">KMG Bibliothèque</span>
                 <span className="text-[10px] font-medium uppercase tracking-widest opacity-70">KMG</span>
               </div>
             </Link>
@@ -70,7 +70,7 @@ export function Footer() {
 
         <div className="mt-12 pt-8 border-t border-secondary-foreground/10">
           <p className="text-center text-sm opacity-60">
-            © {new Date().getFullYear()} Plume d'Or KMG. {t("footer.rights")}
+            © {new Date().getFullYear()} KMG Bibliothèque. {t("footer.rights")}
           </p>
           
         </div>

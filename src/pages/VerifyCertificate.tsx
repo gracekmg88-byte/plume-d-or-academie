@@ -16,7 +16,7 @@ export default function VerifyCertificate() {
     <Layout>
       <SEO
         title={`Vérification certificat ${number ?? ""}`}
-        description="Page officielle de vérification d'un certificat de publication Plume d'Or KMG."
+        description="Page officielle de vérification d'un certificat de publication KMG Bibliothèque."
         path={`/verify/${number}`}
       />
       <div className="container max-w-3xl py-10 md:py-16">
@@ -55,7 +55,7 @@ export default function VerifyCertificate() {
                 ✅ Publication certifiée
               </Badge>
               <p className="text-sm text-muted-foreground max-w-xl mx-auto">
-                Ce certificat est officiellement enregistré dans le système de certification numérique de Plume d'Or KMG.
+                Ce certificat est officiellement enregistré dans le système de certification numérique de KMG Bibliothèque.
               </p>
             </div>
 

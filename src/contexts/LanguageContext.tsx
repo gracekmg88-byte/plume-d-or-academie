@@ -31,7 +31,7 @@ const translations = {
     "stats.articles": "Articles",
 
     // Features
-    "features.title": "Pourquoi Plume d'Or KMG ?",
+    "features.title": "Pourquoi KMG Bibliothèque ?",
     "features.subtitle": "Une plateforme dédiée à la diffusion du savoir académique et à la valorisation des travaux de recherche.",
     "features.freeAccess": "Accès libre",
     "features.freeAccessDesc": "Consultez gratuitement tous nos contenus académiques sans inscription.",
@@ -68,11 +68,11 @@ const translations = {
     "library.viewOfflineDocs": "Voir mes documents hors ligne",
 
     // About
-    "about.title": "À propos de Plume d'Or KMG",
+    "about.title": "À propos de KMG Bibliothèque",
     "about.description": "Une bibliothèque académique numérique dédiée à la diffusion du savoir et à la valorisation des travaux de recherche.",
     "about.missionBadge": "Notre mission",
     "about.missionTitle": "Démocratiser l'accès au savoir académique",
-    "about.missionP1": "Plume d'Or KMG est née de la conviction que le savoir académique doit être accessible à tous. Notre plateforme rassemble des livres, mémoires, TFC et articles scientifiques pour offrir une ressource éducative de qualité.",
+    "about.missionP1": "KMG Bibliothèque est née de la conviction que le savoir académique doit être accessible à tous. Notre plateforme rassemble des livres, mémoires, TFC et articles scientifiques pour offrir une ressource éducative de qualité.",
     "about.missionP2": "Nous accompagnons les étudiants, chercheurs et passionnés dans leur quête de connaissances en leur donnant accès à une bibliothèque numérique riche et variée.",
     "about.missionP3": "Chaque publication est soigneusement sélectionnée pour garantir la qualité et la pertinence des contenus proposés.",
     "about.qualityTitle": "Qualité garantie",
@@ -88,7 +88,7 @@ const translations = {
     "about.val4Title": "Innovation",
     "about.val4Desc": "Nous encourageons la créativité et les nouvelles perspectives de recherche.",
     "about.storyTitle": "Notre histoire",
-    "about.storyP1": "Fondée avec la passion de rendre le savoir accessible, Plume d'Or KMG est le fruit d'une vision simple : créer un espace où les travaux académiques peuvent être partagés et consultés librement.",
+    "about.storyP1": "Fondée avec la passion de rendre le savoir accessible, KMG Bibliothèque est le fruit d'une vision simple : créer un espace où les travaux académiques peuvent être partagés et consultés librement.",
     "about.storyP2": "Notre nom évoque la plume d'or, symbole de l'écriture noble et du savoir précieux. Nous aspirons à être cette plume qui trace le chemin de la connaissance pour les générations présentes et futures.",
     "about.storyP3": "Aujourd'hui, nous continuons de développer notre collection pour offrir toujours plus de ressources à notre communauté d'apprenants et de chercheurs.",
 
@@ -155,7 +155,7 @@ const translations = {
 
     // Chat
     "chat.title": "Chat communautaire",
-    "chat.subtitle": "Discutez avec la communauté Plume d'Or",
+    "chat.subtitle": "Discutez avec la communauté KMG Bibliothèque",
     "chat.placeholder": "Écrire un message...",
     "chat.send": "Envoyer",
     "chat.login": "Connectez-vous pour participer au chat",
@@ -165,7 +165,7 @@ const translations = {
     "chat.error": "Erreur lors de l'envoi du message",
 
     // Install PWA
-    "install.title": "Installer Plume d'Or",
+    "install.title": "Installer KMG Bibliothèque",
     "install.description": "Installez l'application sur votre appareil pour un accès rapide, même hors connexion.",
     "install.alreadyInstalled": "L'application est déjà installée !",
     "install.installButton": "Installer l'application",
@@ -219,7 +219,7 @@ const translations = {
     "stats.articles": "Articles",
 
     // Features
-    "features.title": "Why Plume d'Or KMG?",
+    "features.title": "Why KMG Bibliothèque?",
     "features.subtitle": "A platform dedicated to spreading academic knowledge and showcasing research work.",
     "features.freeAccess": "Free Access",
     "features.freeAccessDesc": "Browse all our academic content for free, no registration needed.",
@@ -256,11 +256,11 @@ const translations = {
     "library.viewOfflineDocs": "View my offline documents",
 
     // About
-    "about.title": "About Plume d'Or KMG",
+    "about.title": "About KMG Bibliothèque",
     "about.description": "A digital academic library dedicated to spreading knowledge and showcasing research work.",
     "about.missionBadge": "Our mission",
     "about.missionTitle": "Democratizing access to academic knowledge",
-    "about.missionP1": "Plume d'Or KMG was born from the conviction that academic knowledge should be accessible to all. Our platform gathers books, theses, papers and scientific articles to provide quality educational resources.",
+    "about.missionP1": "KMG Bibliothèque was born from the conviction that academic knowledge should be accessible to all. Our platform gathers books, theses, papers and scientific articles to provide quality educational resources.",
     "about.missionP2": "We support students, researchers and enthusiasts in their quest for knowledge by giving them access to a rich and diverse digital library.",
     "about.missionP3": "Each publication is carefully selected to ensure the quality and relevance of the content offered.",
     "about.qualityTitle": "Guaranteed Quality",
@@ -276,7 +276,7 @@ const translations = {
     "about.val4Title": "Innovation",
     "about.val4Desc": "We encourage creativity and new research perspectives.",
     "about.storyTitle": "Our story",
-    "about.storyP1": "Founded with a passion for making knowledge accessible, Plume d'Or KMG is the result of a simple vision: creating a space where academic works can be shared and consulted freely.",
+    "about.storyP1": "Founded with a passion for making knowledge accessible, KMG Bibliothèque is the result of a simple vision: creating a space where academic works can be shared and consulted freely.",
     "about.storyP2": "Our name evokes the golden quill, a symbol of noble writing and precious knowledge. We aspire to be that quill that traces the path of knowledge for present and future generations.",
     "about.storyP3": "Today, we continue to develop our collection to offer even more resources to our community of learners and researchers.",
 
@@ -343,7 +343,7 @@ const translations = {
 
     // Chat
     "chat.title": "Community Chat",
-    "chat.subtitle": "Chat with the Plume d'Or community",
+    "chat.subtitle": "Chat with the KMG Bibliothèque community",
     "chat.placeholder": "Write a message...",
     "chat.send": "Send",
     "chat.login": "Sign in to join the chat",
@@ -353,7 +353,7 @@ const translations = {
     "chat.error": "Error sending message",
 
     // Install PWA
-    "install.title": "Install Plume d'Or",
+    "install.title": "Install KMG Bibliothèque",
     "install.description": "Install the app on your device for quick access, even offline.",
     "install.alreadyInstalled": "The app is already installed!",
     "install.installButton": "Install the app",

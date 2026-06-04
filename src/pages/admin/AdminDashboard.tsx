@@ -155,7 +155,7 @@ export default function AdminDashboard() {
             </div>
             <div>
               <span className="font-serif font-bold text-secondary-foreground">Administration</span>
-              <span className="text-secondary-foreground/60 text-sm ml-2">Plume d'Or KMG</span>
+              <span className="text-secondary-foreground/60 text-sm ml-2">KMG Bibliothèque</span>
             </div>
           </div>
 

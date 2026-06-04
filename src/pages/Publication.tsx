@@ -391,7 +391,7 @@ export default function Publication() {
           : "CreativeWork";
   const pubDescription = displayPub.description
     ? displayPub.description.slice(0, 200)
-    : `${displayPub.title} — ${displayPub.author || ""} sur Plume d'Or KMG. Lecture en ligne gratuite.`;
+    : `${displayPub.title} — ${displayPub.author || ""} sur KMG Bibliothèque. Lecture en ligne gratuite.`;
 
   // Canonical SEO-friendly path
   const canonicalPath = buildPublicationPath({
@@ -439,7 +439,7 @@ export default function Publication() {
     datePublished,
     publisher: {
       "@type": "Organization",
-      name: "Plume d'Or KMG",
+      name: "KMG Bibliothèque",
       url: "https://plume-d-or-academie.lovable.app",
     },
   };
@@ -459,7 +459,7 @@ export default function Publication() {
     displayPub.title,
     displayPub.author || "",
     categoryLabel,
-    "Plume d'Or KMG",
+    "KMG Bibliothèque",
     "KMG Bibliothèque",
     "lecture en ligne",
     pubCategory === "livre" ? "livre numérique" : "",

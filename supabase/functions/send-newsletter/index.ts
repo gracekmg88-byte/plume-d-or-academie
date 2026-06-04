@@ -99,7 +99,7 @@ Deno.serve(async (req) => {
               <!-- Header -->
               <tr>
                 <td style="background: linear-gradient(135deg, #1a1a2e, #16213e); padding: 32px; border-radius: 12px 12px 0 0; text-align: center;">
-                  <h1 style="margin: 0; color: #d4a574; font-size: 28px;">✨ Plume d'Or KMG</h1>
+                  <h1 style="margin: 0; color: #d4a574; font-size: 28px;">✨ KMG Bibliothèque</h1>
                   <p style="margin: 8px 0 0; color: #94a3b8; font-size: 14px;">Newsletter hebdomadaire</p>
                 </td>
               </tr>
@@ -133,7 +133,7 @@ Deno.serve(async (req) => {
               <tr>
                 <td style="padding: 24px; text-align: center; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px; background: #f1f5f9;">
                   <p style="margin: 0; font-size: 12px; color: #9ca3af;">
-                    Vous recevez cet email car vous êtes abonné à la newsletter Plume d'Or KMG.
+                    Vous recevez cet email car vous êtes abonné à la newsletter KMG Bibliothèque.
                   </p>
                   <p style="margin: 8px 0 0; font-size: 12px;">
                     <a href="${siteUrl}" style="color: #d4a574;">Visiter le site</a>
@@ -155,9 +155,9 @@ Deno.serve(async (req) => {
       const batch = subscribers.slice(i, i + batchSize);
 
       const emails = batch.map((sub) => ({
-        from: "Plume d'Or KMG <onboarding@resend.dev>",
+        from: "KMG Bibliothèque <onboarding@resend.dev>",
         to: sub.email,
-        subject: `📚 ${publications.length} nouvelle${publications.length > 1 ? "s" : ""} publication${publications.length > 1 ? "s" : ""} cette semaine - Plume d'Or`,
+        subject: `📚 ${publications.length} nouvelle${publications.length > 1 ? "s" : ""} publication${publications.length > 1 ? "s" : ""} cette semaine - KMG Bibliothèque`,
         html: emailHtml,
       }));
 

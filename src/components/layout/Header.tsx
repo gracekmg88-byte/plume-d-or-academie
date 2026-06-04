@@ -43,7 +43,7 @@ export function Header() {
           </div>
           <div className="flex flex-col">
             <span className="font-serif text-lg font-bold leading-tight text-foreground md:text-xl">
-              Plume d'Or
+              KMG Bibliothèque
             </span>
             <span className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
               KMG

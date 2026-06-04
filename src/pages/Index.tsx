@@ -66,7 +66,7 @@ export default function Index() {
           {
             "@context": "https://schema.org",
             "@type": "WebSite",
-            name: "Plume d'Or KMG",
+            name: "KMG Bibliothèque",
             url: "https://plume-d-or-academie.lovable.app/",
             potentialAction: {
               "@type": "SearchAction",
