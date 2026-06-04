@@ -133,8 +133,6 @@ export const CachedImage = memo(function CachedImage({
     );
   }
 
-  const { fetchPriority, ...imgProps } = props;
-
   return (
     <div className={cn("relative overflow-hidden", containerClassName)}>
       {/* Always show placeholder until image is fully loaded */}
