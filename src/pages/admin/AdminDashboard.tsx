@@ -3,7 +3,8 @@ import { useNavigate, Link } from "react-router-dom";
 import { 
   Feather, LogOut, Plus, Book, FileText, GraduationCap, Newspaper, 
   Eye, LayoutDashboard, Settings, Trash2, Edit, ToggleLeft, ToggleRight,
-  MessageSquare, Mail, Copy, Download, Users, Smartphone, Send, Loader2
+  MessageSquare, Mail, Copy, Download, Users, Smartphone, Send, Loader2,
+  ShieldCheck
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -242,6 +243,19 @@ export default function AdminDashboard() {
                 <div>
                   <div className="font-semibold text-foreground">SEO Google</div>
                   <div className="text-sm text-muted-foreground">Sitemap & indexation</div>
+                </div>
+              </div>
+            </div>
+          </Link>
+          <Link to="/admin/auth-logs" className="block">
+            <div className="bg-card rounded-xl border border-border p-6 hover:shadow-elegant transition-all">
+              <div className="flex items-center gap-4">
+                <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <ShieldCheck className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <div className="font-semibold text-foreground">Journal d'auth</div>
+                  <div className="text-sm text-muted-foreground">Sessions & accès admin</div>
                 </div>
               </div>
             </div>

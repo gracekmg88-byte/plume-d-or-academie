@@ -1,5 +1,6 @@
 import { createContext, createElement, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { logAuthEvent } from "@/lib/auth-audit";
 import type { User, Session } from "@supabase/supabase-js";
 
 interface AuthContextValue {
@@ -87,7 +88,21 @@ function useProvideAuth(): AuthContextValue {
     // don't need to gate it — let every event update state.
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+    } = supabase.auth.onAuthStateChange((event, nextSession) => {
+      // Log session lifecycle events for diagnostics
+      const evt =
+        event === "SIGNED_IN" ? "sign_in" :
+        event === "SIGNED_OUT" ? "sign_out" :
+        event === "TOKEN_REFRESHED" ? "token_refreshed" :
+        event === "INITIAL_SESSION" ? (nextSession ? "session_restored" : "session_lost") :
+        null;
+      if (evt) {
+        logAuthEvent(evt, {
+          user_id: nextSession?.user?.id ?? null,
+          email: nextSession?.user?.email ?? null,
+          metadata: { supabase_event: event },
+        });
+      }
       applySession(nextSession);
       if (mountedRef.current) setAuthReady(true);
     });
@@ -117,13 +132,25 @@ function useProvideAuth(): AuthContextValue {
       email,
       password,
     });
-    if (error) throw error;
+    if (error) {
+      logAuthEvent("admin_check_failed", {
+        email,
+        metadata: { stage: "sign_in", error: error.message },
+      });
+      throw error;
+    }
 
     // Pre-warm the admin check synchronously so the next render of any guarded
     // page already reflects the role — avoids "Accès non autorisé" flash.
     if (data.user) {
       adminCache.delete(data.user.id);
       await checkAdminRole(data.user.id);
+      logAuthEvent("admin_check", {
+        user_id: data.user.id,
+        email: data.user.email ?? null,
+        is_admin: adminCache.get(data.user.id) ?? false,
+        metadata: { stage: "post_sign_in" },
+      });
     }
 
     return data;
