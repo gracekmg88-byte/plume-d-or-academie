@@ -361,6 +361,7 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
             </div>
           )}
         </Document>
+        )}
       </div>
 
       {/* Watermark */}
