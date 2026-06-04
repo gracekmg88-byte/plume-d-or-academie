@@ -82,6 +82,16 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Auth: DB trigger (service role) or the authenticated sender themself.
+    if (!isServiceRoleRequest(req)) {
+      const caller = await getAuthUser(req);
+      if (!caller) return unauthorized(corsHeaders);
+      if (!user_id || caller.userId !== user_id) {
+        return forbidden(corsHeaders, "Cannot send as another user");
+      }
+    }
+
+
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
