@@ -175,6 +175,9 @@ export default function PublicationForm() {
         toast.success("Publication créée");
       }
 
+      // Fire-and-forget: ping Google Search Console with the updated sitemap.
+      void supabase.functions.invoke("gsc-admin", { body: { action: "auto" } }).catch(() => {});
+
       navigate("/admin/dashboard");
     } catch (error: any) {
       toast.error(error.message || "Une erreur est survenue");
