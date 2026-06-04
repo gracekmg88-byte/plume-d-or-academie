@@ -25,6 +25,14 @@ export function preloadCommonRoutes() {
     loadPublicationPage(),
     loadProfilPage(),
     loadAProposPage(),
+    loadContactPage(),
+    loadAuthPage(),
+    loadAbonnementPage(),
+    loadChatPage(),
+    loadDepotMemoirePage(),
+    loadInstallAppPage(),
+    loadResetPasswordPage(),
+    loadNotFoundPage(),
   ]);
 }
 
