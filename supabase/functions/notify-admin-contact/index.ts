@@ -31,9 +31,13 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Only the DB trigger (service role) may invoke this webhook.
+  if (!isServiceRoleRequest(req)) return unauthorized(corsHeaders);
+
   try {
     const payload: ContactPayload = await req.json();
     console.log("Received payload:", JSON.stringify(payload));
+
 
     const { record } = payload;
     
