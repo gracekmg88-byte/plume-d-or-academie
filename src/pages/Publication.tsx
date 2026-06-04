@@ -452,6 +452,14 @@ export default function Publication() {
           </div>
         )}
 
+        <Breadcrumb
+          items={[
+            { label: "Bibliothèque", to: "/bibliotheque" },
+            { label: categoryLabel, to: `/bibliotheque?category=${categoryRoute}` },
+            { label: displayPub.title },
+          ]}
+        />
+
         <Link
           to={backTarget}
           replace
@@ -471,10 +479,11 @@ export default function Publication() {
                 {displayPub.cover_image_url ? (
                   <CachedImage
                     src={displayPub.cover_image_url}
-                    alt={displayPub.title}
+                    alt={coverAlt}
                     className="h-full w-full object-cover"
                     containerClassName="h-full w-full"
                     fallbackIcon={<Icon className="h-24 w-24 text-muted-foreground/30" />}
+                    eager
                   />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-muted to-accent">
@@ -531,7 +540,13 @@ export default function Publication() {
             <div className="flex flex-wrap gap-4 text-muted-foreground">
               <div className="flex items-center gap-2">
                 <User className="h-4 w-4" />
-                <span>{displayPub.author}</span>
+                {authorPath ? (
+                  <Link to={authorPath} className="hover:text-foreground hover:underline transition-colors">
+                    {displayPub.author}
+                  </Link>
+                ) : (
+                  <span>{displayPub.author}</span>
+                )}
               </div>
               <div className="flex items-center gap-2">
                 <Calendar className="h-4 w-4" />
@@ -599,6 +614,13 @@ export default function Publication() {
             <div className="mt-10 border-t border-border pt-8">
               <CommentsList publicationId={id!} />
             </div>
+
+            {/* Livres similaires — maillage interne SEO */}
+            <SimilarBooks
+              id={displayPub.id}
+              category={displayPub.category}
+              author={displayPub.author}
+            />
           </div>
         </div>
       </div>
