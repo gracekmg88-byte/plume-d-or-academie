@@ -49,17 +49,56 @@ export function PublicationCard({
   const queryClient = useQueryClient();
   const config = categoryConfig[category];
   const Icon = config.icon;
+  const rootRef = useRef<HTMLAnchorElement>(null);
+  const prefetchedRef = useRef(false);
+
+  const prefetchAll = () => {
+    if (prefetchedRef.current) return;
+    prefetchedRef.current = true;
+    preloadPublicationFlow();
+    queryClient
+      .prefetchQuery({
+        queryKey: ["publication", id],
+        queryFn: () => fetchPublication(id),
+        staleTime: 60_000,
+      })
+      .catch(() => {});
+    if (coverImageUrl) {
+      if (Capacitor.isNativePlatform()) {
+        cacheImage(coverImageUrl).catch(() => {});
+      } else {
+        preloadImage(coverImageUrl).catch(() => {});
+      }
+    }
+  };
 
   const prepareNavigation = () => {
     const entryKey = getCurrentHistoryEntryKey();
     saveScrollPosition(entryKey, pathname, window.scrollY);
-    preloadPublicationFlow();
-    queryClient.prefetchQuery({
-      queryKey: ["publication", id],
-      queryFn: () => fetchPublication(id),
-      staleTime: 60_000,
-    }).catch(() => {});
+    prefetchAll();
   };
+
+  // Prefetch metadata + warm thumbnail when card scrolls into view
+  useEffect(() => {
+    const el = rootRef.current;
+    if (!el || prefetchedRef.current) return;
+    if (typeof IntersectionObserver === "undefined") {
+      prefetchAll();
+      return;
+    }
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          prefetchAll();
+          io.disconnect();
+        }
+      },
+      { rootMargin: "300px" }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, coverImageUrl]);
 
   const linkProps = {
     to: buildPublicationPath({ id, title, category }),
