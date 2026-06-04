@@ -131,6 +131,11 @@ function ScrollManager() {
       const savedY = getSavedScrollPosition(restoreKey, pathname);
       const targetCardId = isReturnFromPublication ? navState?.returnPublicationId ?? null : null;
 
+      if (pathname.startsWith("/publication/") || pathname.startsWith("/livre/") || pathname.startsWith("/memoire/") || pathname.startsWith("/tfc/") || pathname.startsWith("/article/")) {
+        isRestoringRef.current = false;
+        return undefined;
+      }
+
       isRestoringRef.current = true;
       let cancelled = false;
       const start = performance.now();
