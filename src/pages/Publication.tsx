@@ -354,7 +354,7 @@ export default function Publication() {
             {!isOnline ? t("pub.notFoundOffline") : t("pub.notFoundOnline")}
           </p>
           <Button variant="outline" className="gap-2" asChild>
-            <Link to={backTarget} replace state={backState} preventScrollReset>
+            <Link to={backTarget} replace state={backState} preventScrollReset onClick={handleBack}>
               <ArrowLeft className="h-4 w-4" />
               {t("pub.back")}
             </Link>
