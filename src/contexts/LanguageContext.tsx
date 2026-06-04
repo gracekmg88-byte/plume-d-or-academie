@@ -205,9 +205,9 @@ const translations = {
     "nav.chat": "Chat",
 
     // Index hero
-    "hero.badge": "Academic Digital Library",
-    "hero.title": "Plume d'Or",
-    "hero.titleAccent": "KMG",
+    "hero.badge": "Digital Library",
+    "hero.title": "KMG",
+    "hero.titleAccent": "Digital Library",
     "hero.description": "Your gateway to knowledge. Explore our collection of books, theses, research papers and academic articles.",
     "hero.cta": "Explore the library",
     "hero.learnMore": "Learn more",
