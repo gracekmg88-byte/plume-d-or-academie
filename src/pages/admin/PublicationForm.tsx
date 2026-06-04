@@ -156,7 +156,9 @@ export default function PublicationForm() {
       }
 
       if (pdfFile) {
-        fileUrl = await uploadFile(pdfFile, "files");
+        const { optimizePdf } = await import("@/lib/optimize-pdf");
+        const optimizedPdf = await optimizePdf(pdfFile);
+        fileUrl = await uploadFile(optimizedPdf, "files");
       }
 
       const publicationData = {
