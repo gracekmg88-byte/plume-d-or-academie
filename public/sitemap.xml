@@ -426,6 +426,16 @@
     </image:image>
   </url>
   <url>
+    <loc>https://plume-d-or-academie.lovable.app/livre/ce-que-jaurais-aime-savoir-avant-de-me-marier-7281ec</loc>
+    <lastmod>2026-06-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/1773777376386.webp</image:loc>
+      <image:title>Ce que j’aurais aimé savoir avant de me marier  </image:title>
+    </image:image>
+  </url>
+  <url>
     <loc>https://plume-d-or-academie.lovable.app/livre/comment-surmonter-lechec-104630</loc>
     <lastmod>2026-06-04</lastmod>
     <changefreq>monthly</changefreq>
@@ -463,16 +473,6 @@
     <image:image>
       <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/compressed_22fcafe1-f753-4958-a5d6-971c0038de5c.webp</image:loc>
       <image:title>La Prophétie Biblique : La guerre entre les deux postérités</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://plume-d-or-academie.lovable.app/livre/ce-que-jaurais-aime-savoir-avant-de-me-marier-7281ec</loc>
-    <lastmod>2026-06-04</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/1773777376386.webp</image:loc>
-      <image:title>Ce que j’aurais aimé savoir avant de me marier  </image:title>
     </image:image>
   </url>
   <url>
@@ -951,6 +951,11 @@
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://plume-d-or-academie.lovable.app/auteur/gary-chapman</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://plume-d-or-academie.lovable.app/auteur/dale-carnegie</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -962,11 +967,6 @@
   </url>
   <url>
     <loc>https://plume-d-or-academie.lovable.app/auteur/shora-kuetu</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://plume-d-or-academie.lovable.app/auteur/gary-chapman</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
