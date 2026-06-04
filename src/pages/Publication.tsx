@@ -149,9 +149,9 @@ export default function Publication() {
   const handleBack = useCallback(
     (e: React.MouseEvent) => {
       e.preventDefault();
-      // If we arrived from another in-app page, prefer a real POP so the browser
-      // back button and the in-app "Retour" button restore the exact same state.
-      if (returnState && window.history.length > 1) {
+      // Use real browser back only when there is explicit return state from the opener.
+      // Otherwise navigate directly with restore state so deep links still return sanely.
+      if (returnState?.returnTo && window.history.length > 1) {
         navigate(-1);
         return;
       }

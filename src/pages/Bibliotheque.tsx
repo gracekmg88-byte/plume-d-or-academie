@@ -247,6 +247,14 @@ export default function Bibliotheque() {
 
   useEffect(() => {
     const navState = location.state as { restoredFromPublication?: boolean } | null;
+    if (navState?.restoredFromPublication) return;
+
+    restoredCardRef.current = null;
+    restorationAttemptRef.current = 0;
+  }, [location.key, location.state]);
+
+  useEffect(() => {
+    const navState = location.state as { restoredFromPublication?: boolean } | null;
     if (!navState?.restoredFromPublication) {
       hasConsumedRestoreStateRef.current = false;
     }
