@@ -396,6 +396,13 @@ export default function Publication() {
     inLanguage: "fr",
     isAccessibleForFree: true,
     bookFormat: schemaType === "Book" ? "https://schema.org/EBook" : undefined,
+    learningResourceType:
+      schemaType === "Thesis"
+        ? pubCategory === "tfc"
+          ? "Travail de fin de cycle"
+          : "Mémoire universitaire"
+        : undefined,
+    genre: categoryLabel,
     datePublished,
     publisher: {
       "@type": "Organization",
