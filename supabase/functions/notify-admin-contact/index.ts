@@ -56,11 +56,17 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(`Sending notification for contact from: ${record.email}`);
 
+    const safeName = escapeHtml(record.name);
+    const safeEmail = escapeHtml(record.email);
+    const safeSubject = escapeHtml(record.subject);
+    const safeMessage = escapeHtml(record.message);
+
     const emailResponse = await resend.emails.send({
       from: "KMG Bibliothèque <noreply@resend.dev>",
       to: [ADMIN_EMAIL],
       reply_to: record.email,
       subject: `📩 Nouveau message: ${record.subject}`,
+
       html: `
         <!DOCTYPE html>
         <html>
