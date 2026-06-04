@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { getAuthUser, isAdmin, isServiceRoleRequest, unauthorized, forbidden } from "../_shared/auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -12,6 +13,13 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Auth: allow internal/service-role callers (cron) or admins only.
+    if (!isServiceRoleRequest(req)) {
+      const user = await getAuthUser(req);
+      if (!user) return unauthorized(corsHeaders);
+      if (!(await isAdmin(user.userId))) return forbidden(corsHeaders, "Admin only");
+    }
+
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
     if (!RESEND_API_KEY) throw new Error("RESEND_API_KEY not configured");
 
