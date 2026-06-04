@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Book, FileText, GraduationCap, Newspaper, Eye } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -52,7 +52,7 @@ export function PublicationCard({
   const rootRef = useRef<HTMLAnchorElement>(null);
   const prefetchedRef = useRef(false);
 
-  const prefetchAll = () => {
+  const prefetchAll = useCallback(() => {
     if (prefetchedRef.current) return;
     prefetchedRef.current = true;
     preloadPublicationFlow();
@@ -70,13 +70,13 @@ export function PublicationCard({
         preloadImage(coverImageUrl).catch(() => {});
       }
     }
-  };
+  }, [coverImageUrl, id, queryClient]);
 
-  const prepareNavigation = () => {
+  const prepareNavigation = useCallback(() => {
     const entryKey = getCurrentHistoryEntryKey();
     saveScrollPosition(entryKey, pathname, window.scrollY);
     prefetchAll();
-  };
+  }, [pathname, prefetchAll]);
 
   // Prefetch metadata + warm thumbnail when card scrolls into view
   useEffect(() => {
@@ -98,7 +98,7 @@ export function PublicationCard({
     io.observe(el);
     return () => io.disconnect();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id, coverImageUrl]);
+  }, [prefetchAll]);
 
   const linkProps = {
     ref: rootRef,
@@ -109,10 +109,8 @@ export function PublicationCard({
       returnPublicationId: id,
     },
     "data-publication-card-id": id,
-    onPointerDown: prepareNavigation,
     onMouseEnter: prepareNavigation,
-    onTouchStart: prepareNavigation,
-    onClickCapture: prepareNavigation,
+    onClick: prepareNavigation,
   } as const;
 
   // LIST variant — horizontal row with thumbnail + full description

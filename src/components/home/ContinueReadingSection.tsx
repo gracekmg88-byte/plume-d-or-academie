@@ -74,9 +74,8 @@ export function ContinueReadingSection() {
                         returnKey: getCurrentHistoryEntryKey(),
                     returnPublicationId: item.publication_id,
                   }}
-                  onPointerDown={saveScroll}
                   onMouseEnter={saveScroll}
-                  onClickCapture={saveScroll}
+                  onClick={saveScroll}
                   className="group flex gap-4 bg-background rounded-xl border border-border p-4 hover:shadow-elegant transition-all duration-300 h-full"
                 >
                   <div className="w-16 h-20 rounded-lg overflow-hidden bg-muted shrink-0">
