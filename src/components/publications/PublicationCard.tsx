@@ -1,15 +1,18 @@
+import { useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Book, FileText, GraduationCap, Newspaper, Eye } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CachedImage } from "@/components/ui/cached-image";
+import { CachedImage, preloadImage } from "@/components/ui/cached-image";
 import { FavoriteButton } from "@/components/publications/FavoriteButton";
 import { cn } from "@/lib/utils";
 import { fetchPublication } from "@/hooks/usePublications";
 import { getCurrentHistoryEntryKey, saveScrollPosition } from "@/lib/scroll-restoration";
 import { preloadPublicationFlow } from "@/lib/route-preload";
 import { buildPublicationPath } from "@/lib/slug";
+import { cacheImage } from "@/lib/image-cache";
+import { Capacitor } from "@capacitor/core";
 
 type Category = "livre" | "memoire" | "tfc" | "article";
 export type PublicationCardVariant = "grid" | "compact" | "list" | "magazine-hero";
@@ -46,19 +49,59 @@ export function PublicationCard({
   const queryClient = useQueryClient();
   const config = categoryConfig[category];
   const Icon = config.icon;
+  const rootRef = useRef<HTMLAnchorElement>(null);
+  const prefetchedRef = useRef(false);
+
+  const prefetchAll = () => {
+    if (prefetchedRef.current) return;
+    prefetchedRef.current = true;
+    preloadPublicationFlow();
+    queryClient
+      .prefetchQuery({
+        queryKey: ["publication", id],
+        queryFn: () => fetchPublication(id),
+        staleTime: 60_000,
+      })
+      .catch(() => {});
+    if (coverImageUrl) {
+      if (Capacitor.isNativePlatform()) {
+        cacheImage(coverImageUrl).catch(() => {});
+      } else {
+        preloadImage(coverImageUrl).catch(() => {});
+      }
+    }
+  };
 
   const prepareNavigation = () => {
     const entryKey = getCurrentHistoryEntryKey();
     saveScrollPosition(entryKey, pathname, window.scrollY);
-    preloadPublicationFlow();
-    queryClient.prefetchQuery({
-      queryKey: ["publication", id],
-      queryFn: () => fetchPublication(id),
-      staleTime: 60_000,
-    }).catch(() => {});
+    prefetchAll();
   };
 
+  // Prefetch metadata + warm thumbnail when card scrolls into view
+  useEffect(() => {
+    const el = rootRef.current;
+    if (!el || prefetchedRef.current) return;
+    if (typeof IntersectionObserver === "undefined") {
+      prefetchAll();
+      return;
+    }
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          prefetchAll();
+          io.disconnect();
+        }
+      },
+      { rootMargin: "300px" }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, coverImageUrl]);
+
   const linkProps = {
+    ref: rootRef,
     to: buildPublicationPath({ id, title, category }),
     state: {
       returnTo: `${pathname}${window.location.search}`,
@@ -68,6 +111,7 @@ export function PublicationCard({
     "data-publication-card-id": id,
     onPointerDown: prepareNavigation,
     onMouseEnter: prepareNavigation,
+    onTouchStart: prepareNavigation,
     onClickCapture: prepareNavigation,
   } as const;
 

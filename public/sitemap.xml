@@ -186,13 +186,13 @@
     </image:image>
   </url>
   <url>
-    <loc>https://plume-d-or-academie.lovable.app/livre/20-secrets-pour-gerer-son-argent-f467ab</loc>
+    <loc>https://plume-d-or-academie.lovable.app/livre/le-secret-de-la-cybersecurite-87dec0</loc>
     <lastmod>2026-06-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
-      <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/1773389687707.webp</image:loc>
-      <image:title>20 secrets pour gérer son argent</image:title>
+      <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/1773394328974.webp</image:loc>
+      <image:title>Le secret de la cybersécurité</image:title>
     </image:image>
   </url>
   <url>
@@ -206,13 +206,13 @@
     </image:image>
   </url>
   <url>
-    <loc>https://plume-d-or-academie.lovable.app/livre/le-secret-de-la-cybersecurite-87dec0</loc>
-    <lastmod>2026-05-26</lastmod>
+    <loc>https://plume-d-or-academie.lovable.app/livre/20-secrets-pour-gerer-son-argent-f467ab</loc>
+    <lastmod>2026-06-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
-      <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/1773394328974.webp</image:loc>
-      <image:title>Le secret de la cybersécurité</image:title>
+      <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/1773389687707.webp</image:loc>
+      <image:title>20 secrets pour gérer son argent</image:title>
     </image:image>
   </url>
   <url>
@@ -323,6 +323,16 @@
     <image:image>
       <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/1773390738211.webp</image:loc>
       <image:title>Apprenez à programmer en Python (4e édition)</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://plume-d-or-academie.lovable.app/memoire/protection-de-lenvironnement-dans-la-commune-de-ruashi-enjeux-et-perspectives-c297bb</loc>
+    <lastmod>2026-06-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/1773395403115.webp</image:loc>
+      <image:title>Protection de l&apos;environnement dans la commune de Ruashi : Enjeux et perspectives.</image:title>
     </image:image>
   </url>
   <url>
@@ -476,16 +486,6 @@
     </image:image>
   </url>
   <url>
-    <loc>https://plume-d-or-academie.lovable.app/memoire/protection-de-lenvironnement-dans-la-commune-de-ruashi-enjeux-et-perspectives-c297bb</loc>
-    <lastmod>2026-06-04</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/1773395403115.webp</image:loc>
-      <image:title>Protection de l&apos;environnement dans la commune de Ruashi : Enjeux et perspectives.</image:title>
-    </image:image>
-  </url>
-  <url>
     <loc>https://plume-d-or-academie.lovable.app/livre/les-16-lois-du-succes-250d2b</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
@@ -516,16 +516,6 @@
     </image:image>
   </url>
   <url>
-    <loc>https://plume-d-or-academie.lovable.app/livre/tresors-de-la-medecine-traditionnelle-africaine-et-de-sa-pharmacopee-c56164</loc>
-    <lastmod>2026-06-04</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/1773776158998.webp</image:loc>
-      <image:title>Trésors de la médecine traditionnelle africaine et de sa pharmacopée  </image:title>
-    </image:image>
-  </url>
-  <url>
     <loc>https://plume-d-or-academie.lovable.app/livre/216-verbes-en-images-2a9c53</loc>
     <lastmod>2026-06-04</lastmod>
     <changefreq>monthly</changefreq>
@@ -533,6 +523,16 @@
     <image:image>
       <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/compressed_2a9c5370-ce08-496a-9ddf-5baf7305cd0c.webp</image:loc>
       <image:title>216 verbes en images</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://plume-d-or-academie.lovable.app/livre/tresors-de-la-medecine-traditionnelle-africaine-et-de-sa-pharmacopee-c56164</loc>
+    <lastmod>2026-06-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/1773776158998.webp</image:loc>
+      <image:title>Trésors de la médecine traditionnelle africaine et de sa pharmacopée  </image:title>
     </image:image>
   </url>
   <url>
@@ -746,16 +746,6 @@
     </image:image>
   </url>
   <url>
-    <loc>https://plume-d-or-academie.lovable.app/livre/lafrique-sans-les-africains-le-reve-blanc-du-continent-noir-165ca6</loc>
-    <lastmod>2026-06-04</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/1773763688220.webp</image:loc>
-      <image:title>L’Afrique sans les Africains – Le rêve blanc du continent noir  </image:title>
-    </image:image>
-  </url>
-  <url>
     <loc>https://plume-d-or-academie.lovable.app/livre/david-et-goliath-quand-les-outsiders-defient-les-geants-63aa6f</loc>
     <lastmod>2026-05-26</lastmod>
     <changefreq>monthly</changefreq>
@@ -763,6 +753,16 @@
     <image:image>
       <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/1773393489311.webp</image:loc>
       <image:title>David et Goliath : Quand les outsiders défient les géants</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://plume-d-or-academie.lovable.app/livre/le-chemin-parcouru-b5434c</loc>
+    <lastmod>2026-06-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/1773775610008.webp</image:loc>
+      <image:title>Le chemin parcouru  </image:title>
     </image:image>
   </url>
   <url>
@@ -776,13 +776,23 @@
     </image:image>
   </url>
   <url>
-    <loc>https://plume-d-or-academie.lovable.app/livre/le-chemin-parcouru-b5434c</loc>
+    <loc>https://plume-d-or-academie.lovable.app/livre/lafrique-sans-les-africains-le-reve-blanc-du-continent-noir-165ca6</loc>
     <lastmod>2026-06-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
-      <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/1773775610008.webp</image:loc>
-      <image:title>Le chemin parcouru  </image:title>
+      <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/1773763688220.webp</image:loc>
+      <image:title>L’Afrique sans les Africains – Le rêve blanc du continent noir  </image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://plume-d-or-academie.lovable.app/livre/jai-plante-jeune-jai-recolte-jeune-la-revolution-silencieuse-dun-jeune-qui-a-ref-db8701</loc>
+    <lastmod>2026-06-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/1780584726493.webp</image:loc>
+      <image:title>J’ai planté jeune, j’ai récolté jeune – La révolution silencieuse d’un jeune qui a refusé d’attendre</image:title>
     </image:image>
   </url>
   <url>
@@ -836,7 +846,7 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://plume-d-or-academie.lovable.app/auteur/brian-tracy</loc>
+    <loc>https://plume-d-or-academie.lovable.app/auteur/mathieu-nayrolles</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -846,7 +856,7 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://plume-d-or-academie.lovable.app/auteur/mathieu-nayrolles</loc>
+    <loc>https://plume-d-or-academie.lovable.app/auteur/brian-tracy</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -906,6 +916,11 @@
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://plume-d-or-academie.lovable.app/auteur/kmg-bibliotheque</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://plume-d-or-academie.lovable.app/auteur/me-robert-yanda-mushala</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -961,11 +976,6 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://plume-d-or-academie.lovable.app/auteur/kmg-bibliotheque</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
     <loc>https://plume-d-or-academie.lovable.app/auteur/shora-kuetu</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -986,12 +996,12 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://plume-d-or-academie.lovable.app/auteur/annie-balet</loc>
+    <loc>https://plume-d-or-academie.lovable.app/auteur/les-aphasiques</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://plume-d-or-academie.lovable.app/auteur/les-aphasiques</loc>
+    <loc>https://plume-d-or-academie.lovable.app/auteur/annie-balet</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -1076,12 +1086,12 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://plume-d-or-academie.lovable.app/auteur/antoine-glaser-stephen-smith</loc>
+    <loc>https://plume-d-or-academie.lovable.app/auteur/malcolm-gladwell</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://plume-d-or-academie.lovable.app/auteur/malcolm-gladwell</loc>
+    <loc>https://plume-d-or-academie.lovable.app/auteur/ishmael-beah</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -1091,7 +1101,12 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://plume-d-or-academie.lovable.app/auteur/ishmael-beah</loc>
+    <loc>https://plume-d-or-academie.lovable.app/auteur/antoine-glaser-stephen-smith</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://plume-d-or-academie.lovable.app/auteur/diaz-bahati-munguiko</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
