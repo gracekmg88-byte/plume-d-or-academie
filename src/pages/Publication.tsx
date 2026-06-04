@@ -1,5 +1,5 @@
 import { useEffect, useCallback, useState, useMemo, useRef } from "react";
-import { useParams, Link, useSearchParams, useLocation, Navigate } from "react-router-dom";
+import { useParams, Link, useSearchParams, useLocation, useNavigate, Navigate } from "react-router-dom";
 import { ArrowLeft, Book, FileText, GraduationCap, Newspaper, Eye, Calendar, User, Lock, Download, WifiOff, CheckCircle, Heart } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
@@ -45,6 +45,7 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 export default function Publication() {
   const { id: rawId, slug } = useParams<{ id: string; slug: string }>();
   const location = useLocation();
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const pageFromUrl = parseInt(searchParams.get("page") || "0", 10);
   const isOnline = useOnlineStatus();
@@ -141,6 +142,20 @@ export default function Publication() {
       returnPublicationId: returnState?.returnPublicationId ?? id ?? null,
     }),
     [id, returnKey, returnState?.returnPublicationId],
+  );
+
+  const handleBack = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      // If we arrived from another in-app page, prefer a real POP so the browser
+      // back button and the in-app "Retour" button restore the exact same state.
+      if (returnState && window.history.length > 1) {
+        navigate(-1);
+        return;
+      }
+      navigate(backTarget, { replace: true, state: backState, preventScrollReset: true });
+    },
+    [navigate, returnState, backTarget, backState],
   );
 
   // Fetch last read page from DB if not provided in URL
@@ -339,7 +354,7 @@ export default function Publication() {
             {!isOnline ? t("pub.notFoundOffline") : t("pub.notFoundOnline")}
           </p>
           <Button variant="outline" className="gap-2" asChild>
-            <Link to={backTarget} replace state={backState} preventScrollReset>
+            <Link to={backTarget} replace state={backState} preventScrollReset onClick={handleBack}>
               <ArrowLeft className="h-4 w-4" />
               {t("pub.back")}
             </Link>
@@ -486,6 +501,7 @@ export default function Publication() {
           replace
           state={backState}
           preventScrollReset
+          onClick={handleBack}
           className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-8"
         >
           <ArrowLeft className="h-4 w-4" />
