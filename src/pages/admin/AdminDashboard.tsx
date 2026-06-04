@@ -3,7 +3,8 @@ import { useNavigate, Link } from "react-router-dom";
 import { 
   Feather, LogOut, Plus, Book, FileText, GraduationCap, Newspaper, 
   Eye, LayoutDashboard, Settings, Trash2, Edit, ToggleLeft, ToggleRight,
-  MessageSquare, Mail, Copy, Download, Users, Smartphone, Send, Loader2
+  MessageSquare, Mail, Copy, Download, Users, Smartphone, Send, Loader2,
+  ShieldCheck
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
