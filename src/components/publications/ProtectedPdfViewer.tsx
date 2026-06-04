@@ -5,6 +5,7 @@ import "react-pdf/dist/esm/Page/TextLayer.css";
 import { Lock, ZoomIn, ZoomOut, ChevronLeft, ChevronRight, AlertCircle, RefreshCw, Maximize2, Minimize2, BookmarkCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { getCachedPdfBlobUrl } from "@/lib/pdf-cache";
 
 // Configure pdf.js worker
 pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
@@ -49,7 +50,25 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
     catch { return false; }
   });
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const documentSource = useMemo(() => ({ url: fileUrl, withCredentials: false }), [fileUrl]);
+  const [resolvedUrl, setResolvedUrl] = useState<string>(fileUrl);
+
+  // Resolve via Cache Storage so subsequent loads of the same PDF are instant
+  useEffect(() => {
+    let revoke: string | null = null;
+    let cancelled = false;
+    setResolvedUrl(fileUrl);
+    getCachedPdfBlobUrl(fileUrl).then((u) => {
+      if (cancelled) return;
+      if (u.startsWith("blob:")) revoke = u;
+      setResolvedUrl(u);
+    });
+    return () => {
+      cancelled = true;
+      if (revoke) URL.revokeObjectURL(revoke);
+    };
+  }, [fileUrl]);
+
+  const documentSource = useMemo(() => ({ url: resolvedUrl, withCredentials: false }), [resolvedUrl]);
 
   // Persist current page locally on every change
   useEffect(() => {
@@ -312,6 +331,33 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
             loading={null}
             className="shadow-lg"
           />
+          {/* Hidden preloaded neighbours — keeps next/prev page warm in pdf.js cache */}
+          {numPages > 0 && (
+            <div aria-hidden="true" style={{ position: "absolute", width: 0, height: 0, overflow: "hidden", opacity: 0, pointerEvents: "none" }}>
+              {currentPage < numPages && (
+                <Page
+                  key={`preload-next-${currentPage}`}
+                  pageNumber={currentPage + 1}
+                  scale={scale}
+                  renderTextLayer={false}
+                  renderAnnotationLayer={false}
+                  devicePixelRatio={Math.min(typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1, 1.5)}
+                  loading={null}
+                />
+              )}
+              {currentPage > 1 && (
+                <Page
+                  key={`preload-prev-${currentPage}`}
+                  pageNumber={currentPage - 1}
+                  scale={scale}
+                  renderTextLayer={false}
+                  renderAnnotationLayer={false}
+                  devicePixelRatio={Math.min(typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1, 1.5)}
+                  loading={null}
+                />
+              )}
+            </div>
+          )}
         </Document>
       </div>
 
