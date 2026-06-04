@@ -17,9 +17,9 @@ const translations = {
     "nav.chat": "Chat",
 
     // Index hero
-    "hero.badge": "Bibliothèque Académique Numérique",
-    "hero.title": "Plume d'Or",
-    "hero.titleAccent": "KMG",
+    "hero.badge": "Bibliothèque Numérique",
+    "hero.title": "KMG",
+    "hero.titleAccent": "Bibliothèque Numérique",
     "hero.description": "Votre passerelle vers le savoir. Explorez notre collection de livres, mémoires, TFC et articles académiques.",
     "hero.cta": "Explorer la bibliothèque",
     "hero.learnMore": "En savoir plus",
