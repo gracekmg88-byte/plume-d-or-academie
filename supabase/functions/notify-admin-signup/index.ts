@@ -32,6 +32,9 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Only the DB trigger (service role) may invoke this webhook.
+  if (!isServiceRoleRequest(req)) return unauthorized(corsHeaders);
+
   try {
     const payload: SignupPayload = await req.json();
     console.log("Received payload:", JSON.stringify(payload));
@@ -46,12 +49,13 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
-    const userName = record.full_name || "Non spécifié";
-    const userEmail = record.email;
+    const userName = escapeHtml(record.full_name || "Non spécifié");
+    const userEmail = escapeHtml(record.email);
     const signupDate = new Date(record.created_at).toLocaleString("fr-FR", {
       dateStyle: "full",
       timeStyle: "short",
     });
+
 
     console.log(`Sending notification for new user: ${userEmail}`);
 
