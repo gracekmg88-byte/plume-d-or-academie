@@ -64,6 +64,9 @@ const VerifyHome = lazy(() => import("./pages/VerifyHome"));
 const AdminCertificates = lazy(() => import("./pages/admin/AdminCertificates"));
 const AdminSeo = lazy(() => import("./pages/admin/AdminSeo"));
 const Auteur = lazy(() => import("./pages/Auteur"));
+const AdminAuthLogs = lazy(() => import("./pages/admin/AdminAuthLogs"));
+
+import { AdminGuard } from "@/components/auth/AdminGuard";
 
 const queryClient = new QueryClient({
   defaultOptions: {
