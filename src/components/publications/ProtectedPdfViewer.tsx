@@ -107,7 +107,6 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
     try {
       await containerRef.current.requestFullscreen();
       setIsFullscreen(true);
-      setScale((s) => (s < 1 ? 1 : s));
       setNeedsFullscreenGesture(false);
       return true;
     } catch {
