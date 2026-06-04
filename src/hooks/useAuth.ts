@@ -88,7 +88,21 @@ function useProvideAuth(): AuthContextValue {
     // don't need to gate it — let every event update state.
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+    } = supabase.auth.onAuthStateChange((event, nextSession) => {
+      // Log session lifecycle events for diagnostics
+      const evt =
+        event === "SIGNED_IN" ? "sign_in" :
+        event === "SIGNED_OUT" ? "sign_out" :
+        event === "TOKEN_REFRESHED" ? "token_refreshed" :
+        event === "INITIAL_SESSION" ? (nextSession ? "session_restored" : "session_lost") :
+        null;
+      if (evt) {
+        logAuthEvent(evt, {
+          user_id: nextSession?.user?.id ?? null,
+          email: nextSession?.user?.email ?? null,
+          metadata: { supabase_event: event },
+        });
+      }
       applySession(nextSession);
       if (mountedRef.current) setAuthReady(true);
     });
