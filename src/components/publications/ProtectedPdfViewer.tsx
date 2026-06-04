@@ -254,13 +254,26 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
 
       {/* Fullscreen hint — disappears once fullscreen is active */}
       {!isFullscreen && (
-        <div className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-primary/10 border-b border-primary/20 text-[11px] sm:text-xs text-primary font-medium animate-fade-in">
-          <Maximize2 className="h-3 w-3 shrink-0" />
-          <span>
-            {needsFullscreenGesture
-              ? "Touchez le document pour reprendre le plein écran"
-              : "Astuce : appuyez sur « Lire en plein écran » pour une meilleure lecture"}
-          </span>
+        <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 px-3 py-1.5 bg-primary/10 border-b border-primary/20 text-[11px] sm:text-xs text-primary font-medium animate-fade-in">
+          <div className="flex items-center gap-1.5">
+            <Maximize2 className="h-3 w-3 shrink-0" />
+            <span>
+              {needsFullscreenGesture
+                ? "Touchez le document pour reprendre le plein écran"
+                : "Astuce : appuyez sur « Lire en plein écran » pour une meilleure lecture"}
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={toggleAutoFullscreen}
+            className="underline underline-offset-2 hover:text-primary/80 transition-colors"
+            aria-pressed={!autoFullscreenDisabled}
+            title="Activer ou désactiver la reprise automatique du plein écran pour ce document"
+          >
+            {autoFullscreenDisabled
+              ? "Réactiver la reprise auto du plein écran"
+              : "Désactiver la reprise auto du plein écran"}
+          </button>
         </div>
       )}
 
