@@ -27,6 +27,9 @@ import { format } from "date-fns";
 import { fr, enUS } from "date-fns/locale";
 import { toast } from "sonner";
 import { SEO } from "@/components/seo/SEO";
+import { Breadcrumb } from "@/components/publications/Breadcrumb";
+import { SimilarBooks } from "@/components/publications/SimilarBooks";
+import { buildPublicationPath, buildAuthorPath, parseSlugSuffix, categoryPath } from "@/lib/slug";
 
 type Category = "livre" | "memoire" | "tfc" | "article";
 
@@ -40,16 +43,40 @@ const categoryConfig: Record<Category, { label: string; icon: typeof Book; class
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export default function Publication() {
-  const { id: rawId } = useParams<{ id: string }>();
+  const { id: rawId, slug } = useParams<{ id: string; slug: string }>();
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const pageFromUrl = parseInt(searchParams.get("page") || "0", 10);
   const isOnline = useOnlineStatus();
 
-  // Si le paramètre n'est pas un UUID, c'est un numéro de publication → résolution
+  // Three URL shapes are supported:
+  // 1) /publication/:id where :id is a UUID
+  // 2) /publication/:id where :id is a publication_number (e.g. KMG-LIV-2026-001)
+  // 3) /livre/:slug, /memoire/:slug, /tfc/:slug, /article/:slug — slug ends with 6-hex UUID prefix
   const isUuid = !!rawId && UUID_RE.test(rawId);
-  const [resolvedUuid, setResolvedUuid] = useState<string | null | undefined>(isUuid ? rawId : undefined);
+  const slugSuffix = parseSlugSuffix(slug);
+
+  const [resolvedUuid, setResolvedUuid] = useState<string | null | undefined>(
+    isUuid ? rawId : undefined,
+  );
+
   useEffect(() => {
+    // Slug → resolve UUID by id prefix
+    if (slugSuffix) {
+      let cancelled = false;
+      (async () => {
+        const { data } = await supabase
+          .from("publications")
+          .select("id")
+          .like("id", `${slugSuffix}%`)
+          .eq("is_published", true)
+          .limit(1)
+          .maybeSingle();
+        if (!cancelled) setResolvedUuid(data?.id ?? null);
+      })();
+      return () => { cancelled = true; };
+    }
+    // publication_number → resolve UUID
     if (isUuid || !rawId) return;
     let cancelled = false;
     (async () => {
@@ -61,7 +88,7 @@ export default function Publication() {
       if (!cancelled) setResolvedUuid(data?.id ?? null);
     })();
     return () => { cancelled = true; };
-  }, [rawId, isUuid]);
+  }, [rawId, isUuid, slugSuffix]);
 
   const id = isUuid ? rawId : (resolvedUuid || "");
   const { data: publication, isLoading, error } = usePublication(id);
