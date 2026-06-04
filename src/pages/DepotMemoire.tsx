@@ -103,8 +103,18 @@ export default function DepotMemoire() {
     }
 
     setUploading(true);
-    const fileName = `submissions/${user.id}/${Date.now()}-${file.name}`;
-    const { error } = await supabase.storage.from("publications").upload(fileName, file);
+
+    // Try to optimize PDF (rewrite with object streams) before upload
+    let toUpload: File = file;
+    try {
+      const { optimizePdf } = await import("@/lib/optimize-pdf");
+      toUpload = await optimizePdf(file);
+    } catch (err) {
+      console.warn("PDF optimization skipped:", err);
+    }
+
+    const fileName = `submissions/${user.id}/${Date.now()}-${toUpload.name}`;
+    const { error } = await supabase.storage.from("publications").upload(fileName, toUpload);
 
     if (error) {
       toast.error("Erreur lors du téléversement.");
