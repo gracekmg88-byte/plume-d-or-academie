@@ -247,41 +247,43 @@ function NavigationWarmup() {
 function AnimatedRoutes() {
   const location = useLocation();
   return (
-    <Suspense fallback={<PageLoader />}>
-      <Routes location={location}>
-        <Route path="/" element={<Index />} />
-        <Route path="/bibliotheque" element={<Bibliotheque />} />
-        <Route path="/publication/:id" element={<Publication />} />
-        <Route path="/livre/:slug" element={<Publication />} />
-        <Route path="/memoire/:slug" element={<Publication />} />
-        <Route path="/tfc/:slug" element={<Publication />} />
-        <Route path="/article/:slug" element={<Publication />} />
-        <Route path="/auteur/:slug" element={<Auteur />} />
-        <Route path="/a-propos" element={<APropos />} />
-        <Route path="/contact" element={<Contact />} />
-        <Route path="/auth" element={<Auth />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/profil" element={<Profil />} />
-        <Route path="/abonnement" element={<Abonnement />} />
-        <Route path="/admin" element={<AdminLogin />} />
-        <Route path="/admin/dashboard" element={<AdminGuard><AdminDashboard /></AdminGuard>} />
-        <Route path="/admin/messages" element={<AdminGuard><AdminMessages /></AdminGuard>} />
-        <Route path="/admin/settings" element={<AdminGuard><AdminSettings /></AdminGuard>} />
-        <Route path="/admin/users" element={<AdminGuard><AdminUsers /></AdminGuard>} />
-        <Route path="/admin/publication/:id" element={<AdminGuard><PublicationForm /></AdminGuard>} />
-        <Route path="/admin/devices" element={<AdminGuard><AdminDevices /></AdminGuard>} />
-        <Route path="/admin/submissions" element={<AdminGuard><AdminSubmissions /></AdminGuard>} />
-        <Route path="/depot-memoire" element={<DepotMemoire />} />
-        <Route path="/chat" element={<Chat />} />
-        <Route path="/installer" element={<InstallApp />} />
-        <Route path="/verify/:number" element={<VerifyCertificate />} />
-        <Route path="/verification" element={<VerifyHome />} />
-        <Route path="/admin/certificates" element={<AdminGuard><AdminCertificates /></AdminGuard>} />
-        <Route path="/admin/seo" element={<AdminGuard><AdminSeo /></AdminGuard>} />
-        <Route path="/admin/auth-logs" element={<AdminGuard><AdminAuthLogs /></AdminGuard>} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </Suspense>
+    <ErrorBoundary resetKey={location.key}>
+      <Suspense fallback={<PageLoader />}>
+        <Routes location={location}>
+          <Route path="/" element={<Index />} />
+          <Route path="/bibliotheque" element={<Bibliotheque />} />
+          <Route path="/publication/:id" element={<Publication />} />
+          <Route path="/livre/:slug" element={<Publication />} />
+          <Route path="/memoire/:slug" element={<Publication />} />
+          <Route path="/tfc/:slug" element={<Publication />} />
+          <Route path="/article/:slug" element={<Publication />} />
+          <Route path="/auteur/:slug" element={<Auteur />} />
+          <Route path="/a-propos" element={<APropos />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/profil" element={<Profil />} />
+          <Route path="/abonnement" element={<Abonnement />} />
+          <Route path="/admin" element={<AdminLogin />} />
+          <Route path="/admin/dashboard" element={<AdminGuard><AdminDashboard /></AdminGuard>} />
+          <Route path="/admin/messages" element={<AdminGuard><AdminMessages /></AdminGuard>} />
+          <Route path="/admin/settings" element={<AdminGuard><AdminSettings /></AdminGuard>} />
+          <Route path="/admin/users" element={<AdminGuard><AdminUsers /></AdminGuard>} />
+          <Route path="/admin/publication/:id" element={<AdminGuard><PublicationForm /></AdminGuard>} />
+          <Route path="/admin/devices" element={<AdminGuard><AdminDevices /></AdminGuard>} />
+          <Route path="/admin/submissions" element={<AdminGuard><AdminSubmissions /></AdminGuard>} />
+          <Route path="/depot-memoire" element={<DepotMemoire />} />
+          <Route path="/chat" element={<Chat />} />
+          <Route path="/installer" element={<InstallApp />} />
+          <Route path="/verify/:number" element={<VerifyCertificate />} />
+          <Route path="/verification" element={<VerifyHome />} />
+          <Route path="/admin/certificates" element={<AdminGuard><AdminCertificates /></AdminGuard>} />
+          <Route path="/admin/seo" element={<AdminGuard><AdminSeo /></AdminGuard>} />
+          <Route path="/admin/auth-logs" element={<AdminGuard><AdminAuthLogs /></AdminGuard>} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </Suspense>
+    </ErrorBoundary>
   );
 }
 
