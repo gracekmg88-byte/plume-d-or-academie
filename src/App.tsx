@@ -62,6 +62,7 @@ const NotFound = lazy(loadNotFoundPage);
 const VerifyCertificate = lazy(() => import("./pages/VerifyCertificate"));
 const VerifyHome = lazy(() => import("./pages/VerifyHome"));
 const AdminCertificates = lazy(() => import("./pages/admin/AdminCertificates"));
+const Auteur = lazy(() => import("./pages/Auteur"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -228,6 +229,11 @@ function AnimatedRoutes() {
         <Route path="/" element={<Index />} />
         <Route path="/bibliotheque" element={<Bibliotheque />} />
         <Route path="/publication/:id" element={<Publication />} />
+        <Route path="/livre/:slug" element={<Publication />} />
+        <Route path="/memoire/:slug" element={<Publication />} />
+        <Route path="/tfc/:slug" element={<Publication />} />
+        <Route path="/article/:slug" element={<Publication />} />
+        <Route path="/auteur/:slug" element={<Auteur />} />
         <Route path="/a-propos" element={<APropos />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/auth" element={<Auth />} />

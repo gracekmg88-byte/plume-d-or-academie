@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { fetchPublication } from "@/hooks/usePublications";
 import { saveScrollPosition } from "@/lib/scroll-restoration";
 import { preloadPublicationFlow } from "@/lib/route-preload";
+import { buildPublicationPath } from "@/lib/slug";
 
 type Category = "livre" | "memoire" | "tfc" | "article";
 export type PublicationCardVariant = "grid" | "compact" | "list" | "magazine-hero";
@@ -57,7 +58,7 @@ export function PublicationCard({
   };
 
   const linkProps = {
-    to: `/publication/${id}`,
+    to: buildPublicationPath({ id, title, category }),
     state: {
       returnTo: `${pathname}${window.location.search}`,
       returnKey: window.history.state?.key ?? null,

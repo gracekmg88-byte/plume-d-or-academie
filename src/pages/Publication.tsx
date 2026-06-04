@@ -27,6 +27,9 @@ import { format } from "date-fns";
 import { fr, enUS } from "date-fns/locale";
 import { toast } from "sonner";
 import { SEO } from "@/components/seo/SEO";
+import { Breadcrumb } from "@/components/publications/Breadcrumb";
+import { SimilarBooks } from "@/components/publications/SimilarBooks";
+import { buildPublicationPath, buildAuthorPath, parseSlugSuffix, categoryPath } from "@/lib/slug";
 
 type Category = "livre" | "memoire" | "tfc" | "article";
 
@@ -40,16 +43,40 @@ const categoryConfig: Record<Category, { label: string; icon: typeof Book; class
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export default function Publication() {
-  const { id: rawId } = useParams<{ id: string }>();
+  const { id: rawId, slug } = useParams<{ id: string; slug: string }>();
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const pageFromUrl = parseInt(searchParams.get("page") || "0", 10);
   const isOnline = useOnlineStatus();
 
-  // Si le paramètre n'est pas un UUID, c'est un numéro de publication → résolution
+  // Three URL shapes are supported:
+  // 1) /publication/:id where :id is a UUID
+  // 2) /publication/:id where :id is a publication_number (e.g. KMG-LIV-2026-001)
+  // 3) /livre/:slug, /memoire/:slug, /tfc/:slug, /article/:slug — slug ends with 6-hex UUID prefix
   const isUuid = !!rawId && UUID_RE.test(rawId);
-  const [resolvedUuid, setResolvedUuid] = useState<string | null | undefined>(isUuid ? rawId : undefined);
+  const slugSuffix = parseSlugSuffix(slug);
+
+  const [resolvedUuid, setResolvedUuid] = useState<string | null | undefined>(
+    isUuid ? rawId : undefined,
+  );
+
   useEffect(() => {
+    // Slug → resolve UUID by id prefix
+    if (slugSuffix) {
+      let cancelled = false;
+      (async () => {
+        const { data } = await supabase
+          .from("publications")
+          .select("id")
+          .like("id", `${slugSuffix}%`)
+          .eq("is_published", true)
+          .limit(1)
+          .maybeSingle();
+        if (!cancelled) setResolvedUuid(data?.id ?? null);
+      })();
+      return () => { cancelled = true; };
+    }
+    // publication_number → resolve UUID
     if (isUuid || !rawId) return;
     let cancelled = false;
     (async () => {
@@ -61,7 +88,7 @@ export default function Publication() {
       if (!cancelled) setResolvedUuid(data?.id ?? null);
     })();
     return () => { cancelled = true; };
-  }, [rawId, isUuid]);
+  }, [rawId, isUuid, slugSuffix]);
 
   const id = isUuid ? rawId : (resolvedUuid || "");
   const { data: publication, isLoading, error } = usePublication(id);
@@ -318,7 +345,7 @@ export default function Publication() {
     ? offlineData.local_pdf_uri
     : displayPub.file_url;
 
-  const pubCategory = publication?.category as Category | undefined;
+  const pubCategory = displayPub.category as Category | undefined;
   const pubType: "book" | "article" =
     pubCategory === "livre" ? "book" : "article";
   const schemaType =
@@ -327,38 +354,95 @@ export default function Publication() {
       : pubCategory === "article"
         ? "ScholarlyArticle"
         : "CreativeWork";
-  const pubDescription = publication?.description
-    ? publication.description.slice(0, 200)
-    : `${publication?.title ?? ""} — ${publication?.author ?? ""} sur Plume d'Or KMG.`;
+  const pubDescription = displayPub.description
+    ? displayPub.description.slice(0, 200)
+    : `${displayPub.title} — ${displayPub.author || ""} sur Plume d'Or KMG. Lecture en ligne gratuite.`;
+
+  // Canonical SEO-friendly path
+  const canonicalPath = buildPublicationPath({
+    id: displayPub.id,
+    title: displayPub.title,
+    category: displayPub.category,
+  });
+  const canonicalUrl = `https://plume-d-or-academie.lovable.app${canonicalPath}`;
+  const authorPath = displayPub.author ? buildAuthorPath(displayPub.author) : null;
+  const coverAlt = displayPub.author
+    ? `Couverture de "${displayPub.title}" par ${displayPub.author}`
+    : `Couverture de "${displayPub.title}"`;
+  const datePublished = displayPub.created_at
+    ? new Date(displayPub.created_at).toISOString().slice(0, 10)
+    : undefined;
+
+  const categoryLabel = config.label;
+  const categoryRoute = categoryPath(displayPub.category);
+
+  const bookJsonLd: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": schemaType,
+    name: displayPub.title,
+    headline: displayPub.title,
+    author: displayPub.author
+      ? {
+          "@type": "Person",
+          name: displayPub.author,
+          url: authorPath ? `https://plume-d-or-academie.lovable.app${authorPath}` : undefined,
+        }
+      : undefined,
+    description: displayPub.description || pubDescription,
+    image: displayPub.cover_image_url || undefined,
+    url: canonicalUrl,
+    inLanguage: "fr",
+    isAccessibleForFree: true,
+    bookFormat: schemaType === "Book" ? "https://schema.org/EBook" : undefined,
+    datePublished,
+    publisher: {
+      "@type": "Organization",
+      name: "Plume d'Or KMG",
+      url: "https://plume-d-or-academie.lovable.app",
+    },
+  };
+
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Accueil", item: "https://plume-d-or-academie.lovable.app" },
+      { "@type": "ListItem", position: 2, name: "Bibliothèque", item: "https://plume-d-or-academie.lovable.app/bibliotheque" },
+      { "@type": "ListItem", position: 3, name: categoryLabel, item: `https://plume-d-or-academie.lovable.app/bibliotheque?category=${displayPub.category}` },
+      { "@type": "ListItem", position: 4, name: displayPub.title, item: canonicalUrl },
+    ],
+  };
+
+  const seoKeywords = [
+    displayPub.title,
+    displayPub.author || "",
+    categoryLabel,
+    "Plume d'Or KMG",
+    "KMG Bibliothèque",
+    "lecture en ligne",
+    pubCategory === "livre" ? "livre numérique" : "",
+    pubCategory === "memoire" ? "mémoire académique" : "",
+    pubCategory === "tfc" ? "travail de fin de cycle" : "",
+    pubCategory === "article" ? "article scientifique" : "",
+  ].filter(Boolean);
+
+  const extraMeta: Array<{ property?: string; name?: string; content: string }> = [];
+  if (displayPub.author) extraMeta.push({ property: "book:author", content: displayPub.author });
+  if (datePublished) extraMeta.push({ property: "book:release_date", content: datePublished });
 
   return (
     <Layout>
-      {publication && (
-        <SEO
-          title={`${publication.title}${publication.author ? ` — ${publication.author}` : ""}`}
-          description={pubDescription}
-          path={`/publication/${publication.id}`}
-          type={pubType}
-          image={publication.cover_image_url || undefined}
-          jsonLd={{
-            "@context": "https://schema.org",
-            "@type": schemaType,
-            name: publication.title,
-            headline: publication.title,
-            author: publication.author
-              ? { "@type": "Person", name: publication.author }
-              : undefined,
-            description: publication.description || undefined,
-            image: publication.cover_image_url || undefined,
-            url: `https://plume-d-or-academie.lovable.app/publication/${publication.id}`,
-            inLanguage: "fr",
-            publisher: {
-              "@type": "Organization",
-              name: "KMG Multi Services",
-            },
-          }}
-        />
-      )}
+      <SEO
+        title={`${displayPub.title}${displayPub.author ? ` — ${displayPub.author}` : ""}`}
+        description={pubDescription}
+        path={canonicalPath}
+        type={pubType}
+        image={displayPub.cover_image_url || undefined}
+        keywords={seoKeywords}
+        extraMeta={extraMeta}
+        jsonLd={[bookJsonLd, breadcrumbJsonLd]}
+      />
+
       <div className="container py-8 md:py-12">
         {/* Offline banner */}
         {!isOnline && (
@@ -367,6 +451,14 @@ export default function Publication() {
             <span>{t("pub.offlineBanner")}</span>
           </div>
         )}
+
+        <Breadcrumb
+          items={[
+            { label: "Bibliothèque", to: "/bibliotheque" },
+            { label: categoryLabel, to: `/bibliotheque?category=${categoryRoute}` },
+            { label: displayPub.title },
+          ]}
+        />
 
         <Link
           to={backTarget}
@@ -387,10 +479,12 @@ export default function Publication() {
                 {displayPub.cover_image_url ? (
                   <CachedImage
                     src={displayPub.cover_image_url}
-                    alt={displayPub.title}
+                    alt={coverAlt}
                     className="h-full w-full object-cover"
                     containerClassName="h-full w-full"
                     fallbackIcon={<Icon className="h-24 w-24 text-muted-foreground/30" />}
+                    loading="eager"
+                    fetchPriority="high"
                   />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-muted to-accent">
@@ -447,7 +541,13 @@ export default function Publication() {
             <div className="flex flex-wrap gap-4 text-muted-foreground">
               <div className="flex items-center gap-2">
                 <User className="h-4 w-4" />
-                <span>{displayPub.author}</span>
+                {authorPath ? (
+                  <Link to={authorPath} className="hover:text-foreground hover:underline transition-colors">
+                    {displayPub.author}
+                  </Link>
+                ) : (
+                  <span>{displayPub.author}</span>
+                )}
               </div>
               <div className="flex items-center gap-2">
                 <Calendar className="h-4 w-4" />
@@ -515,6 +615,13 @@ export default function Publication() {
             <div className="mt-10 border-t border-border pt-8">
               <CommentsList publicationId={id!} />
             </div>
+
+            {/* Livres similaires — maillage interne SEO */}
+            <SimilarBooks
+              id={displayPub.id}
+              category={displayPub.category}
+              author={displayPub.author}
+            />
           </div>
         </div>
       </div>
