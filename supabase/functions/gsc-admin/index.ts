@@ -111,7 +111,6 @@ Deno.serve(async (req) => {
         result = await getStatus();
         break;
       case "submit":
-      case "auto":
         result = await submitSitemap();
         break;
       case "verify_token":
@@ -123,6 +122,16 @@ Deno.serve(async (req) => {
       case "add_site":
         result = await addSite();
         break;
+      case "auto":
+      case "onboard": {
+        // Full pipeline: verify ownership → add site → submit sitemap → return status.
+        const verify = await verifySite();
+        const addSiteRes = verify.ok ? await addSite() : { ok: false, status: 0, skipped: true };
+        const submit = (verify.ok || action === "auto") ? await submitSitemap() : { ok: false, status: 0, skipped: true };
+        const status = await getStatus();
+        result = { ok: verify.ok && submit.ok, steps: { verify, addSite: addSiteRes, submit }, ...status };
+        break;
+      }
       default:
         return new Response(JSON.stringify({ error: "Unknown action" }), {
           status: 400,
