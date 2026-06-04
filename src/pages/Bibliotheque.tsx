@@ -51,6 +51,7 @@ export default function Bibliotheque() {
   const [offlineLoading, setOfflineLoading] = useState(!isOnline);
   const restoredCardRef = useRef<string | null>(null);
   const restorationAttemptRef = useRef(0);
+  const hasConsumedRestoreStateRef = useRef(false);
 
   useEffect(() => {
     if (!isOnline) {
@@ -190,7 +191,7 @@ export default function Bibliotheque() {
     const navState = location.state as { restoredFromPublication?: boolean; returnPublicationId?: string | null } | null;
     const targetPublicationId = navState?.restoredFromPublication ? navState.returnPublicationId : null;
 
-    if (!targetPublicationId || actualLoading || restoredCardRef.current === targetPublicationId) {
+    if (!targetPublicationId || actualLoading || restoredCardRef.current === targetPublicationId || hasConsumedRestoreStateRef.current) {
       return;
     }
 
@@ -204,6 +205,21 @@ export default function Bibliotheque() {
 
       window.scrollTo({ top: targetTop, left: 0, behavior: "instant" as ScrollBehavior });
       restoredCardRef.current = targetPublicationId;
+      hasConsumedRestoreStateRef.current = true;
+
+      if (window.history.state?.usr?.restoredFromPublication) {
+        window.history.replaceState(
+          {
+            ...window.history.state,
+            usr: {
+              ...window.history.state.usr,
+              restoredFromPublication: false,
+            },
+          },
+          "",
+          window.location.href,
+        );
+      }
       return true;
     };
 
@@ -229,6 +245,13 @@ export default function Bibliotheque() {
     };
   }, [actualLoading, location.state, paginatedPublications]);
 
+  useEffect(() => {
+    const navState = location.state as { restoredFromPublication?: boolean } | null;
+    if (!navState?.restoredFromPublication) {
+      hasConsumedRestoreStateRef.current = false;
+    }
+  }, [location.key, location.state]);
+
   return (
     <Layout>
       <SEO
@@ -247,7 +270,7 @@ export default function Bibliotheque() {
       {/* Header with background image */}
       <section className="relative overflow-hidden py-12 md:py-16">
         <div className="absolute inset-0">
-          <img src={heroBiblioImage} alt="" className="h-full w-full object-cover" loading="eager" fetchPriority="high" decoding="sync" />
+          <img src={heroBiblioImage} alt="" className="h-full w-full object-cover" loading="eager" decoding="sync" />
           <div className="absolute inset-0 bg-gradient-to-r from-secondary/95 via-secondary/85 to-secondary/70" />
         </div>
         <div className="relative container">

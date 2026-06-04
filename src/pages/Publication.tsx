@@ -120,6 +120,7 @@ export default function Publication() {
   const readingStart = useRef<number>(Date.now());
   const currentPageRef = useRef<number>(resumePage);
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const incrementedViewForIdRef = useRef<string | null>(null);
   const returnState = location.state as {
     returnTo?: string;
     returnKey?: string | null;
@@ -289,7 +290,10 @@ export default function Publication() {
       window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
     }
 
-    if (id) incrementViews.mutate(id);
+    if (id && incrementedViewForIdRef.current !== id) {
+      incrementedViewForIdRef.current = id;
+      incrementViews.mutate(id);
+    }
 
     document.addEventListener('copy', preventCopy);
     document.addEventListener('cut', preventCopy);
@@ -523,7 +527,6 @@ export default function Publication() {
                     containerClassName="h-full w-full"
                     fallbackIcon={<Icon className="h-24 w-24 text-muted-foreground/30" />}
                     loading="eager"
-                    fetchPriority="high"
                   />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-muted to-accent">
