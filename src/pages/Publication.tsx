@@ -353,7 +353,9 @@ export default function Publication() {
       ? "Book"
       : pubCategory === "article"
         ? "ScholarlyArticle"
-        : "CreativeWork";
+        : pubCategory === "memoire" || pubCategory === "tfc"
+          ? "Thesis"
+          : "CreativeWork";
   const pubDescription = displayPub.description
     ? displayPub.description.slice(0, 200)
     : `${displayPub.title} — ${displayPub.author || ""} sur Plume d'Or KMG. Lecture en ligne gratuite.`;
