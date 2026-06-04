@@ -1,5 +1,5 @@
 import { useEffect, useCallback, useState, useMemo, useRef } from "react";
-import { useParams, Link, useSearchParams, useLocation, useNavigate, Navigate } from "react-router-dom";
+import { useParams, Link, useSearchParams, useLocation, useNavigate, Navigate, useNavigationType } from "react-router-dom";
 import { ArrowLeft, Book, FileText, GraduationCap, Newspaper, Eye, Calendar, User, Lock, Download, WifiOff, CheckCircle, Heart } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
@@ -46,6 +46,7 @@ export default function Publication() {
   const { id: rawId, slug } = useParams<{ id: string; slug: string }>();
   const location = useLocation();
   const navigate = useNavigate();
+  const navigationType = useNavigationType();
   const [searchParams] = useSearchParams();
   const pageFromUrl = parseInt(searchParams.get("page") || "0", 10);
   const isOnline = useOnlineStatus();
@@ -284,8 +285,7 @@ export default function Publication() {
   }, [savePageProgress]);
 
   useEffect(() => {
-    const openedViaHistoryBack = window.history.state?.idx > 0 && Boolean(returnState?.returnKey);
-    if (!openedViaHistoryBack) {
+    if (navigationType !== "POP") {
       window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
     }
 
@@ -312,7 +312,7 @@ export default function Publication() {
       document.body.style.webkitUserSelect = '';
       document.body.style.userSelect = '';
     };
-  }, [id, incrementViews, preventCopy, preventKeyboardShortcuts, preventTouchMenu, preventDrag, returnState?.returnKey]);
+  }, [id, incrementViews, navigationType, preventCopy, preventKeyboardShortcuts, preventTouchMenu, preventDrag]);
 
   // Use offline data when not online
   const displayPub = isOnline ? publication : (offlineData || publication);
