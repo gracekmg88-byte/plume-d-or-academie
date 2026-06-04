@@ -46,7 +46,7 @@ Instructions :
       body: JSON.stringify({
         model: "google/gemini-3-flash-preview",
         messages: [
-          { role: "system", content: "Tu es un assistant académique spécialisé dans la rédaction de résumés de publications universitaires et littéraires pour la bibliothèque KMG Plume d'Or." },
+          { role: "system", content: "Tu es un assistant académique spécialisé dans la rédaction de résumés de publications universitaires et littéraires pour la bibliothèque KMG KMG Bibliothèque." },
           { role: "user", content: prompt },
         ],
       }),

@@ -54,9 +54,9 @@ const handler = async (req: Request): Promise<Response> => {
     console.log(`Sending notification for new user: ${userEmail}`);
 
     const emailResponse = await resend.emails.send({
-      from: "Plume d'Or <noreply@resend.dev>",
+      from: "KMG Bibliothèque <noreply@resend.dev>",
       to: [ADMIN_EMAIL],
-      subject: "🎉 Nouveau membre inscrit sur Plume d'Or Académie",
+      subject: "🎉 Nouveau membre inscrit sur KMG Bibliothèque Académie",
       html: `
         <!DOCTYPE html>
         <html>
@@ -80,7 +80,7 @@ const handler = async (req: Request): Promise<Response> => {
         <body>
           <div class="container">
             <div class="header">
-              <h1>🎓 Plume d'Or Académie</h1>
+              <h1>🎓 KMG Bibliothèque Académie</h1>
             </div>
             <div class="content">
               <h2 style="color: #333; margin-bottom: 20px;">Nouveau membre inscrit !</h2>
@@ -110,8 +110,8 @@ const handler = async (req: Request): Promise<Response> => {
               </div>
             </div>
             <div class="footer">
-              <p>Cet email a été envoyé automatiquement par Plume d'Or Académie.</p>
-              <p>© ${new Date().getFullYear()} Plume d'Or KMG. Tous droits réservés.</p>
+              <p>Cet email a été envoyé automatiquement par KMG Bibliothèque Académie.</p>
+              <p>© ${new Date().getFullYear()} KMG Bibliothèque. Tous droits réservés.</p>
             </div>
           </div>
         </body>

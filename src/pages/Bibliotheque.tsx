@@ -261,10 +261,10 @@ export default function Bibliotheque() {
         jsonLd={{
           "@context": "https://schema.org",
           "@type": "CollectionPage",
-          name: "Bibliothèque Plume d'Or KMG",
+          name: "Bibliothèque KMG Bibliothèque",
           url: "https://plume-d-or-academie.lovable.app/bibliotheque",
           description: "Catalogue de publications académiques francophones.",
-          isPartOf: { "@type": "WebSite", name: "Plume d'Or KMG" },
+          isPartOf: { "@type": "WebSite", name: "KMG Bibliothèque" },
         }}
       />
       {/* Header with background image */}

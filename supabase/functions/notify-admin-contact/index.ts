@@ -51,7 +51,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.log(`Sending notification for contact from: ${record.email}`);
 
     const emailResponse = await resend.emails.send({
-      from: "Plume d'Or <noreply@resend.dev>",
+      from: "KMG Bibliothèque <noreply@resend.dev>",
       to: [ADMIN_EMAIL],
       reply_to: record.email,
       subject: `📩 Nouveau message: ${record.subject}`,
@@ -116,8 +116,8 @@ const handler = async (req: Request): Promise<Response> => {
               </div>
             </div>
             <div class="footer">
-              <p>Cet email a été envoyé automatiquement par Plume d'Or Académie.</p>
-              <p>© ${new Date().getFullYear()} Plume d'Or KMG. Tous droits réservés.</p>
+              <p>Cet email a été envoyé automatiquement par KMG Bibliothèque Académie.</p>
+              <p>© ${new Date().getFullYear()} KMG Bibliothèque. Tous droits réservés.</p>
             </div>
           </div>
         </body>

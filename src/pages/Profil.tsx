@@ -77,7 +77,7 @@ export default function Profil() {
 
   return (
     <Layout>
-      <SEO title="Mon profil — Plume d'Or KMG" description="Espace personnel : favoris, historique de lecture, préférences et publications hors-ligne." path="/profil" noindex />
+      <SEO title="Mon profil — KMG Bibliothèque" description="Espace personnel : favoris, historique de lecture, préférences et publications hors-ligne." path="/profil" noindex />
       <div className="container py-12">
         <div className="max-w-2xl mx-auto space-y-8">
           <div className="text-center">

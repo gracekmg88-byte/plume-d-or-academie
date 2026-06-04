@@ -25,8 +25,8 @@ export default function Auteur() {
 
   const url = `${SITE_URL}/auteur/${slug}`;
   const description = data && data.length > 0
-    ? `${authorName} — auteur publié chez Plume d'Or KMG. Découvrez ${data.length} publication${data.length > 1 ? "s" : ""} : livres, mémoires, TFC et articles académiques.`
-    : `${authorName} — auteur publié chez Plume d'Or KMG.`;
+    ? `${authorName} — auteur publié chez KMG Bibliothèque. Découvrez ${data.length} publication${data.length > 1 ? "s" : ""} : livres, mémoires, TFC et articles académiques.`
+    : `${authorName} — auteur publié chez KMG Bibliothèque.`;
 
   const jsonLd: Record<string, unknown>[] = [
     {
@@ -37,7 +37,7 @@ export default function Auteur() {
       jobTitle: "Auteur",
       worksFor: {
         "@type": "Organization",
-        name: "Plume d'Or KMG",
+        name: "KMG Bibliothèque",
         url: SITE_URL,
       },
     },
@@ -72,7 +72,7 @@ export default function Auteur() {
         description={description}
         path={`/auteur/${slug}`}
         type="profile"
-        keywords={[authorName, "auteur", "publications", "Plume d'Or KMG", "bibliothèque"]}
+        keywords={[authorName, "auteur", "publications", "KMG Bibliothèque", "bibliothèque"]}
         jsonLd={jsonLd}
       />
       <div className="container py-8 md:py-12">
@@ -101,12 +101,12 @@ export default function Auteur() {
                 {authorName}
               </h1>
               <p className="text-sm text-muted-foreground">
-                {data?.length ?? 0} publication{(data?.length ?? 0) > 1 ? "s" : ""} chez Plume d'Or KMG
+                {data?.length ?? 0} publication{(data?.length ?? 0) > 1 ? "s" : ""} chez KMG Bibliothèque
               </p>
             </div>
           </div>
           <p className="text-muted-foreground max-w-3xl leading-relaxed">
-            Retrouvez toutes les publications de <strong>{authorName}</strong> sur Plume d'Or KMG :
+            Retrouvez toutes les publications de <strong>{authorName}</strong> sur KMG Bibliothèque :
             livres, mémoires, travaux de fin de cycle et articles académiques. Une sélection
             d'œuvres pour soutenir la recherche, l'enseignement et le partage du savoir.
           </p>

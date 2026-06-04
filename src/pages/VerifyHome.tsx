@@ -41,8 +41,8 @@ export default function VerifyHome() {
   return (
     <Layout>
       <SEO
-        title="Vérification de certificat — Plume d'Or KMG"
-        description="Vérifiez l'authenticité d'une publication certifiée par Plume d'Or KMG via son numéro ou QR code."
+        title="Vérification de certificat — KMG Bibliothèque"
+        description="Vérifiez l'authenticité d'une publication certifiée par KMG Bibliothèque via son numéro ou QR code."
         path="/verification"
       />
       <div className="container max-w-2xl py-12 md:py-20">

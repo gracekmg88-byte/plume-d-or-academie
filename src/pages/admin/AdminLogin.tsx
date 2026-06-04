@@ -39,7 +39,7 @@ export default function AdminLogin() {
             <Feather className="h-8 w-8" />
           </div>
           <h1 className="font-serif text-2xl font-bold text-secondary-foreground">
-            Plume d'Or KMG
+            KMG Bibliothèque
           </h1>
           <p className="text-secondary-foreground/70 text-sm mt-1">
             Administration

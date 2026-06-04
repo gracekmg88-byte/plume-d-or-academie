@@ -38,8 +38,8 @@ export default function Contact() {
   return (
     <Layout>
       <SEO
-        title="Contact — Plume d'Or KMG"
-        description="Contactez Plume d'Or KMG : téléphone +243 998 102 000, email kmgmultiservices98@gmail.com. Formulaire de contact en ligne."
+        title="Contact — KMG Bibliothèque"
+        description="Contactez KMG Bibliothèque : téléphone +243 998 102 000, email kmgmultiservices98@gmail.com. Formulaire de contact en ligne."
         path="/contact"
       />
       <section className="relative overflow-hidden py-12 md:py-16">

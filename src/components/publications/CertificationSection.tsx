@@ -190,7 +190,7 @@ export function CertificationSection({
               </p>
               <p className="text-sm italic">par {publicationAuthor || "(auteur inconnu)"}</p>
               <p className="text-xs text-muted-foreground pt-1">
-                a été officiellement enregistrée et certifiée dans le registre de Plume d'Or KMG.
+                a été officiellement enregistrée et certifiée dans le registre de KMG Bibliothèque.
               </p>
             </div>
 
@@ -248,7 +248,7 @@ export function CertificationSection({
             <div className="flex items-end justify-between gap-4 pt-4 border-t border-border/50">
               <div className="text-[10px] text-muted-foreground">
                 <p className="font-bold uppercase tracking-wider">Signé numériquement</p>
-                <p className="italic">Direction Plume d'Or KMG</p>
+                <p className="italic">Direction KMG Bibliothèque</p>
                 <p>{new Date().toLocaleString("fr-FR")}</p>
               </div>
               <div className="flex flex-col items-center justify-center w-20 h-20 rounded-full border-2 border-amber-500/70 text-amber-700 dark:text-amber-400 text-[8px] font-bold text-center leading-tight">
