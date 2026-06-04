@@ -1,6 +1,15 @@
 const ENTRY_SCROLL_PREFIX = "scroll:entry:";
 const PATH_SCROLL_PREFIX = "scroll:path:";
 
+export function getCurrentHistoryEntryKey() {
+  const historyState = window.history.state as { key?: string } | null;
+  if (typeof historyState?.key === "string" && historyState.key.length > 0) {
+    return historyState.key;
+  }
+
+  return null;
+}
+
 export function saveScrollPosition(entryKey?: string, pathname?: string, y = window.scrollY) {
   const value = String(Math.max(0, Math.round(y)));
 
