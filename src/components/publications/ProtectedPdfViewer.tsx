@@ -17,19 +17,47 @@ interface ProtectedPdfViewerProps {
 }
 
 const FULLSCREEN_PREF_PREFIX = "pdfViewer:fullscreen:";
+const FULLSCREEN_AUTO_DISABLED_PREFIX = "pdfViewer:fullscreenAutoDisabled:";
+const PAGE_PREF_PREFIX = "pdfViewer:page:";
 
 export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }: ProtectedPdfViewerProps) {
+  const prefKey = useMemo(() => `${FULLSCREEN_PREF_PREFIX}${fileUrl}`, [fileUrl]);
+  const autoDisabledKey = useMemo(() => `${FULLSCREEN_AUTO_DISABLED_PREFIX}${fileUrl}`, [fileUrl]);
+  const pageKey = useMemo(() => `${PAGE_PREF_PREFIX}${fileUrl}`, [fileUrl]);
+
+  // Read locally-saved page as a fallback (works offline / unlogged / reload)
+  const initialResolvedPage = useMemo(() => {
+    if (initialPage && initialPage > 1) return initialPage;
+    try {
+      const stored = localStorage.getItem(pageKey);
+      const n = stored ? parseInt(stored, 10) : NaN;
+      if (!Number.isNaN(n) && n > 1) return n;
+    } catch { /* ignore */ }
+    return 1;
+  }, [initialPage, pageKey]);
+
   const [numPages, setNumPages] = useState<number>(0);
-  const [currentPage, setCurrentPage] = useState(initialPage || 1);
+  const [currentPage, setCurrentPage] = useState(initialResolvedPage);
   const [scale, setScale] = useState(0.5);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [showResumeBadge, setShowResumeBadge] = useState(!!initialPage && initialPage > 1);
+  const [showResumeBadge, setShowResumeBadge] = useState(initialResolvedPage > 1);
   const [needsFullscreenGesture, setNeedsFullscreenGesture] = useState(false);
+  const [autoFullscreenDisabled, setAutoFullscreenDisabled] = useState<boolean>(() => {
+    try { return localStorage.getItem(`${FULLSCREEN_AUTO_DISABLED_PREFIX}${fileUrl}`) === "1"; }
+    catch { return false; }
+  });
   const containerRef = useRef<HTMLDivElement | null>(null);
   const documentSource = useMemo(() => ({ url: fileUrl, withCredentials: false }), [fileUrl]);
-  const prefKey = useMemo(() => `${FULLSCREEN_PREF_PREFIX}${fileUrl}`, [fileUrl]);
+
+  // Persist current page locally on every change
+  useEffect(() => {
+    try {
+      if (currentPage > 1) localStorage.setItem(pageKey, String(currentPage));
+      else localStorage.removeItem(pageKey);
+    } catch { /* ignore */ }
+  }, [currentPage, pageKey]);
 
   // Sync with initialPage when it changes (e.g. from DB fetch)
   useEffect(() => {
@@ -40,6 +68,23 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
       return () => clearTimeout(t);
     }
   }, [initialPage]);
+
+  const toggleAutoFullscreen = useCallback(() => {
+    setAutoFullscreenDisabled((prev) => {
+      const next = !prev;
+      try {
+        if (next) {
+          localStorage.setItem(autoDisabledKey, "1");
+          // Also clear any stored "should restore" flag so it doesn't fire next time
+          localStorage.removeItem(prefKey);
+        } else {
+          localStorage.removeItem(autoDisabledKey);
+        }
+      } catch { /* ignore */ }
+      if (next) setNeedsFullscreenGesture(false);
+      return next;
+    });
+  }, [autoDisabledKey, prefKey]);
 
   // Track native fullscreen state (handles ESC key) & persist preference per document
   useEffect(() => {
@@ -72,7 +117,7 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
 
   // Auto-restore fullscreen preference for this document once loaded
   useEffect(() => {
-    if (loading) return;
+    if (loading || autoFullscreenDisabled) return;
     let stored: string | null = null;
     try {
       stored = localStorage.getItem(prefKey);
@@ -83,7 +128,7 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
     enterFullscreen().then((ok) => {
       if (!ok) setNeedsFullscreenGesture(true);
     });
-  }, [loading, prefKey, enterFullscreen]);
+  }, [loading, prefKey, enterFullscreen, autoFullscreenDisabled]);
 
   // If the browser blocked auto fullscreen (needs gesture), retry on first tap in the viewer
   useEffect(() => {
@@ -209,13 +254,26 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
 
       {/* Fullscreen hint — disappears once fullscreen is active */}
       {!isFullscreen && (
-        <div className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-primary/10 border-b border-primary/20 text-[11px] sm:text-xs text-primary font-medium animate-fade-in">
-          <Maximize2 className="h-3 w-3 shrink-0" />
-          <span>
-            {needsFullscreenGesture
-              ? "Touchez le document pour reprendre le plein écran"
-              : "Astuce : appuyez sur « Lire en plein écran » pour une meilleure lecture"}
-          </span>
+        <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 px-3 py-1.5 bg-primary/10 border-b border-primary/20 text-[11px] sm:text-xs text-primary font-medium animate-fade-in">
+          <div className="flex items-center gap-1.5">
+            <Maximize2 className="h-3 w-3 shrink-0" />
+            <span>
+              {needsFullscreenGesture
+                ? "Touchez le document pour reprendre le plein écran"
+                : "Astuce : appuyez sur « Lire en plein écran » pour une meilleure lecture"}
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={toggleAutoFullscreen}
+            className="underline underline-offset-2 hover:text-primary/80 transition-colors"
+            aria-pressed={!autoFullscreenDisabled}
+            title="Activer ou désactiver la reprise automatique du plein écran pour ce document"
+          >
+            {autoFullscreenDisabled
+              ? "Réactiver la reprise auto du plein écran"
+              : "Désactiver la reprise auto du plein écran"}
+          </button>
         </div>
       )}
 
