@@ -44,7 +44,7 @@ export default function Contact() {
       />
       <section className="relative overflow-hidden py-12 md:py-16">
         <div className="absolute inset-0">
-          <img src={heroContactImage} alt="" className="h-full w-full object-cover" loading="eager" fetchPriority="high" decoding="sync" />
+          <img src={heroContactImage} alt="" className="h-full w-full object-cover" loading="eager" decoding="sync" />
           <div className="absolute inset-0 bg-gradient-to-r from-secondary/95 via-secondary/85 to-secondary/70" />
         </div>
         <div className="relative container">
