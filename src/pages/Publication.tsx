@@ -61,12 +61,16 @@ export default function Publication() {
   );
 
   useEffect(() => {
+    if (isUuid) {
+      setResolvedUuid(rawId);
+      return;
+    }
+    // Reset to undefined so the skeleton stays visible while we resolve.
+    setResolvedUuid(undefined);
     // Slug → resolve UUID by id prefix
     if (slugSuffix) {
       let cancelled = false;
       (async () => {
-        // id is a UUID column → can't use LIKE. Use a range over the first 8 hex chars.
-        // slugSuffix is 6 hex; build the lo/hi UUIDs by padding.
         const lo = `${slugSuffix}00-0000-0000-0000-000000000000`;
         const hi = `${slugSuffix}ff-ffff-ffff-ffff-ffffffffffff`;
         const { data } = await supabase
@@ -82,7 +86,7 @@ export default function Publication() {
       return () => { cancelled = true; };
     }
     // publication_number → resolve UUID
-    if (isUuid || !rawId) return;
+    if (!rawId) return;
     let cancelled = false;
     (async () => {
       const { data } = await supabase
