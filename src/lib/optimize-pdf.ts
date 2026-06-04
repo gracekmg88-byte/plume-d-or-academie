@@ -12,7 +12,7 @@ export async function optimizePdf(file: File): Promise<File> {
     const bytes = await pdf.save({ useObjectStreams: true, addDefaultPage: false });
     // Only keep the optimized version if it's actually smaller
     if (bytes.byteLength < buf.byteLength * 0.98) {
-      return new File([bytes], file.name, { type: "application/pdf", lastModified: Date.now() });
+      return new File([bytes as BlobPart], file.name, { type: "application/pdf", lastModified: Date.now() });
     }
     return file;
   } catch (err) {
