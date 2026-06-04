@@ -44,6 +44,10 @@ interface SitemapEntry {
 const staticEntries: SitemapEntry[] = [
   { path: "/", changefreq: "weekly", priority: "1.0" },
   { path: "/bibliotheque", changefreq: "daily", priority: "0.9" },
+  { path: "/bibliotheque?categorie=livre", changefreq: "weekly", priority: "0.8" },
+  { path: "/bibliotheque?categorie=memoire", changefreq: "weekly", priority: "0.8" },
+  { path: "/bibliotheque?categorie=tfc", changefreq: "weekly", priority: "0.8" },
+  { path: "/bibliotheque?categorie=article", changefreq: "weekly", priority: "0.8" },
   { path: "/a-propos", changefreq: "monthly", priority: "0.7" },
   { path: "/contact", changefreq: "monthly", priority: "0.6" },
   { path: "/depot-memoire", changefreq: "monthly", priority: "0.6" },
