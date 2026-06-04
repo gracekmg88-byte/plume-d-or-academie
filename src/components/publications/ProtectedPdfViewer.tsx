@@ -17,19 +17,47 @@ interface ProtectedPdfViewerProps {
 }
 
 const FULLSCREEN_PREF_PREFIX = "pdfViewer:fullscreen:";
+const FULLSCREEN_AUTO_DISABLED_PREFIX = "pdfViewer:fullscreenAutoDisabled:";
+const PAGE_PREF_PREFIX = "pdfViewer:page:";
 
 export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }: ProtectedPdfViewerProps) {
+  const prefKey = useMemo(() => `${FULLSCREEN_PREF_PREFIX}${fileUrl}`, [fileUrl]);
+  const autoDisabledKey = useMemo(() => `${FULLSCREEN_AUTO_DISABLED_PREFIX}${fileUrl}`, [fileUrl]);
+  const pageKey = useMemo(() => `${PAGE_PREF_PREFIX}${fileUrl}`, [fileUrl]);
+
+  // Read locally-saved page as a fallback (works offline / unlogged / reload)
+  const initialResolvedPage = useMemo(() => {
+    if (initialPage && initialPage > 1) return initialPage;
+    try {
+      const stored = localStorage.getItem(pageKey);
+      const n = stored ? parseInt(stored, 10) : NaN;
+      if (!Number.isNaN(n) && n > 1) return n;
+    } catch { /* ignore */ }
+    return 1;
+  }, [initialPage, pageKey]);
+
   const [numPages, setNumPages] = useState<number>(0);
-  const [currentPage, setCurrentPage] = useState(initialPage || 1);
+  const [currentPage, setCurrentPage] = useState(initialResolvedPage);
   const [scale, setScale] = useState(0.5);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [showResumeBadge, setShowResumeBadge] = useState(!!initialPage && initialPage > 1);
+  const [showResumeBadge, setShowResumeBadge] = useState(initialResolvedPage > 1);
   const [needsFullscreenGesture, setNeedsFullscreenGesture] = useState(false);
+  const [autoFullscreenDisabled, setAutoFullscreenDisabled] = useState<boolean>(() => {
+    try { return localStorage.getItem(`${FULLSCREEN_AUTO_DISABLED_PREFIX}${fileUrl}`) === "1"; }
+    catch { return false; }
+  });
   const containerRef = useRef<HTMLDivElement | null>(null);
   const documentSource = useMemo(() => ({ url: fileUrl, withCredentials: false }), [fileUrl]);
-  const prefKey = useMemo(() => `${FULLSCREEN_PREF_PREFIX}${fileUrl}`, [fileUrl]);
+
+  // Persist current page locally on every change
+  useEffect(() => {
+    try {
+      if (currentPage > 1) localStorage.setItem(pageKey, String(currentPage));
+      else localStorage.removeItem(pageKey);
+    } catch { /* ignore */ }
+  }, [currentPage, pageKey]);
 
   // Sync with initialPage when it changes (e.g. from DB fetch)
   useEffect(() => {
@@ -40,6 +68,23 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
       return () => clearTimeout(t);
     }
   }, [initialPage]);
+
+  const toggleAutoFullscreen = useCallback(() => {
+    setAutoFullscreenDisabled((prev) => {
+      const next = !prev;
+      try {
+        if (next) {
+          localStorage.setItem(autoDisabledKey, "1");
+          // Also clear any stored "should restore" flag so it doesn't fire next time
+          localStorage.removeItem(prefKey);
+        } else {
+          localStorage.removeItem(autoDisabledKey);
+        }
+      } catch { /* ignore */ }
+      if (next) setNeedsFullscreenGesture(false);
+      return next;
+    });
+  }, [autoDisabledKey, prefKey]);
 
   // Track native fullscreen state (handles ESC key) & persist preference per document
   useEffect(() => {
