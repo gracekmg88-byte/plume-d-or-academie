@@ -53,6 +53,7 @@ export const CachedImage = memo(function CachedImage({
   const imgRef = useRef<HTMLImageElement>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
   const [inView, setInView] = useState(isCached);
+  const { fetchPriority, ...imgProps } = props;
 
   // On native: resolve cached local URI or download & cache
   useEffect(() => {
@@ -115,6 +116,11 @@ export const CachedImage = memo(function CachedImage({
     setError(true);
   }, []);
 
+  useEffect(() => {
+    if (!imgRef.current || typeof fetchPriority !== "string") return;
+    imgRef.current.setAttribute("fetchpriority", fetchPriority);
+  }, [fetchPriority, resolvedSrc, inView]);
+
   const defaultFallback = fallbackIcon || (
     <Book className="h-16 w-16 text-muted-foreground/40" />
   );
@@ -152,7 +158,6 @@ export const CachedImage = memo(function CachedImage({
           alt={alt}
           loading="lazy"
           decoding="async"
-          fetchpriority={typeof fetchPriority === "string" ? fetchPriority : undefined}
           onLoad={handleLoad}
           onError={handleError}
           className={cn(
