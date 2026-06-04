@@ -1,9 +1,11 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { getAuthUser, isServiceRoleRequest, unauthorized, forbidden } from "../_shared/auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
 
 interface ServiceAccount {
   client_email: string;
@@ -79,6 +81,16 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    // Auth: DB trigger (service role) or the authenticated sender themself.
+    if (!isServiceRoleRequest(req)) {
+      const caller = await getAuthUser(req);
+      if (!caller) return unauthorized(corsHeaders);
+      if (!user_id || caller.userId !== user_id) {
+        return forbidden(corsHeaders, "Cannot send as another user");
+      }
+    }
+
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,

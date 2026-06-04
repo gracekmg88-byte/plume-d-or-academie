@@ -1,10 +1,12 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { getAuthUser, isAdmin, isServiceRoleRequest, unauthorized, forbidden } from "../_shared/auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type",
 };
+
 
 interface ServiceAccount {
   client_email: string;
@@ -72,6 +74,13 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Auth: DB trigger (service role) or admin user only.
+    if (!isServiceRoleRequest(req)) {
+      const user = await getAuthUser(req);
+      if (!user) return unauthorized(corsHeaders);
+      if (!(await isAdmin(user.userId))) return forbidden(corsHeaders, "Admin only");
+    }
+
     const { publication_id, title, author, category } = await req.json();
 
     if (!title) {

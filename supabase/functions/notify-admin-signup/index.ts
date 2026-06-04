@@ -1,6 +1,8 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { escapeHtml, isServiceRoleRequest, unauthorized } from "../_shared/auth.ts";
+
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 const ADMIN_EMAIL = "kmgmultiservices98@gmail.com";
@@ -30,6 +32,9 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Only the DB trigger (service role) may invoke this webhook.
+  if (!isServiceRoleRequest(req)) return unauthorized(corsHeaders);
+
   try {
     const payload: SignupPayload = await req.json();
     console.log("Received payload:", JSON.stringify(payload));
@@ -44,12 +49,13 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
-    const userName = record.full_name || "Non spécifié";
-    const userEmail = record.email;
+    const userName = escapeHtml(record.full_name || "Non spécifié");
+    const userEmail = escapeHtml(record.email);
     const signupDate = new Date(record.created_at).toLocaleString("fr-FR", {
       dateStyle: "full",
       timeStyle: "short",
     });
+
 
     console.log(`Sending notification for new user: ${userEmail}`);
 

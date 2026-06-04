@@ -1,5 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@2.0.0";
+import { escapeHtml, isServiceRoleRequest, unauthorized } from "../_shared/auth.ts";
+
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 const ADMIN_EMAIL = "kmgmultiservices98@gmail.com";
@@ -29,9 +31,13 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Only the DB trigger (service role) may invoke this webhook.
+  if (!isServiceRoleRequest(req)) return unauthorized(corsHeaders);
+
   try {
     const payload: ContactPayload = await req.json();
     console.log("Received payload:", JSON.stringify(payload));
+
 
     const { record } = payload;
     
@@ -50,11 +56,17 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(`Sending notification for contact from: ${record.email}`);
 
+    const safeName = escapeHtml(record.name);
+    const safeEmail = escapeHtml(record.email);
+    const safeSubject = escapeHtml(record.subject);
+    const safeMessage = escapeHtml(record.message);
+
     const emailResponse = await resend.emails.send({
       from: "KMG Bibliothèque <noreply@resend.dev>",
       to: [ADMIN_EMAIL],
       reply_to: record.email,
       subject: `📩 Nouveau message: ${record.subject}`,
+
       html: `
         <!DOCTYPE html>
         <html>
@@ -89,15 +101,15 @@ const handler = async (req: Request): Promise<Response> => {
               <div class="info-box">
                 <div class="info-row">
                   <div class="label">👤 Nom</div>
-                  <div class="value">${record.name}</div>
+                  <div class="value">${safeName}</div>
                 </div>
                 <div class="info-row">
                   <div class="label">📧 Email</div>
-                  <div class="value">${record.email}</div>
+                  <div class="value">${safeEmail}</div>
                 </div>
                 <div class="info-row">
                   <div class="label">📝 Sujet</div>
-                  <div class="value">${record.subject}</div>
+                  <div class="value">${safeSubject}</div>
                 </div>
                 <div class="info-row">
                   <div class="label">📅 Date</div>
@@ -107,13 +119,14 @@ const handler = async (req: Request): Promise<Response> => {
 
               <h3 style="color: #333; margin-bottom: 10px;">💬 Message :</h3>
               <div class="message-box">
-                <div class="message-content">${record.message}</div>
+                <div class="message-content">${safeMessage}</div>
               </div>
               
               <div class="cta">
-                <a href="mailto:${record.email}?subject=Re: ${encodeURIComponent(record.subject)}">Répondre par email</a>
+                <a href="mailto:${encodeURIComponent(record.email)}?subject=Re: ${encodeURIComponent(record.subject)}">Répondre par email</a>
                 <a href="https://plume-d-or-academie.lovable.app/admin/messages" class="secondary">Voir tous les messages</a>
               </div>
+
             </div>
             <div class="footer">
               <p>Cet email a été envoyé automatiquement par KMG Bibliothèque Académie.</p>
