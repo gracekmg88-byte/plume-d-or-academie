@@ -67,6 +67,7 @@ const Auteur = lazy(() => import("./pages/Auteur"));
 const AdminAuthLogs = lazy(() => import("./pages/admin/AdminAuthLogs"));
 
 import { AdminGuard } from "@/components/auth/AdminGuard";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 const queryClient = new QueryClient({
   defaultOptions: {
