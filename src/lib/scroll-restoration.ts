@@ -29,22 +29,29 @@ export function saveScrollPosition(entryKey?: string, pathname?: string, y = win
 
 export function getSavedScrollPosition(entryKey?: string, pathname?: string) {
   const historyState = window.history.state as { __scrollY?: number } | null;
-  if (typeof historyState?.__scrollY === "number") {
-    return historyState.__scrollY;
-  }
-
+  const fromHistory = typeof historyState?.__scrollY === "number" ? historyState.__scrollY : null;
   if (entryKey) {
     const byEntry = sessionStorage.getItem(`${ENTRY_SCROLL_PREFIX}${entryKey}`);
     if (byEntry) {
-      return Number.parseInt(byEntry, 10) || 0;
+      const entryValue = Number.parseInt(byEntry, 10) || 0;
+      if (entryValue > 0 || fromHistory === null) {
+        return entryValue;
+      }
     }
   }
 
   if (pathname) {
     const byPath = sessionStorage.getItem(`${PATH_SCROLL_PREFIX}${pathname}`);
     if (byPath) {
-      return Number.parseInt(byPath, 10) || 0;
+      const pathValue = Number.parseInt(byPath, 10) || 0;
+      if (pathValue > 0 || fromHistory === null) {
+        return pathValue;
+      }
     }
+  }
+
+  if (fromHistory !== null) {
+    return fromHistory;
   }
 
   return 0;
