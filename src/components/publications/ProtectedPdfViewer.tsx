@@ -107,7 +107,6 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
     try {
       await containerRef.current.requestFullscreen();
       setIsFullscreen(true);
-      setScale((s) => (s < 1 ? 1 : s));
       setNeedsFullscreenGesture(false);
       return true;
     } catch {
@@ -309,6 +308,7 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
             scale={scale}
             renderTextLayer={false}
             renderAnnotationLayer={false}
+            devicePixelRatio={Math.min(typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1, 1.5)}
             loading={null}
             className="shadow-lg"
           />
