@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useReadingHistory } from "@/hooks/useReadingHistory";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Link, useLocation } from "react-router-dom";
-import { saveScrollPosition } from "@/lib/scroll-restoration";
+import { getCurrentHistoryEntryKey, saveScrollPosition } from "@/lib/scroll-restoration";
 import { Bar, BarChart, XAxis, YAxis, ResponsiveContainer } from "recharts";
 
 const categoryLabels: Record<string, Record<string, string>> = {
@@ -28,7 +28,7 @@ export function ReadingStatsCard() {
   const { pathname } = useLocation();
 
   const saveScroll = () => {
-    saveScrollPosition(window.history.state?.key, pathname, window.scrollY);
+    saveScrollPosition(getCurrentHistoryEntryKey(), pathname, window.scrollY);
   };
 
   if (isLoading) {
