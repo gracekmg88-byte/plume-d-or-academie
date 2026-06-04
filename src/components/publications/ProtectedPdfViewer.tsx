@@ -315,7 +315,9 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
             <div className="h-full w-full animate-pulse bg-gradient-to-b from-background/0 via-background/10 to-background/0" />
           </div>
         )}
+        {resolvedUrl && (
         <Document
+          key={resolvedUrl}
           file={documentSource}
           onLoadSuccess={onDocumentLoadSuccess}
           onLoadError={onDocumentLoadError}
@@ -359,6 +361,7 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
             </div>
           )}
         </Document>
+        )}
       </div>
 
       {/* Watermark */}
