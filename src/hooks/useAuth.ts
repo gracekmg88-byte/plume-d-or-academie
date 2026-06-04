@@ -2,10 +2,6 @@ import { createContext, createElement, useCallback, useContext, useEffect, useMe
 import { supabase } from "@/integrations/supabase/client";
 import type { User, Session } from "@supabase/supabase-js";
 
-// Shared singleton to avoid duplicate admin checks across component instances
-let cachedAdminStatus: { userId: string; isAdmin: boolean } | null = null;
-let adminCheckPromise: Promise<boolean> | null = null;
-
 interface AuthContextValue {
   user: User | null;
   session: Session | null;
@@ -19,6 +15,9 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
+// Per-user admin cache to avoid re-querying on every auth event (token refresh, etc.)
+const adminCache = new Map<string, boolean>();
+
 function useProvideAuth(): AuthContextValue {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -26,45 +25,41 @@ function useProvideAuth(): AuthContextValue {
   const [isAdmin, setIsAdmin] = useState(false);
   const [adminChecking, setAdminChecking] = useState(false);
   const mountedRef = useRef(true);
-  const initializedRef = useRef(false);
+  const adminRequestIdRef = useRef(0);
 
   const checkAdminRole = useCallback(async (userId: string) => {
-    // Use cached result if available for same user — instant, no flicker
-    if (cachedAdminStatus && cachedAdminStatus.userId === userId) {
-      setIsAdmin(cachedAdminStatus.isAdmin);
+    // Use cached value if available — instant, no flicker on token refresh
+    if (adminCache.has(userId)) {
+      if (!mountedRef.current) return;
+      setIsAdmin(adminCache.get(userId)!);
       setAdminChecking(false);
       return;
     }
 
+    const requestId = ++adminRequestIdRef.current;
     setAdminChecking(true);
 
-    // Deduplicate concurrent requests
-    if (!adminCheckPromise) {
-      adminCheckPromise = (async () => {
-        try {
-          const { data, error } = await supabase
-            .from("user_roles")
-            .select("role")
-            .eq("user_id", userId)
-            .eq("role", "admin")
-            .maybeSingle();
+    try {
+      const { data, error } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", userId)
+        .eq("role", "admin")
+        .maybeSingle();
 
-          const result = !error && !!data;
-          cachedAdminStatus = { userId, isAdmin: result };
-          return result;
-        } catch {
-          cachedAdminStatus = { userId, isAdmin: false };
-          return false;
-        } finally {
-          adminCheckPromise = null;
-        }
-      })();
-    }
+      const result = !error && !!data;
+      adminCache.set(userId, result);
 
-    const result = await adminCheckPromise;
-    if (mountedRef.current) {
+      // Ignore stale responses if a newer auth event has fired
+      if (!mountedRef.current || requestId !== adminRequestIdRef.current) return;
       setIsAdmin(result);
-      setAdminChecking(false);
+    } catch {
+      if (!mountedRef.current || requestId !== adminRequestIdRef.current) return;
+      setIsAdmin(false);
+    } finally {
+      if (mountedRef.current && requestId === adminRequestIdRef.current) {
+        setAdminChecking(false);
+      }
     }
   }, []);
 
@@ -75,44 +70,39 @@ function useProvideAuth(): AuthContextValue {
     setUser(nextSession?.user ?? null);
 
     if (nextSession?.user) {
+      // Fire-and-forget — never await inside onAuthStateChange (Supabase deadlock risk)
       void checkAdminRole(nextSession.user.id);
-      return;
+    } else {
+      adminRequestIdRef.current++; // cancel any in-flight check
+      setIsAdmin(false);
+      setAdminChecking(false);
     }
-
-    setIsAdmin(false);
-    setAdminChecking(false);
-    cachedAdminStatus = null;
   }, [checkAdminRole]);
 
   useEffect(() => {
     mountedRef.current = true;
 
+    // Standard Supabase pattern: subscribe FIRST, then getSession.
+    // The subscription fires INITIAL_SESSION with the restored session, so we
+    // don't need to gate it — let every event update state.
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, nextSession) => {
-      if (!mountedRef.current) return;
-
-      if (!initializedRef.current) {
-        return;
-      }
-
       applySession(nextSession);
-      setAuthReady(true);
+      if (mountedRef.current) setAuthReady(true);
     });
 
+    // Fallback in case INITIAL_SESSION doesn't fire (rare).
     supabase.auth
       .getSession()
       .then(({ data: { session: restoredSession } }) => {
         if (!mountedRef.current) return;
+        // Only apply if we haven't received an auth event yet
         applySession(restoredSession);
+        setAuthReady(true);
       })
       .catch(() => {
         if (!mountedRef.current) return;
-        applySession(null);
-      })
-      .finally(() => {
-        if (!mountedRef.current) return;
-        initializedRef.current = true;
         setAuthReady(true);
       });
 
@@ -128,11 +118,19 @@ function useProvideAuth(): AuthContextValue {
       password,
     });
     if (error) throw error;
+
+    // Pre-warm the admin check synchronously so the next render of any guarded
+    // page already reflects the role — avoids "Accès non autorisé" flash.
+    if (data.user) {
+      adminCache.delete(data.user.id);
+      await checkAdminRole(data.user.id);
+    }
+
     return data;
   };
 
   const signOut = async () => {
-    cachedAdminStatus = null;
+    adminCache.clear();
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
   };
