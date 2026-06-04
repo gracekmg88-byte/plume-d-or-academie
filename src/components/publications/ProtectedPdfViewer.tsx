@@ -50,7 +50,25 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
     catch { return false; }
   });
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const documentSource = useMemo(() => ({ url: fileUrl, withCredentials: false }), [fileUrl]);
+  const [resolvedUrl, setResolvedUrl] = useState<string>(fileUrl);
+
+  // Resolve via Cache Storage so subsequent loads of the same PDF are instant
+  useEffect(() => {
+    let revoke: string | null = null;
+    let cancelled = false;
+    setResolvedUrl(fileUrl);
+    getCachedPdfBlobUrl(fileUrl).then((u) => {
+      if (cancelled) return;
+      if (u.startsWith("blob:")) revoke = u;
+      setResolvedUrl(u);
+    });
+    return () => {
+      cancelled = true;
+      if (revoke) URL.revokeObjectURL(revoke);
+    };
+  }, [fileUrl]);
+
+  const documentSource = useMemo(() => ({ url: resolvedUrl, withCredentials: false }), [resolvedUrl]);
 
   // Persist current page locally on every change
   useEffect(() => {
