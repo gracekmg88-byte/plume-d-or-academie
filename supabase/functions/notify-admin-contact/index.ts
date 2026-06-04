@@ -101,15 +101,15 @@ const handler = async (req: Request): Promise<Response> => {
               <div class="info-box">
                 <div class="info-row">
                   <div class="label">👤 Nom</div>
-                  <div class="value">${record.name}</div>
+                  <div class="value">${safeName}</div>
                 </div>
                 <div class="info-row">
                   <div class="label">📧 Email</div>
-                  <div class="value">${record.email}</div>
+                  <div class="value">${safeEmail}</div>
                 </div>
                 <div class="info-row">
                   <div class="label">📝 Sujet</div>
-                  <div class="value">${record.subject}</div>
+                  <div class="value">${safeSubject}</div>
                 </div>
                 <div class="info-row">
                   <div class="label">📅 Date</div>
@@ -119,13 +119,14 @@ const handler = async (req: Request): Promise<Response> => {
 
               <h3 style="color: #333; margin-bottom: 10px;">💬 Message :</h3>
               <div class="message-box">
-                <div class="message-content">${record.message}</div>
+                <div class="message-content">${safeMessage}</div>
               </div>
               
               <div class="cta">
-                <a href="mailto:${record.email}?subject=Re: ${encodeURIComponent(record.subject)}">Répondre par email</a>
+                <a href="mailto:${encodeURIComponent(record.email)}?subject=Re: ${encodeURIComponent(record.subject)}">Répondre par email</a>
                 <a href="https://plume-d-or-academie.lovable.app/admin/messages" class="secondary">Voir tous les messages</a>
               </div>
+
             </div>
             <div class="footer">
               <p>Cet email a été envoyé automatiquement par KMG Bibliothèque Académie.</p>
