@@ -74,8 +74,7 @@ export function FavoritesSection() {
                     returnPublicationId: pub.id,
                   }}
                   data-publication-card-id={pub.id}
-                  onPointerDown={saveScroll}
-                  onClickCapture={saveScroll}
+                  onClick={saveScroll}
                   className="min-w-0 flex-1 mr-3 hover:text-primary transition-colors"
                 >
                   <p className="text-sm font-medium text-foreground truncate">

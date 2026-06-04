@@ -177,8 +177,7 @@ export function ReadingStatsCard() {
                     returnPublicationId: r.publication_id,
                   }}
                   data-publication-card-id={r.publication_id}
-                  onPointerDown={saveScroll}
-                  onClickCapture={saveScroll}
+                  onClick={saveScroll}
                   className="flex items-center gap-3 bg-muted/50 rounded-lg px-3 py-2.5 hover:bg-muted transition-colors"
                 >
                   <div className="min-w-0 flex-1">
