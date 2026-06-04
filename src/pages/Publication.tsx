@@ -65,10 +65,15 @@ export default function Publication() {
     if (slugSuffix) {
       let cancelled = false;
       (async () => {
+        // id is a UUID column → can't use LIKE. Use a range over the first 8 hex chars.
+        // slugSuffix is 6 hex; build the lo/hi UUIDs by padding.
+        const lo = `${slugSuffix}00-0000-0000-0000-000000000000`;
+        const hi = `${slugSuffix}ff-ffff-ffff-ffff-ffffffffffff`;
         const { data } = await supabase
           .from("publications")
           .select("id")
-          .like("id", `${slugSuffix}%`)
+          .gte("id", lo)
+          .lte("id", hi)
           .eq("is_published", true)
           .limit(1)
           .maybeSingle();
