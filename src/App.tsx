@@ -214,7 +214,17 @@ function ScrollManager() {
 }
 
 function PageLoader() {
-  return <div className="h-0 w-full overflow-hidden opacity-0" aria-hidden="true" />;
+  return (
+    <div className="min-h-screen w-full bg-background" aria-hidden="true">
+      <div className="container py-12">
+        <div className="animate-pulse space-y-6">
+          <div className="h-8 w-32 rounded bg-muted" />
+          <div className="h-10 w-3/4 rounded bg-muted" />
+          <div className="h-64 w-full rounded-lg bg-muted" />
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function NavigationWarmup() {
