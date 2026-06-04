@@ -117,7 +117,7 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
 
   // Auto-restore fullscreen preference for this document once loaded
   useEffect(() => {
-    if (loading) return;
+    if (loading || autoFullscreenDisabled) return;
     let stored: string | null = null;
     try {
       stored = localStorage.getItem(prefKey);
@@ -128,7 +128,7 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
     enterFullscreen().then((ok) => {
       if (!ok) setNeedsFullscreenGesture(true);
     });
-  }, [loading, prefKey, enterFullscreen]);
+  }, [loading, prefKey, enterFullscreen, autoFullscreenDisabled]);
 
   // If the browser blocked auto fullscreen (needs gesture), retry on first tap in the viewer
   useEffect(() => {
