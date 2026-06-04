@@ -132,13 +132,25 @@ function useProvideAuth(): AuthContextValue {
       email,
       password,
     });
-    if (error) throw error;
+    if (error) {
+      logAuthEvent("admin_check_failed", {
+        email,
+        metadata: { stage: "sign_in", error: error.message },
+      });
+      throw error;
+    }
 
     // Pre-warm the admin check synchronously so the next render of any guarded
     // page already reflects the role — avoids "Accès non autorisé" flash.
     if (data.user) {
       adminCache.delete(data.user.id);
       await checkAdminRole(data.user.id);
+      logAuthEvent("admin_check", {
+        user_id: data.user.id,
+        email: data.user.email ?? null,
+        is_admin: adminCache.get(data.user.id) ?? false,
+        metadata: { stage: "post_sign_in" },
+      });
     }
 
     return data;
