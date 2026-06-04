@@ -144,6 +144,20 @@ export default function Publication() {
     [id, returnKey, returnState?.returnPublicationId],
   );
 
+  const handleBack = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      // If we arrived from another in-app page, prefer a real POP so the browser
+      // back button and the in-app "Retour" button restore the exact same state.
+      if (returnState && window.history.length > 1) {
+        navigate(-1);
+        return;
+      }
+      navigate(backTarget, { replace: true, state: backState, preventScrollReset: true });
+    },
+    [navigate, returnState, backTarget, backState],
+  );
+
   // Fetch last read page from DB if not provided in URL
   useEffect(() => {
     if (!id || !user || pageFromUrl > 0) return;
