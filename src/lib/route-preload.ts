@@ -24,6 +24,7 @@ export const loadAdminAuthLogsPage = () => import("@/pages/admin/AdminAuthLogs")
 export const loadAuteurPage = () => import("@/pages/Auteur");
 export const loadVerifyCertificatePage = () => import("@/pages/VerifyCertificate");
 export const loadVerifyHomePage = () => import("@/pages/VerifyHome");
+export const loadCatalogDiagnosticPage = () => import("@/pages/CatalogDiagnostic");
 
 export function preloadAdminRoutes() {
   void Promise.allSettled([
@@ -57,6 +58,7 @@ export function preloadCommonRoutes() {
     loadAuteurPage(),
     loadVerifyHomePage(),
     loadVerifyCertificatePage(),
+    loadCatalogDiagnosticPage(),
   ]);
 }
 
@@ -99,6 +101,7 @@ const PREFIX_LOADERS: Array<[string, () => Promise<unknown>]> = [
   ["/installer", loadInstallAppPage],
   ["/verify/", loadVerifyCertificatePage],
   ["/verification", loadVerifyHomePage],
+  ["/diagnostic-catalogue", loadCatalogDiagnosticPage],
 ];
 
 const warmed = new Set<string>();
