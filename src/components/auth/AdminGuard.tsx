@@ -3,6 +3,7 @@ import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { logAuthEvent } from "@/lib/auth-audit";
+import { preloadAdminRoutes } from "@/lib/route-preload";
 import { toast } from "sonner";
 
 interface AdminGuardProps {
@@ -22,6 +23,11 @@ export function AdminGuard({ children }: AdminGuardProps) {
     alreadyVerified ? true : null,
   );
   const [verifying, setVerifying] = useState(false);
+
+  useEffect(() => {
+    // Warm all admin route bundles so navigation between admin pages is instant.
+    preloadAdminRoutes();
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
