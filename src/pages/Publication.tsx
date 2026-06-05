@@ -492,6 +492,14 @@ export default function Publication() {
         jsonLd={[bookJsonLd, breadcrumbJsonLd]}
       />
 
+      {isLeaving && (
+        <div
+          aria-hidden="true"
+          className="fixed inset-0 z-[100] bg-background"
+          style={{ pointerEvents: "none" }}
+        />
+      )}
+
       <div className="container py-8 md:py-12">
         {/* Offline banner */}
         {!isOnline && (
