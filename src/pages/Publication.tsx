@@ -525,8 +525,22 @@ export default function Publication() {
       {isLeaving && (
         <div
           aria-hidden="true"
-          className="fixed inset-0 z-[100] bg-background"
-          style={{ pointerEvents: "none" }}
+          className="fixed inset-0 z-[2147483647] bg-background"
+          style={{
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            width: "100vw",
+            height: "100vh",
+            // Cover dynamic viewport too (mobile URL bar show/hide)
+            minHeight: "100dvh",
+            pointerEvents: "auto",
+            touchAction: "none",
+            transform: "translateZ(0)",
+            willChange: "transform",
+            contain: "strict",
+          }}
         />
       )}
 
