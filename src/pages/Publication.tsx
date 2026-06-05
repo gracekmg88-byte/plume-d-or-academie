@@ -146,16 +146,23 @@ export default function Publication() {
     [id, returnKey, returnState?.returnPublicationId],
   );
 
+  const [isLeaving, setIsLeaving] = useState(false);
   const handleBack = useCallback(
     (e: React.MouseEvent) => {
       e.preventDefault();
-      // Use real browser back only when there is explicit return state from the opener.
-      // Otherwise navigate directly with restore state so deep links still return sanely.
-      if (returnState?.returnTo && window.history.length > 1) {
-        navigate(-1);
-        return;
-      }
-      navigate(backTarget, { replace: true, state: backState, preventScrollReset: true });
+      // Prevent the visible "flash" (mobile URL bar reflow + PDF unmount shift)
+      // by hiding the document overlay first, then navigating in the next frame.
+      setIsLeaving(true);
+      // Lock the scroll position immediately so reflows can't move it.
+      const lockedY = window.scrollY;
+      requestAnimationFrame(() => {
+        window.scrollTo({ top: lockedY, left: 0, behavior: "instant" as ScrollBehavior });
+        if (returnState?.returnTo && window.history.length > 1) {
+          navigate(-1);
+          return;
+        }
+        navigate(backTarget, { replace: true, state: backState, preventScrollReset: true });
+      });
     },
     [navigate, returnState, backTarget, backState],
   );
