@@ -35,7 +35,7 @@ export function usePublications(category?: string) {
 
       const { data, error } = await query;
       if (error) throw error;
-      return data;
+      return data ?? [];
     },
   });
 }
@@ -79,7 +79,7 @@ export function useAdminPublications() {
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      return data;
+      return data ?? [];
     },
   });
 }

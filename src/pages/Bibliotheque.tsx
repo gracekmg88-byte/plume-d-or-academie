@@ -18,6 +18,7 @@ import { useOnlineStatus } from "@/hooks/useOffline";
 import { getAllOfflinePublications, type OfflinePublication } from "@/lib/offline-storage";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useLibraryLayout } from "@/hooks/useLibraryLayout";
+import { usePublicationsRealtime } from "@/hooks/usePublicationsRealtime";
 import { SEO } from "@/components/seo/SEO";
 import heroBiblioImage from "@/assets/hero-bibliotheque.webp";
 
@@ -41,10 +42,11 @@ export default function Bibliotheque() {
   const isOnline = useOnlineStatus();
   const { t } = useLanguage();
   const { layout } = useLibraryLayout();
+  usePublicationsRealtime(isOnline);
   
   
 
-  const { data: publications, isLoading } = usePublications(category === "all" ? undefined : category);
+  const { data: publications, isLoading, isError, refetch } = usePublications(category === "all" ? undefined : category);
 
   // Offline cached publications
   const [offlinePubs, setOfflinePubs] = useState<OfflinePublication[]>([]);
@@ -507,6 +509,35 @@ export default function Bibliotheque() {
                   </div>
                 )}
               </>
+            ) : isError && isOnline ? (
+              <div className="rounded-lg border border-border bg-card p-6 md:p-8">
+                <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                  <div className="flex items-start gap-4">
+                    <BookOpen className="mt-1 h-10 w-10 text-muted-foreground/50" />
+                    <div>
+                      <h2 className="font-serif text-2xl font-semibold text-foreground mb-2">
+                        {t("library.noResults")}
+                      </h2>
+                      <p className="text-muted-foreground max-w-2xl">
+                        {search
+                          ? t("library.noResultsSearch", { search })
+                          : t("library.noResultsCategory")}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-3 sm:flex-row">
+                    <Button onClick={() => void refetch()} variant="outline">
+                      <RefreshCw className="h-4 w-4" />
+                      {t("library.retry")}
+                    </Button>
+                    <Button onClick={() => navigate("/diagnostic-catalogue")}>
+                      <BookOpen className="h-4 w-4" />
+                      {t("library.openDiagnostic")}
+                    </Button>
+                  </div>
+                </div>
+              </div>
             ) : (
               <div className="text-center py-16">
                 <BookOpen className="h-16 w-16 mx-auto mb-4 text-muted-foreground/30" />
