@@ -354,7 +354,7 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
         style={{ zIndex: 10 }}
       >
         <div className="text-4xl font-bold text-foreground rotate-[-30deg] whitespace-nowrap">
-          PLUME D'OR KMG - LECTURE SEULE
+          KMG LECTURE
         </div>
       </div>
 

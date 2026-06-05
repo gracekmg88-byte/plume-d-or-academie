@@ -523,7 +523,7 @@ export default function Publication() {
                   <CachedImage
                     src={displayPub.cover_image_url}
                     alt={coverAlt}
-                    className="h-full w-full object-cover"
+                    className="h-full w-full object-contain"
                     containerClassName="h-full w-full"
                     fallbackIcon={<Icon className="h-24 w-24 text-muted-foreground/30" />}
                     loading="eager"
