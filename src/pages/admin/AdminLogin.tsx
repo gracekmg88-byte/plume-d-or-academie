@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Feather, Lock, Mail, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAuth } from "@/hooks/useAuth";
+import { preloadAdminRoutes } from "@/lib/route-preload";
 
 export default function AdminLogin() {
   const [email, setEmail] = useState("");
@@ -14,6 +15,11 @@ export default function AdminLogin() {
   const [isLoading, setIsLoading] = useState(false);
   const { signIn } = useAuth();
   const navigate = useNavigate();
+
+  // Warm up admin routes as soon as the login screen mounts
+  useEffect(() => {
+    preloadAdminRoutes();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

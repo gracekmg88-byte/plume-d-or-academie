@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { preloadAdminRoutes } from "@/lib/route-preload";
 import { useNavigate, Link } from "react-router-dom";
 import { 
   Feather, LogOut, Plus, Book, FileText, GraduationCap, Newspaper, 
@@ -67,6 +68,11 @@ export default function AdminDashboard() {
   const navigate = useNavigate();
 
   const [sendingNewsletter, setSendingNewsletter] = useState(false);
+
+  // Warm up all admin route bundles so navigation is instant
+  useEffect(() => {
+    preloadAdminRoutes();
+  }, []);
 
   const handleSignOut = async () => {
     await signOut();

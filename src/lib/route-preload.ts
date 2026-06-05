@@ -18,6 +18,24 @@ export const loadDepotMemoirePage = () => import("@/pages/DepotMemoire");
 export const loadChatPage = () => import("@/pages/Chat");
 export const loadInstallAppPage = () => import("@/pages/InstallApp");
 export const loadNotFoundPage = () => import("@/pages/NotFound");
+export const loadAdminCertificatesPage = () => import("@/pages/admin/AdminCertificates");
+export const loadAdminSeoPage = () => import("@/pages/admin/AdminSeo");
+export const loadAdminAuthLogsPage = () => import("@/pages/admin/AdminAuthLogs");
+
+export function preloadAdminRoutes() {
+  void Promise.allSettled([
+    loadAdminDashboardPage(),
+    loadAdminMessagesPage(),
+    loadAdminSettingsPage(),
+    loadAdminUsersPage(),
+    loadAdminDevicesPage(),
+    loadAdminSubmissionsPage(),
+    loadPublicationFormPage(),
+    loadAdminCertificatesPage(),
+    loadAdminSeoPage(),
+    loadAdminAuthLogsPage(),
+  ]);
+}
 
 export function preloadCommonRoutes() {
   void Promise.allSettled([
