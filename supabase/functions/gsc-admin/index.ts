@@ -94,10 +94,8 @@ Deno.serve(async (req) => {
     const body = req.method === "POST" ? await req.json().catch(() => ({})) : {};
     const action = body.action ?? new URL(req.url).searchParams.get("action") ?? "status";
 
-    // auto = called by the app when a publication is created/updated.
-    // Any authenticated user gets through, since admin route already guards the UI; we just don't expose admin data.
-    const requireAdmin = action !== "auto";
-    const auth = await isAdmin(req, requireAdmin);
+    // All actions require an admin user. Non-admin contexts (DB triggers, etc.) should use the service role key.
+    const auth = await isAdmin(req, true);
     if (!auth.allowed) {
       return new Response(JSON.stringify({ error: "Forbidden" }), {
         status: 403,
