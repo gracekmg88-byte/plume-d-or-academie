@@ -11,6 +11,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useOnlineStatus } from "@/hooks/useOffline";
 import { useHomepageLayout } from "@/hooks/useHomepageLayout";
+import { usePublicationsRealtime } from "@/hooks/usePublicationsRealtime";
 import { ContinueReadingSection } from "@/components/home/ContinueReadingSection";
 import { RecommendationsSection } from "@/components/home/RecommendationsSection";
 import { SEO } from "@/components/seo/SEO";
@@ -24,6 +25,7 @@ export default function Index() {
   const { t } = useLanguage();
   const { user } = useAuth();
   const { layout: homepageLayout } = useHomepageLayout();
+  usePublicationsRealtime(isOnline);
 
   const recentCount = homepageLayout === "focus-catalogue" ? 12 : homepageLayout === "epure" ? 6 : 4;
   const recentPublications = publications?.slice(0, recentCount) || [];
