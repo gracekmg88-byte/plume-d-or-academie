@@ -69,6 +69,11 @@ export default function AdminDashboard() {
 
   const [sendingNewsletter, setSendingNewsletter] = useState(false);
 
+  // Warm up all admin route bundles so navigation is instant
+  useEffect(() => {
+    preloadAdminRoutes();
+  }, []);
+
   const handleSignOut = async () => {
     await signOut();
     navigate("/admin");
