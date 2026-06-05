@@ -239,6 +239,45 @@ function PageLoader() {
 function NavigationWarmup() {
   useEffect(() => {
     preloadCommonRoutes();
+
+    // Global prefetch: any internal <a> link warms its route bundle on
+    // hover / focus / touch so the next click feels instant.
+    let prefetchRouteFn: ((to: string) => void) | null = null;
+    import("@/lib/route-preload").then((m) => {
+      prefetchRouteFn = m.prefetchRoute;
+    });
+
+    const extractPath = (target: EventTarget | null): string | null => {
+      if (!(target instanceof Element)) return null;
+      const anchor = target.closest("a");
+      if (!anchor) return null;
+      const href = anchor.getAttribute("href");
+      if (!href || href.startsWith("#") || href.startsWith("mailto:") || href.startsWith("tel:")) {
+        return null;
+      }
+      try {
+        const url = new URL(href, window.location.origin);
+        if (url.origin !== window.location.origin) return null;
+        return url.pathname;
+      } catch {
+        return null;
+      }
+    };
+
+    const handler = (e: Event) => {
+      const path = extractPath(e.target);
+      if (path && prefetchRouteFn) prefetchRouteFn(path);
+    };
+
+    document.addEventListener("mouseover", handler, { passive: true });
+    document.addEventListener("focusin", handler, { passive: true });
+    document.addEventListener("touchstart", handler, { passive: true });
+
+    return () => {
+      document.removeEventListener("mouseover", handler);
+      document.removeEventListener("focusin", handler);
+      document.removeEventListener("touchstart", handler);
+    };
   }, []);
 
   return null;
