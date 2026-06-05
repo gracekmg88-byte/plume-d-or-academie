@@ -147,16 +147,37 @@ export default function Publication() {
   );
 
   const [isLeaving, setIsLeaving] = useState(false);
+  const leavingRef = useRef(false);
+  const beginLeave = useCallback(() => {
+    if (leavingRef.current) return;
+    leavingRef.current = true;
+    // Lock current scroll position so any reflow (URL bar, PDF unmount) cannot
+    // visibly move the page underneath the overlay.
+    const lockedY = window.scrollY;
+    const html = document.documentElement;
+    const body = document.body;
+    const prevHtmlOverflow = html.style.overflow;
+    const prevBodyOverflow = body.style.overflow;
+    const prevBodyOverscroll = body.style.overscrollBehavior;
+    html.style.overflow = "hidden";
+    body.style.overflow = "hidden";
+    body.style.overscrollBehavior = "none";
+    window.scrollTo({ top: lockedY, left: 0, behavior: "instant" as ScrollBehavior });
+    setIsLeaving(true);
+    // Restore styles after the navigation has rendered the next route.
+    window.setTimeout(() => {
+      html.style.overflow = prevHtmlOverflow;
+      body.style.overflow = prevBodyOverflow;
+      body.style.overscrollBehavior = prevBodyOverscroll;
+    }, 400);
+  }, []);
+
   const handleBack = useCallback(
     (e: React.MouseEvent) => {
       e.preventDefault();
-      // Prevent the visible "flash" (mobile URL bar reflow + PDF unmount shift)
-      // by hiding the document overlay first, then navigating in the next frame.
-      setIsLeaving(true);
-      // Lock the scroll position immediately so reflows can't move it.
-      const lockedY = window.scrollY;
+      beginLeave();
+      // Defer the actual route change one frame so the overlay paints first.
       requestAnimationFrame(() => {
-        window.scrollTo({ top: lockedY, left: 0, behavior: "instant" as ScrollBehavior });
         if (returnState?.returnTo && window.history.length > 1) {
           navigate(-1);
           return;
@@ -164,8 +185,17 @@ export default function Publication() {
         navigate(backTarget, { replace: true, state: backState, preventScrollReset: true });
       });
     },
-    [navigate, returnState, backTarget, backState],
+    [navigate, returnState, backTarget, backState, beginLeave],
   );
+
+  // Also catch hardware/browser back (Android, swipe-back, browser arrow):
+  // paint the overlay before the route swap so the PDF unmount is invisible.
+  useEffect(() => {
+    const onPopState = () => beginLeave();
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, [beginLeave]);
+
 
   // Fetch last read page from DB if not provided in URL
   useEffect(() => {
@@ -495,8 +525,22 @@ export default function Publication() {
       {isLeaving && (
         <div
           aria-hidden="true"
-          className="fixed inset-0 z-[100] bg-background"
-          style={{ pointerEvents: "none" }}
+          className="fixed inset-0 z-[2147483647] bg-background"
+          style={{
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            width: "100vw",
+            height: "100vh",
+            // Cover dynamic viewport too (mobile URL bar show/hide)
+            minHeight: "100dvh",
+            pointerEvents: "auto",
+            touchAction: "none",
+            transform: "translateZ(0)",
+            willChange: "transform",
+            contain: "strict",
+          }}
         />
       )}
 
