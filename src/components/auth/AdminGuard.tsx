@@ -9,18 +9,18 @@ interface AdminGuardProps {
   children: React.ReactNode;
 }
 
-/**
- * Strict admin guard:
- *  1. Waits for auth to be ready.
- *  2. Redirects unauthenticated users to /admin (login).
- *  3. Calls the `verify-admin` edge function (server-side check using the
- *     service role) as defense-in-depth in addition to the client `isAdmin`.
- *  4. Logs every denial / grant to `auth_audit_log`.
- */
+// Module-level cache: once the server has verified this user as admin in this
+// session, we trust the client `isAdmin` for subsequent route changes and
+// don't show the "Vérification des droits d'accès…" screen again.
+const serverVerifiedUsers = new Set<string>();
+
 export function AdminGuard({ children }: AdminGuardProps) {
   const { user, isAdmin, authReady, adminChecking } = useAuth();
   const location = useLocation();
-  const [serverVerified, setServerVerified] = useState<boolean | null>(null);
+  const alreadyVerified = !!user && serverVerifiedUsers.has(user.id);
+  const [serverVerified, setServerVerified] = useState<boolean | null>(
+    alreadyVerified ? true : null,
+  );
   const [verifying, setVerifying] = useState(false);
 
   useEffect(() => {
@@ -47,7 +47,13 @@ export function AdminGuard({ children }: AdminGuardProps) {
       return;
     }
 
-    // Client thinks user is admin — double-check on the server.
+    // Already verified this session — skip the server round-trip.
+    if (serverVerifiedUsers.has(user.id)) {
+      setServerVerified(true);
+      return;
+    }
+
+    // First-time verification only.
     setVerifying(true);
     (async () => {
       try {
@@ -66,6 +72,7 @@ export function AdminGuard({ children }: AdminGuardProps) {
           });
           setServerVerified(false);
         } else {
+          serverVerifiedUsers.add(user.id);
           logAuthEvent("admin_route_granted", {
             user_id: user.id,
             email: user.email ?? null,
@@ -91,6 +98,7 @@ export function AdminGuard({ children }: AdminGuardProps) {
       cancelled = true;
     };
   }, [authReady, adminChecking, user, isAdmin, location.pathname]);
+
 
   if (!authReady || adminChecking || verifying || serverVerified === null) {
     return (
