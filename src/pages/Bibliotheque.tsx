@@ -46,7 +46,7 @@ export default function Bibliotheque() {
   
   
 
-  const { data: publications, isLoading } = usePublications(category === "all" ? undefined : category);
+  const { data: publications, isLoading, isError, refetch } = usePublications(category === "all" ? undefined : category);
 
   // Offline cached publications
   const [offlinePubs, setOfflinePubs] = useState<OfflinePublication[]>([]);
@@ -509,7 +509,7 @@ export default function Bibliotheque() {
                   </div>
                 )}
               </>
-            ) : isOnline ? (
+            ) : isError && isOnline ? (
               <div className="rounded-lg border border-border bg-card p-6 md:p-8">
                 <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                   <div className="flex items-start gap-4">
@@ -527,7 +527,7 @@ export default function Bibliotheque() {
                   </div>
 
                   <div className="flex flex-col gap-3 sm:flex-row">
-                    <Button onClick={() => window.location.reload()} variant="outline">
+                    <Button onClick={() => void refetch()} variant="outline">
                       <RefreshCw className="h-4 w-4" />
                       {t("library.retry")}
                     </Button>
