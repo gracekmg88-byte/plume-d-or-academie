@@ -65,6 +65,7 @@ const AdminCertificates = lazy(() => import("./pages/admin/AdminCertificates"));
 const AdminSeo = lazy(() => import("./pages/admin/AdminSeo"));
 const Auteur = lazy(() => import("./pages/Auteur"));
 const AdminAuthLogs = lazy(() => import("./pages/admin/AdminAuthLogs"));
+const CatalogDiagnostic = lazy(() => import("./pages/CatalogDiagnostic"));
 
 import { AdminGuard } from "@/components/auth/AdminGuard";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -291,6 +292,7 @@ function AnimatedRoutes() {
         <Routes location={location}>
           <Route path="/" element={<Index />} />
           <Route path="/bibliotheque" element={<Bibliotheque />} />
+          <Route path="/diagnostic-catalogue" element={<CatalogDiagnostic />} />
           <Route path="/publication/:id" element={<Publication />} />
           <Route path="/livre/:slug" element={<Publication />} />
           <Route path="/memoire/:slug" element={<Publication />} />
