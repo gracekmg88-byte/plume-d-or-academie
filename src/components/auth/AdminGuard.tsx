@@ -25,6 +25,11 @@ export function AdminGuard({ children }: AdminGuardProps) {
   const [verifying, setVerifying] = useState(false);
 
   useEffect(() => {
+    // Warm all admin route bundles so navigation between admin pages is instant.
+    preloadAdminRoutes();
+  }, []);
+
+  useEffect(() => {
     let cancelled = false;
 
     if (!authReady || adminChecking) return;
