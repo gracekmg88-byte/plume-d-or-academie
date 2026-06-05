@@ -16,6 +16,11 @@ export default function AdminLogin() {
   const { signIn } = useAuth();
   const navigate = useNavigate();
 
+  // Warm up admin routes as soon as the login screen mounts
+  useEffect(() => {
+    preloadAdminRoutes();
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
