@@ -21,7 +21,7 @@ import heroImage from "@/assets/hero-library.webp";
 export default function Index() {
   const isOnline = useOnlineStatus();
   const navigate = useNavigate();
-  const { data: publications, isLoading } = usePublications();
+  const { data: publications, isLoading, isError, refetch } = usePublications();
   const { t } = useLanguage();
   const { user } = useAuth();
   const { layout: homepageLayout } = useHomepageLayout();
@@ -267,6 +267,21 @@ export default function Index() {
                   ))}
                 </div>
               )
+            ) : isError ? (
+              <div className="rounded-lg border border-border bg-card p-6 text-center max-w-xl mx-auto">
+                <BookOpen className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+                <p className="text-foreground mb-3">{t("library.noResults")}</p>
+                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                  <Button onClick={() => refetch()} variant="outline">
+                    <RefreshCw className="h-4 w-4" />
+                    {t("library.retry")}
+                  </Button>
+                  <Button onClick={() => navigate("/diagnostic-catalogue")}>
+                    <BookOpen className="h-4 w-4" />
+                    {t("library.openDiagnostic")}
+                  </Button>
+                </div>
+              </div>
             ) : (
               <div className="text-center py-12 text-muted-foreground">
                 <BookOpen className="h-12 w-12 mx-auto mb-4 opacity-50" />
