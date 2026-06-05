@@ -3,6 +3,7 @@ import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { logAuthEvent } from "@/lib/auth-audit";
+import { preloadAdminRoutes } from "@/lib/route-preload";
 import { toast } from "sonner";
 
 interface AdminGuardProps {
