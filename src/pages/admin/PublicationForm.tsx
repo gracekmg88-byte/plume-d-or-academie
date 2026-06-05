@@ -151,8 +151,13 @@ export default function PublicationForm() {
       if (aiCoverUrl) {
         coverImageUrl = aiCoverUrl;
       } else if (coverFile) {
-        const compressed = await compressImage(coverFile, { maxWidth: 800, maxHeight: 1200, quality: 0.75 });
-        coverImageUrl = await uploadFile(compressed, "covers");
+        let toUpload: File = coverFile;
+        try {
+          toUpload = await compressImage(coverFile, { maxWidth: 800, maxHeight: 1200, quality: 0.75 });
+        } catch (err) {
+          console.warn("Cover compression failed, uploading original:", err);
+        }
+        coverImageUrl = await uploadFile(toUpload, "covers");
       }
 
       if (pdfFile) {
