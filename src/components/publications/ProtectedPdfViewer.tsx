@@ -142,6 +142,56 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
     } catch { /* ignore */ }
   }, [currentPage, pageKey]);
 
+  // Persist zoom level (only when the user explicitly zoomed, not fit-to-width)
+  useEffect(() => {
+    try {
+      if (userZoomed) localStorage.setItem(zoomKey, String(scale));
+      else localStorage.removeItem(zoomKey);
+    } catch { /* ignore */ }
+  }, [scale, userZoomed, zoomKey]);
+
+  // Persist scroll position (debounced) and restore once content is ready
+  useEffect(() => {
+    const el = scrollAreaRef.current;
+    if (!el) return;
+    let saveTimer: ReturnType<typeof setTimeout> | null = null;
+    const onScroll = () => {
+      if (saveTimer) clearTimeout(saveTimer);
+      saveTimer = setTimeout(() => {
+        try {
+          const top = el.scrollTop;
+          const left = el.scrollLeft;
+          if (top > 0 || left > 0) localStorage.setItem(scrollKey, `${top}|${left}`);
+          else localStorage.removeItem(scrollKey);
+        } catch { /* ignore */ }
+      }, 300);
+    };
+    el.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      el.removeEventListener("scroll", onScroll);
+      if (saveTimer) clearTimeout(saveTimer);
+    };
+  }, [scrollKey]);
+
+  // Restore saved scroll position after the first page renders
+  useEffect(() => {
+    if (loading) return;
+    const target = pendingScrollRef.current;
+    if (!target) return;
+    const el = scrollAreaRef.current;
+    if (!el) return;
+    // Wait two frames so the canvas has been laid out at its full size.
+    let raf2 = 0;
+    const raf1 = requestAnimationFrame(() => {
+      raf2 = requestAnimationFrame(() => {
+        el.scrollTo({ top: target.top, left: target.left, behavior: "auto" });
+        pendingScrollRef.current = null;
+      });
+    });
+    return () => { cancelAnimationFrame(raf1); cancelAnimationFrame(raf2); };
+  }, [loading, scale, currentPage]);
+
+
   // Sync with initialPage when it changes (e.g. from DB fetch)
   useEffect(() => {
     if (initialPage && initialPage > 1) {
