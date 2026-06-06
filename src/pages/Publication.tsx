@@ -30,6 +30,7 @@ import { SEO } from "@/components/seo/SEO";
 import { Breadcrumb } from "@/components/publications/Breadcrumb";
 import { SimilarBooks } from "@/components/publications/SimilarBooks";
 import { buildPublicationPath, buildAuthorPath, parseSlugSuffix, categoryPath } from "@/lib/slug";
+import { prefetchRoute } from "@/lib/route-preload";
 
 type Category = "livre" | "memoire" | "tfc" | "article";
 
