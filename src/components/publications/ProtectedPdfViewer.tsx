@@ -39,7 +39,9 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
 
   const [numPages, setNumPages] = useState<number>(0);
   const [currentPage, setCurrentPage] = useState(initialResolvedPage);
-  const [scale, setScale] = useState(0.5);
+  const [scale, setScale] = useState(1);
+  const [userZoomed, setUserZoomed] = useState(false);
+  const [fitScale, setFitScale] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -50,6 +52,8 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
     catch { return false; }
   });
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const scrollAreaRef = useRef<HTMLDivElement | null>(null);
+  const pageNativeWidthRef = useRef<number | null>(null);
   // Always render with the direct URL to avoid a remount/reload when a cached blob is found.
   // Warm the HTTP/Cache Storage cache in the background so subsequent opens are faster, but
   // never swap the URL after the first paint — that causes the visible "double load".
@@ -73,11 +77,38 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
     isEvalSupported: false,
   }), []);
 
-  // Device pixel ratio capped for canvas rendering (memory + speed)
+  // Render at the device's actual pixel ratio (capped at 3) so text stays crisp,
+  // especially on high-DPI phones where the previous 1.25 cap caused visible blur.
   const canvasDpr = useMemo(
-    () => Math.min(typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1, 1.25),
+    () => Math.min(typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1, 3),
     [],
   );
+
+  // Compute a "fit-to-width" scale based on the visible container and the page's
+  // native width. Re-runs on resize, fullscreen toggle, and orientation changes.
+  const recomputeFitScale = useCallback(() => {
+    const el = scrollAreaRef.current;
+    const native = pageNativeWidthRef.current;
+    if (!el || !native) return;
+    // Leave a small horizontal padding so the page doesn't touch the edges.
+    const available = Math.max(0, el.clientWidth - 16);
+    if (available <= 0) return;
+    const next = Math.max(0.3, Math.min(2.5, available / native));
+    setFitScale(next);
+    setScale((prev) => (userZoomed ? prev : next));
+  }, [userZoomed]);
+
+  useEffect(() => {
+    const onResize = () => recomputeFitScale();
+    window.addEventListener("resize", onResize);
+    window.addEventListener("orientationchange", onResize);
+    return () => {
+      window.removeEventListener("resize", onResize);
+      window.removeEventListener("orientationchange", onResize);
+    };
+  }, [recomputeFitScale]);
+
+  useEffect(() => { recomputeFitScale(); }, [isFullscreen, recomputeFitScale]);
 
   // Persist current page locally on every change
   useEffect(() => {
@@ -179,8 +210,9 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
 
   const goToPrev = () => setCurrentPage((p) => { const next = Math.max(1, p - 1); onPageChange?.(next); return next; });
   const goToNext = () => setCurrentPage((p) => { const next = Math.min(numPages, p + 1); onPageChange?.(next); return next; });
-  const zoomIn = () => setScale((s) => Math.min(2.5, s + 0.25));
-  const zoomOut = () => setScale((s) => Math.max(0.5, s - 0.25));
+  const zoomIn = () => { setUserZoomed(true); setScale((s) => Math.min(3, +(s + 0.25).toFixed(2))); };
+  const zoomOut = () => { setUserZoomed(true); setScale((s) => Math.max(0.3, +(s - 0.25).toFixed(2))); };
+  const resetZoom = () => { setUserZoomed(false); if (fitScale) setScale(fitScale); };
 
   const toggleFullscreen = async () => {
     try {
@@ -248,13 +280,18 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
           </Button>
         </div>
         <div className="flex items-center gap-1.5">
-          <Button variant="ghost" size="icon" onClick={zoomOut} disabled={scale <= 0.5} className="h-8 w-8">
+          <Button variant="ghost" size="icon" onClick={zoomOut} disabled={scale <= 0.3} className="h-8 w-8">
             <ZoomOut className="h-4 w-4" />
           </Button>
-          <span className="text-xs text-muted-foreground min-w-[36px] text-center">
+          <button
+            type="button"
+            onClick={resetZoom}
+            className="text-xs text-muted-foreground min-w-[44px] text-center hover:text-foreground transition-colors"
+            title="Ajuster à la largeur"
+          >
             {Math.round(scale * 100)}%
-          </span>
-          <Button variant="ghost" size="icon" onClick={zoomIn} disabled={scale >= 2.5} className="h-8 w-8">
+          </button>
+          <Button variant="ghost" size="icon" onClick={zoomIn} disabled={scale >= 3} className="h-8 w-8">
             <ZoomIn className="h-4 w-4" />
           </Button>
           <Button
@@ -314,10 +351,12 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
 
       {/* PDF Content */}
       <div
+        ref={scrollAreaRef}
         className={cn(
-          "overflow-auto flex justify-center py-4 bg-muted/50",
-          isFullscreen ? "h-[calc(100vh-48px)]" : "max-h-[70vh] min-h-[50vh]",
+          "overflow-auto flex justify-center items-start py-4 px-2 bg-muted/50",
+          isFullscreen ? "h-[calc(100dvh-48px)]" : "max-h-[75vh] min-h-[50vh]",
         )}
+        style={{ WebkitOverflowScrolling: "touch", touchAction: "pan-x pan-y" }}
       >
         {loading && (
           <div className="absolute inset-0 z-10 bg-background/70 backdrop-blur-[1px]" aria-hidden="true">
@@ -332,7 +371,7 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
           onLoadSuccess={onDocumentLoadSuccess}
           onLoadError={onDocumentLoadError}
           loading={null}
-          className="select-none"
+          className="select-none mx-auto"
         >
           <Page
             key={`page-${currentPage}`}
@@ -342,7 +381,15 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
             renderAnnotationLayer={false}
             devicePixelRatio={canvasDpr}
             loading={null}
-            className="shadow-lg"
+            className="shadow-lg mx-auto"
+            onLoadSuccess={(page) => {
+              // page.originalWidth / page.view[2] is the PDF's native point width.
+              const w = (page as any).originalWidth ?? page.view?.[2];
+              if (w && pageNativeWidthRef.current !== w) {
+                pageNativeWidthRef.current = w;
+                recomputeFitScale();
+              }
+            }}
           />
         </Document>
         )}
