@@ -456,7 +456,7 @@ export default function Bibliotheque() {
 
                 {/* Pagination */}
                 {totalPages > 1 && (
-                  <div className="flex items-center justify-center gap-2 mt-10">
+                  <div className="flex items-center justify-center flex-wrap gap-1.5 sm:gap-2 mt-10">
                     <Button
                       variant="outline"
                       size="icon"
