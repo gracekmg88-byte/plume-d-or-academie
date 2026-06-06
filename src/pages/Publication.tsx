@@ -30,6 +30,7 @@ import { SEO } from "@/components/seo/SEO";
 import { Breadcrumb } from "@/components/publications/Breadcrumb";
 import { SimilarBooks } from "@/components/publications/SimilarBooks";
 import { buildPublicationPath, buildAuthorPath, parseSlugSuffix, categoryPath } from "@/lib/slug";
+import { prefetchRoute } from "@/lib/route-preload";
 
 type Category = "livre" | "memoire" | "tfc" | "article";
 
@@ -195,6 +196,14 @@ export default function Publication() {
     window.addEventListener("popstate", onPopState);
     return () => window.removeEventListener("popstate", onPopState);
   }, [beginLeave]);
+
+  // Pre-warm the back-target bundle as soon as Publication mounts so the
+  // return navigation never triggers a Suspense flash (white page).
+  useEffect(() => {
+    prefetchRoute(backTarget);
+    prefetchRoute("/bibliotheque");
+    prefetchRoute("/");
+  }, [backTarget]);
 
 
   // Fetch last read page from DB if not provided in URL

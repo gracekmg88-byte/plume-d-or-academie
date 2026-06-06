@@ -224,13 +224,22 @@ function ScrollManager() {
 }
 
 function PageLoader() {
+  // Render a header-shaped skeleton so back-navigation between lazy routes
+  // never shows a fully blank/white screen during the suspense window.
   return (
-    <div className="min-h-screen w-full bg-background" aria-hidden="true">
-      <div className="container py-12">
-        <div className="animate-pulse space-y-6">
-          <div className="h-8 w-32 rounded bg-muted" />
-          <div className="h-10 w-3/4 rounded bg-muted" />
-          <div className="h-64 w-full rounded-lg bg-muted" />
+    <div className="flex min-h-screen flex-col bg-background" aria-hidden="true">
+      <div className="h-16 w-full border-b border-border bg-card/80 backdrop-blur" />
+      <div className="flex-1">
+        <div className="container py-8">
+          <div className="animate-pulse space-y-6">
+            <div className="h-6 w-32 rounded bg-muted" />
+            <div className="h-10 w-3/4 rounded bg-muted" />
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+              {Array.from({ length: 10 }).map((_, i) => (
+                <div key={i} className="aspect-[2/3] w-full rounded-lg bg-muted" />
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </div>
