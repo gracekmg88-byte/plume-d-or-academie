@@ -137,7 +137,7 @@
   </url>
   <url>
     <loc>https://plume-d-or-academie.lovable.app/livre/20-facons-de-booster-votre-motivation-f35b29</loc>
-    <lastmod>2026-06-05</lastmod>
+    <lastmod>2026-06-06</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -246,6 +246,16 @@
     </image:image>
   </url>
   <url>
+    <loc>https://plume-d-or-academie.lovable.app/livre/la-seduction-du-diable-reflexions-sur-la-question-du-mal-89fb7f</loc>
+    <lastmod>2026-06-06</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/1773776457029.webp</image:loc>
+      <image:title>La Séduction du Diable – Réflexions sur la question du mal  </image:title>
+    </image:image>
+  </url>
+  <url>
     <loc>https://plume-d-or-academie.lovable.app/livre/le-secret-du-lieu-secret-018e91</loc>
     <lastmod>2026-06-05</lastmod>
     <changefreq>monthly</changefreq>
@@ -253,16 +263,6 @@
     <image:image>
       <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/1773394591010.webp</image:loc>
       <image:title>Le secret du lieu secret</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://plume-d-or-academie.lovable.app/livre/la-seduction-du-diable-reflexions-sur-la-question-du-mal-89fb7f</loc>
-    <lastmod>2026-06-05</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/1773776457029.webp</image:loc>
-      <image:title>La Séduction du Diable – Réflexions sur la question du mal  </image:title>
     </image:image>
   </url>
   <url>
@@ -467,7 +467,7 @@
   </url>
   <url>
     <loc>https://plume-d-or-academie.lovable.app/livre/comment-surmonter-lechec-104630</loc>
-    <lastmod>2026-06-05</lastmod>
+    <lastmod>2026-06-06</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -616,16 +616,6 @@
     </image:image>
   </url>
   <url>
-    <loc>https://plume-d-or-academie.lovable.app/livre/crypto-monnaies-generer-des-revenus-passifs-avec-le-bitcoin-et-les-cryptomonnaie-a8d210</loc>
-    <lastmod>2026-06-05</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/1773391845165.webp</image:loc>
-      <image:title>Crypto-monnaies : Générer des revenus passifs avec le Bitcoin et les cryptomonnaies</image:title>
-    </image:image>
-  </url>
-  <url>
     <loc>https://plume-d-or-academie.lovable.app/article/consommation-abusive-du-tramadol-chez-les-jeunes-de-la-commune-kabondo-a-kisanga-6532b0</loc>
     <lastmod>2026-06-06</lastmod>
     <changefreq>monthly</changefreq>
@@ -633,6 +623,16 @@
     <image:image>
       <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/1779916721823.webp</image:loc>
       <image:title>Consommation abusive du tramadol chez les jeunes de la commune Kabondo à Kisangani  </image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://plume-d-or-academie.lovable.app/livre/crypto-monnaies-generer-des-revenus-passifs-avec-le-bitcoin-et-les-cryptomonnaie-a8d210</loc>
+    <lastmod>2026-06-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/1773391845165.webp</image:loc>
+      <image:title>Crypto-monnaies : Générer des revenus passifs avec le Bitcoin et les cryptomonnaies</image:title>
     </image:image>
   </url>
   <url>
@@ -896,12 +896,12 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://plume-d-or-academie.lovable.app/auteur/marcelo-tunasi</loc>
+    <loc>https://plume-d-or-academie.lovable.app/auteur/alain-cugno</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://plume-d-or-academie.lovable.app/auteur/alain-cugno</loc>
+    <loc>https://plume-d-or-academie.lovable.app/auteur/marcelo-tunasi</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -1056,12 +1056,12 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://plume-d-or-academie.lovable.app/auteur/markus-miller</loc>
+    <loc>https://plume-d-or-academie.lovable.app/auteur/ph-kayumba-et-collaborateurs</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://plume-d-or-academie.lovable.app/auteur/ph-kayumba-et-collaborateurs</loc>
+    <loc>https://plume-d-or-academie.lovable.app/auteur/markus-miller</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
