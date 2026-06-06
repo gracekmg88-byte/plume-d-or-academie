@@ -130,6 +130,11 @@
     }
   }
 
+  html, body {
+    overflow-x: hidden;
+    max-width: 100%;
+  }
+
   body {
     @apply bg-background text-foreground font-sans antialiased;
     line-height: 1.65;
@@ -140,6 +145,12 @@
     font-weight: 700;
     letter-spacing: -0.01em;
     line-height: 1.25;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+  }
+
+  p, span, a {
+    overflow-wrap: break-word;
   }
 }
 
