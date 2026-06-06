@@ -112,9 +112,10 @@ export const CachedImage = memo(function CachedImage({
     setLoaded(true);
   }, [src]);
 
-  const handleError = useCallback(() => {
+  const handleError = useCallback((e: React.SyntheticEvent<HTMLImageElement, Event>) => {
     setError(true);
-  }, []);
+    props.onError?.(e);
+  }, [props]);
 
   useEffect(() => {
     if (!imgRef.current || typeof fetchPriority !== "string") return;
