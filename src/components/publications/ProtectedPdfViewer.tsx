@@ -39,7 +39,9 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
 
   const [numPages, setNumPages] = useState<number>(0);
   const [currentPage, setCurrentPage] = useState(initialResolvedPage);
-  const [scale, setScale] = useState(0.5);
+  const [scale, setScale] = useState(1);
+  const [userZoomed, setUserZoomed] = useState(false);
+  const [fitScale, setFitScale] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -50,6 +52,8 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
     catch { return false; }
   });
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const scrollAreaRef = useRef<HTMLDivElement | null>(null);
+  const pageNativeWidthRef = useRef<number | null>(null);
   // Always render with the direct URL to avoid a remount/reload when a cached blob is found.
   // Warm the HTTP/Cache Storage cache in the background so subsequent opens are faster, but
   // never swap the URL after the first paint — that causes the visible "double load".
@@ -73,11 +77,38 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
     isEvalSupported: false,
   }), []);
 
-  // Device pixel ratio capped for canvas rendering (memory + speed)
+  // Render at the device's actual pixel ratio (capped at 3) so text stays crisp,
+  // especially on high-DPI phones where the previous 1.25 cap caused visible blur.
   const canvasDpr = useMemo(
-    () => Math.min(typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1, 1.25),
+    () => Math.min(typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1, 3),
     [],
   );
+
+  // Compute a "fit-to-width" scale based on the visible container and the page's
+  // native width. Re-runs on resize, fullscreen toggle, and orientation changes.
+  const recomputeFitScale = useCallback(() => {
+    const el = scrollAreaRef.current;
+    const native = pageNativeWidthRef.current;
+    if (!el || !native) return;
+    // Leave a small horizontal padding so the page doesn't touch the edges.
+    const available = Math.max(0, el.clientWidth - 16);
+    if (available <= 0) return;
+    const next = Math.max(0.3, Math.min(2.5, available / native));
+    setFitScale(next);
+    setScale((prev) => (userZoomed ? prev : next));
+  }, [userZoomed]);
+
+  useEffect(() => {
+    const onResize = () => recomputeFitScale();
+    window.addEventListener("resize", onResize);
+    window.addEventListener("orientationchange", onResize);
+    return () => {
+      window.removeEventListener("resize", onResize);
+      window.removeEventListener("orientationchange", onResize);
+    };
+  }, [recomputeFitScale]);
+
+  useEffect(() => { recomputeFitScale(); }, [isFullscreen, recomputeFitScale]);
 
   // Persist current page locally on every change
   useEffect(() => {
