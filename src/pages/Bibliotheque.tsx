@@ -355,7 +355,7 @@ export default function Bibliotheque() {
         <section className="py-12 md:py-16 bg-background">
           <div className="container">
             {actualLoading ? (
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
                 {[...Array(8)].map((_, i) => (
                   <div key={i} className="animate-pulse">
                     <div className="aspect-[3/4] bg-muted rounded-lg mb-4" />
@@ -406,7 +406,7 @@ export default function Bibliotheque() {
                       />
                     )}
                     {paginatedPublications.length > 1 && (
-                      <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
                         {paginatedPublications.slice(1).map((pub) => (
                           <PublicationCard
                             key={pub.id}

@@ -240,11 +240,11 @@ export function PublicationCard({
               {config.label}
             </Badge>
           </div>
-          <CardContent className="p-2.5">
-            <h3 className="font-serif text-sm font-semibold leading-tight line-clamp-2 group-hover:text-primary transition-colors">
+          <CardContent className="p-2.5 min-w-0">
+            <h3 className="font-serif text-sm font-semibold leading-tight line-clamp-2 break-words group-hover:text-primary transition-colors">
               {title}
             </h3>
-            <p className="mt-0.5 text-xs text-muted-foreground line-clamp-1">{author}</p>
+            <p className="mt-0.5 text-xs text-muted-foreground line-clamp-1 break-words">{author}</p>
           </CardContent>
         </Card>
       </Link>
@@ -281,19 +281,19 @@ export function PublicationCard({
           </div>
         </div>
 
-        <CardContent className="p-4">
-          <h3 className="font-serif text-lg font-semibold leading-tight line-clamp-2 group-hover:text-primary transition-colors">
+        <CardContent className="p-3 sm:p-4 min-w-0">
+          <h3 className="font-serif text-base sm:text-lg font-semibold leading-tight line-clamp-2 break-words group-hover:text-primary transition-colors">
             {title}
           </h3>
-          <p className="mt-1 text-sm text-muted-foreground">{author}</p>
+          <p className="mt-1 text-xs sm:text-sm text-muted-foreground break-words line-clamp-1">{author}</p>
           {description && (
-            <p className="mt-2 text-sm text-muted-foreground line-clamp-2 leading-relaxed">
+            <p className="mt-2 hidden sm:line-clamp-2 sm:block text-sm text-muted-foreground leading-relaxed">
               {description}
             </p>
           )}
           <div className="mt-3 flex items-center gap-1 text-xs text-muted-foreground">
             <Eye className="h-3 w-3" />
-            <span>{viewsCount} consultations</span>
+            <span>{viewsCount}</span>
           </div>
         </CardContent>
       </Card>
