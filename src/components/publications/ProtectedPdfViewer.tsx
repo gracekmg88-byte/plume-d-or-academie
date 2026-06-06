@@ -20,6 +20,8 @@ interface ProtectedPdfViewerProps {
 const FULLSCREEN_PREF_PREFIX = "pdfViewer:fullscreen:";
 const FULLSCREEN_AUTO_DISABLED_PREFIX = "pdfViewer:fullscreenAutoDisabled:";
 const PAGE_PREF_PREFIX = "pdfViewer:page:";
+const ZOOM_PREF_PREFIX = "pdfViewer:zoom:";
+const SCROLL_PREF_PREFIX = "pdfViewer:scroll:";
 
 export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }: ProtectedPdfViewerProps) {
   const prefKey = useMemo(() => `${FULLSCREEN_PREF_PREFIX}${fileUrl}`, [fileUrl]);
