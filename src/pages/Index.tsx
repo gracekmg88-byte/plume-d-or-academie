@@ -35,10 +35,10 @@ export default function Index() {
   const showRecommendations = homepageLayout === "complet" || homepageLayout === "magazine";
   const recentAsMagazine = homepageLayout === "magazine";
   const recentGridCols = homepageLayout === "focus-catalogue"
-    ? "sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
+    ? "grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
     : homepageLayout === "epure"
-      ? "sm:grid-cols-2 lg:grid-cols-3"
-      : "sm:grid-cols-2 lg:grid-cols-4";
+      ? "grid-cols-2 sm:grid-cols-2 lg:grid-cols-3"
+      : "grid-cols-2 sm:grid-cols-2 lg:grid-cols-4";
   const skeletonCount = homepageLayout === "focus-catalogue" ? 8 : homepageLayout === "epure" ? 6 : 4;
 
   const features = [
@@ -211,7 +211,7 @@ export default function Index() {
               </Link>
             </div>
             {isLoading ? (
-              <div className={`grid ${recentGridCols} gap-6`}>
+              <div className={`grid ${recentGridCols} gap-3 sm:gap-6`}>
                 {[...Array(skeletonCount)].map((_, i) => (
                   <div key={i} className="animate-pulse">
                     <div className="aspect-[3/4] bg-muted rounded-lg mb-4" />
@@ -252,7 +252,7 @@ export default function Index() {
                   )}
                 </div>
               ) : (
-                <div className={`grid ${recentGridCols} gap-6`}>
+                <div className={`grid ${recentGridCols} gap-3 sm:gap-6`}>
                   {recentPublications.map((pub) => (
                     <PublicationCard
                       key={pub.id}

@@ -59,16 +59,16 @@ export function NewsletterForm() {
         onChange={(e) => setName(e.target.value)}
         className="h-9 bg-background/10 border-secondary-foreground/20 text-secondary-foreground placeholder:text-secondary-foreground/50"
       />
-      <div className="flex gap-2">
+      <div className="flex flex-col sm:flex-row gap-2">
         <Input
           type="email"
           required
           placeholder={t("newsletter.emailPlaceholder")}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="h-9 bg-background/10 border-secondary-foreground/20 text-secondary-foreground placeholder:text-secondary-foreground/50"
+          className="h-9 min-w-0 bg-background/10 border-secondary-foreground/20 text-secondary-foreground placeholder:text-secondary-foreground/50"
         />
-        <Button type="submit" size="sm" disabled={loading} className="h-9 gap-1 shrink-0">
+        <Button type="submit" size="sm" disabled={loading} className="h-9 gap-1 shrink-0 w-full sm:w-auto">
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
           {t("newsletter.subscribe")}
         </Button>

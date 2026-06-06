@@ -15,7 +15,7 @@ export function RecommendationsSection() {
               📚 Recommandé pour vous
             </h2>
           </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-6">
             {[...Array(5)].map((_, i) => (
               <div key={i} className="animate-pulse">
                 <div className="aspect-[3/4] bg-muted rounded-lg mb-4" />
@@ -40,7 +40,7 @@ export function RecommendationsSection() {
             📚 Recommandé pour vous
           </h2>
         </div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-6">
           {recommendations.map((pub) => (
             <div key={pub.id}>
               <PublicationCard
