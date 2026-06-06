@@ -53,8 +53,8 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
 
   const [numPages, setNumPages] = useState<number>(0);
   const [currentPage, setCurrentPage] = useState(initialResolvedPage);
-  const [scale, setScale] = useState(1);
-  const [userZoomed, setUserZoomed] = useState(false);
+  const [scale, setScale] = useState(initialStoredZoom ?? 1);
+  const [userZoomed, setUserZoomed] = useState(initialStoredZoom !== null);
   const [fitScale, setFitScale] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -68,6 +68,16 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
   const containerRef = useRef<HTMLDivElement | null>(null);
   const scrollAreaRef = useRef<HTMLDivElement | null>(null);
   const pageNativeWidthRef = useRef<number | null>(null);
+  // Pending scroll position to restore after the page renders (read once on mount)
+  const pendingScrollRef = useRef<{ top: number; left: number } | null>((() => {
+    try {
+      const raw = localStorage.getItem(`${SCROLL_PREF_PREFIX}${fileUrl}`);
+      if (!raw) return null;
+      const [t, l] = raw.split("|").map((x) => parseInt(x, 10));
+      if (Number.isFinite(t) && Number.isFinite(l)) return { top: t, left: l };
+    } catch { /* ignore */ }
+    return null;
+  })());
   // Always render with the direct URL to avoid a remount/reload when a cached blob is found.
   // Warm the HTTP/Cache Storage cache in the background so subsequent opens are faster, but
   // never swap the URL after the first paint — that causes the visible "double load".
