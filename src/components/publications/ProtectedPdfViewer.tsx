@@ -20,11 +20,25 @@ interface ProtectedPdfViewerProps {
 const FULLSCREEN_PREF_PREFIX = "pdfViewer:fullscreen:";
 const FULLSCREEN_AUTO_DISABLED_PREFIX = "pdfViewer:fullscreenAutoDisabled:";
 const PAGE_PREF_PREFIX = "pdfViewer:page:";
+const ZOOM_PREF_PREFIX = "pdfViewer:zoom:";
+const SCROLL_PREF_PREFIX = "pdfViewer:scroll:";
 
 export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }: ProtectedPdfViewerProps) {
   const prefKey = useMemo(() => `${FULLSCREEN_PREF_PREFIX}${fileUrl}`, [fileUrl]);
   const autoDisabledKey = useMemo(() => `${FULLSCREEN_AUTO_DISABLED_PREFIX}${fileUrl}`, [fileUrl]);
   const pageKey = useMemo(() => `${PAGE_PREF_PREFIX}${fileUrl}`, [fileUrl]);
+  const zoomKey = useMemo(() => `${ZOOM_PREF_PREFIX}${fileUrl}`, [fileUrl]);
+  const scrollKey = useMemo(() => `${SCROLL_PREF_PREFIX}${fileUrl}`, [fileUrl]);
+
+  // Read locally-saved zoom (per document)
+  const initialStoredZoom = useMemo(() => {
+    try {
+      const raw = localStorage.getItem(zoomKey);
+      const n = raw ? parseFloat(raw) : NaN;
+      if (!Number.isNaN(n) && n >= 0.3 && n <= 3) return n;
+    } catch { /* ignore */ }
+    return null;
+  }, [zoomKey]);
 
   // Read locally-saved page as a fallback (works offline / unlogged / reload)
   const initialResolvedPage = useMemo(() => {
@@ -39,8 +53,8 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
 
   const [numPages, setNumPages] = useState<number>(0);
   const [currentPage, setCurrentPage] = useState(initialResolvedPage);
-  const [scale, setScale] = useState(1);
-  const [userZoomed, setUserZoomed] = useState(false);
+  const [scale, setScale] = useState(initialStoredZoom ?? 1);
+  const [userZoomed, setUserZoomed] = useState(initialStoredZoom !== null);
   const [fitScale, setFitScale] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -54,6 +68,16 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
   const containerRef = useRef<HTMLDivElement | null>(null);
   const scrollAreaRef = useRef<HTMLDivElement | null>(null);
   const pageNativeWidthRef = useRef<number | null>(null);
+  // Pending scroll position to restore after the page renders (read once on mount)
+  const pendingScrollRef = useRef<{ top: number; left: number } | null>((() => {
+    try {
+      const raw = localStorage.getItem(`${SCROLL_PREF_PREFIX}${fileUrl}`);
+      if (!raw) return null;
+      const [t, l] = raw.split("|").map((x) => parseInt(x, 10));
+      if (Number.isFinite(t) && Number.isFinite(l)) return { top: t, left: l };
+    } catch { /* ignore */ }
+    return null;
+  })());
   // Always render with the direct URL to avoid a remount/reload when a cached blob is found.
   // Warm the HTTP/Cache Storage cache in the background so subsequent opens are faster, but
   // never swap the URL after the first paint — that causes the visible "double load".
@@ -117,6 +141,56 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
       else localStorage.removeItem(pageKey);
     } catch { /* ignore */ }
   }, [currentPage, pageKey]);
+
+  // Persist zoom level (only when the user explicitly zoomed, not fit-to-width)
+  useEffect(() => {
+    try {
+      if (userZoomed) localStorage.setItem(zoomKey, String(scale));
+      else localStorage.removeItem(zoomKey);
+    } catch { /* ignore */ }
+  }, [scale, userZoomed, zoomKey]);
+
+  // Persist scroll position (debounced) and restore once content is ready
+  useEffect(() => {
+    const el = scrollAreaRef.current;
+    if (!el) return;
+    let saveTimer: ReturnType<typeof setTimeout> | null = null;
+    const onScroll = () => {
+      if (saveTimer) clearTimeout(saveTimer);
+      saveTimer = setTimeout(() => {
+        try {
+          const top = el.scrollTop;
+          const left = el.scrollLeft;
+          if (top > 0 || left > 0) localStorage.setItem(scrollKey, `${top}|${left}`);
+          else localStorage.removeItem(scrollKey);
+        } catch { /* ignore */ }
+      }, 300);
+    };
+    el.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      el.removeEventListener("scroll", onScroll);
+      if (saveTimer) clearTimeout(saveTimer);
+    };
+  }, [scrollKey]);
+
+  // Restore saved scroll position after the first page renders
+  useEffect(() => {
+    if (loading) return;
+    const target = pendingScrollRef.current;
+    if (!target) return;
+    const el = scrollAreaRef.current;
+    if (!el) return;
+    // Wait two frames so the canvas has been laid out at its full size.
+    let raf2 = 0;
+    const raf1 = requestAnimationFrame(() => {
+      raf2 = requestAnimationFrame(() => {
+        el.scrollTo({ top: target.top, left: target.left, behavior: "auto" });
+        pendingScrollRef.current = null;
+      });
+    });
+    return () => { cancelAnimationFrame(raf1); cancelAnimationFrame(raf2); };
+  }, [loading, scale, currentPage]);
+
 
   // Sync with initialPage when it changes (e.g. from DB fetch)
   useEffect(() => {
