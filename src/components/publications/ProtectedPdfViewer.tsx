@@ -280,13 +280,18 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
           </Button>
         </div>
         <div className="flex items-center gap-1.5">
-          <Button variant="ghost" size="icon" onClick={zoomOut} disabled={scale <= 0.5} className="h-8 w-8">
+          <Button variant="ghost" size="icon" onClick={zoomOut} disabled={scale <= 0.3} className="h-8 w-8">
             <ZoomOut className="h-4 w-4" />
           </Button>
-          <span className="text-xs text-muted-foreground min-w-[36px] text-center">
+          <button
+            type="button"
+            onClick={resetZoom}
+            className="text-xs text-muted-foreground min-w-[44px] text-center hover:text-foreground transition-colors"
+            title="Ajuster à la largeur"
+          >
             {Math.round(scale * 100)}%
-          </span>
-          <Button variant="ghost" size="icon" onClick={zoomIn} disabled={scale >= 2.5} className="h-8 w-8">
+          </button>
+          <Button variant="ghost" size="icon" onClick={zoomIn} disabled={scale >= 3} className="h-8 w-8">
             <ZoomIn className="h-4 w-4" />
           </Button>
           <Button
