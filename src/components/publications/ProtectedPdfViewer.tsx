@@ -27,6 +27,18 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
   const prefKey = useMemo(() => `${FULLSCREEN_PREF_PREFIX}${fileUrl}`, [fileUrl]);
   const autoDisabledKey = useMemo(() => `${FULLSCREEN_AUTO_DISABLED_PREFIX}${fileUrl}`, [fileUrl]);
   const pageKey = useMemo(() => `${PAGE_PREF_PREFIX}${fileUrl}`, [fileUrl]);
+  const zoomKey = useMemo(() => `${ZOOM_PREF_PREFIX}${fileUrl}`, [fileUrl]);
+  const scrollKey = useMemo(() => `${SCROLL_PREF_PREFIX}${fileUrl}`, [fileUrl]);
+
+  // Read locally-saved zoom (per document)
+  const initialStoredZoom = useMemo(() => {
+    try {
+      const raw = localStorage.getItem(zoomKey);
+      const n = raw ? parseFloat(raw) : NaN;
+      if (!Number.isNaN(n) && n >= 0.3 && n <= 3) return n;
+    } catch { /* ignore */ }
+    return null;
+  }, [zoomKey]);
 
   // Read locally-saved page as a fallback (works offline / unlogged / reload)
   const initialResolvedPage = useMemo(() => {
