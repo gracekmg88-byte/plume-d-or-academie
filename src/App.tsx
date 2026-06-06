@@ -295,10 +295,23 @@ function NavigationWarmup() {
 
 function AnimatedRoutes() {
   const location = useLocation();
+  // Keep the previous location's tree mounted while the next route's lazy
+  // chunk loads. React's startTransition tells React it's OK to keep showing
+  // the old UI until the new one is ready — no Suspense fallback flash.
+  const [renderedLocation, setRenderedLocation] = useState(location);
+  const [, startTransition] = useTransition();
+
+  useEffect(() => {
+    if (location.key === renderedLocation.key) return;
+    startTransition(() => setRenderedLocation(location));
+  }, [location, renderedLocation.key]);
+
   return (
-    <ErrorBoundary resetKey={location.key}>
+    <ErrorBoundary resetKey={renderedLocation.key}>
+      {/* Fallback is only shown on the very first load, never on subsequent
+          navigations — the previous tree stays visible during transitions. */}
       <Suspense fallback={<PageLoader />}>
-        <Routes location={location}>
+        <Routes location={renderedLocation}>
           <Route path="/" element={<Index />} />
           <Route path="/bibliotheque" element={<Bibliotheque />} />
           <Route path="/diagnostic-catalogue" element={<CatalogDiagnostic />} />
