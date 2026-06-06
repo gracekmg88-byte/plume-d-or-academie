@@ -197,6 +197,14 @@ export default function Publication() {
     return () => window.removeEventListener("popstate", onPopState);
   }, [beginLeave]);
 
+  // Pre-warm the back-target bundle as soon as Publication mounts so the
+  // return navigation never triggers a Suspense flash (white page).
+  useEffect(() => {
+    prefetchRoute(backTarget);
+    prefetchRoute("/bibliotheque");
+    prefetchRoute("/");
+  }, [backTarget]);
+
 
   // Fetch last read page from DB if not provided in URL
   useEffect(() => {
