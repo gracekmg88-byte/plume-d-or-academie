@@ -361,7 +361,7 @@ playOnInit: true,
             {publications.map((pub) => (
               <div
                 key={pub.id}
-                className="flex-[0_0_75%] xs:flex-[0_0_60%] sm:flex-[0_0_45%] md:flex-[0_0_32%] lg:flex-[0_0_24%] min-w-0 px-2"
+                className="flex-[0_0_75%] sm:flex-[0_0_45%] md:flex-[0_0_32%] lg:flex-[0_0_24%] min-w-0 px-2"
               >
                 <CarouselCard pub={pub} preview={preview} onNavigate={handleNavigate} highlighted={highlightedId === pub.id} />
               </div>
