@@ -99,7 +99,7 @@ function CarouselCard({
             <CachedImage
               src={pub.cover_image_url}
               alt={pub.title}
-              className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-105"
+              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
               onError={() => setImgError(true)}
             />
           ) : (
@@ -129,11 +129,11 @@ function CarouselCard({
             )}
           </div>
         </div>
-        <div className="p-3 space-y-1">
-          <h3 className="font-serif text-sm md:text-base font-semibold text-foreground line-clamp-2 group-hover:text-primary transition-colors">
+        <div className="p-3 space-y-1 min-w-0">
+          <h3 className="font-serif text-sm md:text-base font-semibold text-foreground line-clamp-2 break-words group-hover:text-primary transition-colors">
             {pub.title}
           </h3>
-          <p className="text-xs text-muted-foreground line-clamp-1">{pub.author}</p>
+          <p className="text-xs text-muted-foreground line-clamp-1 break-words">{pub.author}</p>
         </div>
       </div>
     </a>
@@ -361,7 +361,7 @@ playOnInit: true,
             {publications.map((pub) => (
               <div
                 key={pub.id}
-                className="flex-[0_0_70%] sm:flex-[0_0_45%] md:flex-[0_0_32%] lg:flex-[0_0_24%] px-2"
+                className="flex-[0_0_75%] xs:flex-[0_0_60%] sm:flex-[0_0_45%] md:flex-[0_0_32%] lg:flex-[0_0_24%] min-w-0 px-2"
               >
                 <CarouselCard pub={pub} preview={preview} onNavigate={handleNavigate} highlighted={highlightedId === pub.id} />
               </div>
