@@ -351,10 +351,12 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
 
       {/* PDF Content */}
       <div
+        ref={scrollAreaRef}
         className={cn(
-          "overflow-auto flex justify-center py-4 bg-muted/50",
-          isFullscreen ? "h-[calc(100vh-48px)]" : "max-h-[70vh] min-h-[50vh]",
+          "overflow-auto flex justify-center items-start py-4 px-2 bg-muted/50",
+          isFullscreen ? "h-[calc(100dvh-48px)]" : "max-h-[75vh] min-h-[50vh]",
         )}
+        style={{ WebkitOverflowScrolling: "touch", touchAction: "pan-x pan-y" }}
       >
         {loading && (
           <div className="absolute inset-0 z-10 bg-background/70 backdrop-blur-[1px]" aria-hidden="true">
@@ -369,7 +371,7 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
           onLoadSuccess={onDocumentLoadSuccess}
           onLoadError={onDocumentLoadError}
           loading={null}
-          className="select-none"
+          className="select-none mx-auto"
         >
           <Page
             key={`page-${currentPage}`}
@@ -379,7 +381,15 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
             renderAnnotationLayer={false}
             devicePixelRatio={canvasDpr}
             loading={null}
-            className="shadow-lg"
+            className="shadow-lg mx-auto"
+            onLoadSuccess={(page) => {
+              // page.originalWidth / page.view[2] is the PDF's native point width.
+              const w = (page as any).originalWidth ?? page.view?.[2];
+              if (w && pageNativeWidthRef.current !== w) {
+                pageNativeWidthRef.current = w;
+                recomputeFitScale();
+              }
+            }}
           />
         </Document>
         )}
