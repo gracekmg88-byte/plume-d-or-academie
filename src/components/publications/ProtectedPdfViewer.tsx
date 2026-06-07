@@ -59,7 +59,7 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [showResumeBadge, setShowResumeBadge] = useState(initialResolvedPage > 1);
+  const [showResumeBadge, setShowResumeBadge] = useState(false);
   const [needsFullscreenGesture, setNeedsFullscreenGesture] = useState(false);
   const [autoFullscreenDisabled, setAutoFullscreenDisabled] = useState<boolean>(() => {
     try { return localStorage.getItem(`${FULLSCREEN_AUTO_DISABLED_PREFIX}${fileUrl}`) === "1"; }
@@ -196,9 +196,6 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
   useEffect(() => {
     if (initialPage && initialPage > 1) {
       setCurrentPage(initialPage);
-      setShowResumeBadge(true);
-      const t = setTimeout(() => setShowResumeBadge(false), 5000);
-      return () => clearTimeout(t);
     }
   }, [initialPage]);
 
