@@ -165,7 +165,7 @@ export function PublicationCard({
                 {viewsCount}
               </span>
             </div>
-            <h3 className="font-serif text-base sm:text-lg font-semibold leading-tight line-clamp-2 group-hover:text-primary transition-colors">
+            <h3 className="font-serif text-base sm:text-lg font-semibold leading-tight break-words group-hover:text-primary transition-colors">
               {title}
             </h3>
             <p className="mt-1 text-sm text-muted-foreground">{author}</p>
