@@ -142,9 +142,8 @@ export default function Publication() {
     () => ({
       restoredFromPublication: true,
       returnKey,
-      returnPublicationId: returnState?.returnPublicationId ?? id ?? null,
     }),
-    [id, returnKey, returnState?.returnPublicationId],
+    [returnKey],
   );
 
   const handleBack = useCallback(
@@ -295,7 +294,7 @@ export default function Publication() {
 
   useEffect(() => {
     if (navigationType !== "POP") {
-      window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
     }
 
     if (id && incrementedViewForIdRef.current !== id) {
@@ -585,7 +584,7 @@ export default function Publication() {
             </div>
 
             <div className="lg:hidden">
-              <div className="mx-auto max-w-[220px]">
+              <div className="mx-auto w-full max-w-sm">
                 <div className="aspect-[3/4] rounded-xl overflow-hidden bg-muted shadow-elegant">
                   {displayPub.cover_image_url ? (
                     <CachedImage
