@@ -1,5 +1,5 @@
-import { useEffect, useRef, useCallback } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { useEffect, useRef, useCallback, type MouseEvent } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Book, FileText, GraduationCap, Newspaper, Eye } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
@@ -9,7 +9,7 @@ import { FavoriteButton } from "@/components/publications/FavoriteButton";
 import { cn } from "@/lib/utils";
 import { fetchPublication } from "@/hooks/usePublications";
 import { getCurrentHistoryEntryKey, saveScrollPosition } from "@/lib/scroll-restoration";
-import { preloadPublicationFlow } from "@/lib/route-preload";
+import { ensureRouteReady, preloadPublicationFlow } from "@/lib/route-preload";
 import { buildPublicationPath } from "@/lib/slug";
 import { cacheImage } from "@/lib/image-cache";
 import { Capacitor } from "@capacitor/core";
@@ -46,6 +46,7 @@ export function PublicationCard({
   variant = "grid",
 }: PublicationCardProps) {
   const { pathname } = useLocation();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const config = categoryConfig[category];
   const Icon = config.icon;
@@ -78,6 +79,30 @@ export function PublicationCard({
     prefetchAll();
   }, [pathname, prefetchAll]);
 
+  const publicationPath = buildPublicationPath({ id, title, category });
+  const linkState = {
+    returnTo: `${pathname}${window.location.search}`,
+    returnKey: getCurrentHistoryEntryKey(),
+    returnPublicationId: id,
+  };
+
+  const handleNavigate = useCallback(async (event: MouseEvent<HTMLAnchorElement>) => {
+    prepareNavigation();
+    if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+      return;
+    }
+
+    event.preventDefault();
+
+    try {
+      await ensureRouteReady(publicationPath);
+    } catch {
+      // Continue navigation even if preloading fails.
+    }
+
+    navigate(publicationPath, { state: linkState });
+  }, [linkState, navigate, prepareNavigation, publicationPath]);
+
   // Prefetch metadata + warm thumbnail when card scrolls into view
   useEffect(() => {
     const el = rootRef.current;
@@ -102,15 +127,11 @@ export function PublicationCard({
 
   const linkProps = {
     ref: rootRef,
-    to: buildPublicationPath({ id, title, category }),
-    state: {
-      returnTo: `${pathname}${window.location.search}`,
-      returnKey: getCurrentHistoryEntryKey(),
-      returnPublicationId: id,
-    },
+    to: publicationPath,
+    state: linkState,
     "data-publication-card-id": id,
     onMouseEnter: prepareNavigation,
-    onClick: prepareNavigation,
+    onClick: handleNavigate,
   } as const;
 
   // LIST variant — horizontal row with thumbnail + full description
