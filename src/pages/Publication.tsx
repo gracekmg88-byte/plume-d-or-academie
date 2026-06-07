@@ -1,5 +1,5 @@
 import { useEffect, useCallback, useState, useMemo, useRef, useLayoutEffect } from "react";
-import { useParams, Link, useSearchParams, useLocation, useNavigate, Navigate, useNavigationType } from "react-router-dom";
+import { useParams, Link, useSearchParams, useLocation, useNavigate, Navigate } from "react-router-dom";
 import { ArrowLeft, Book, FileText, GraduationCap, Newspaper, Eye, Calendar, User, Lock, Download, WifiOff, CheckCircle, Heart } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
@@ -46,7 +46,6 @@ export default function Publication() {
   const { id: rawId, slug } = useParams<{ id: string; slug: string }>();
   const location = useLocation();
   const navigate = useNavigate();
-  const navigationType = useNavigationType();
   const [searchParams] = useSearchParams();
   const pageFromUrl = parseInt(searchParams.get("page") || "0", 10);
   const isOnline = useOnlineStatus();
