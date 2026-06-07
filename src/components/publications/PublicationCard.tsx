@@ -132,6 +132,7 @@ export function PublicationCard({
     "data-publication-card-id": id,
     onMouseEnter: prepareNavigation,
     onClick: handleNavigate,
+    className: "self-start",
   } as const;
 
   // LIST variant — horizontal row with thumbnail + full description
