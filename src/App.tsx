@@ -4,7 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation, useNavigationType } from "react-router-dom";
 
-import { lazy, Suspense, useEffect, useLayoutEffect, useRef, useState, useTransition } from "react";
+import { lazy, Suspense, useEffect, useLayoutEffect, useRef } from "react";
 import { warmUpCache } from "@/lib/image-cache";
 import { PushNotificationInit } from "@/components/PushNotificationInit";
 import { ThemeProvider } from "@/contexts/ThemeContext";
@@ -275,22 +275,13 @@ function NavigationWarmup() {
 
 function AnimatedRoutes() {
   const location = useLocation();
-  const [renderedLocation, setRenderedLocation] = useState(location);
-  const [, startTransition] = useTransition();
-
-  useEffect(() => {
-    if (location.key === renderedLocation.key) return;
-    startTransition(() => {
-      setRenderedLocation(location);
-    });
-  }, [location, renderedLocation.key]);
 
   return (
     <>
-      <ScrollManager location={renderedLocation} />
-      <ErrorBoundary resetKey={renderedLocation.key}>
+      <ScrollManager location={location} />
+      <ErrorBoundary resetKey={location.key}>
       <Suspense fallback={<PageLoader />}>
-        <Routes location={renderedLocation}>
+        <Routes location={location}>
           <Route path="/" element={<Index />} />
           <Route path="/bibliotheque" element={<Bibliotheque />} />
           <Route path="/diagnostic-catalogue" element={<CatalogDiagnostic />} />
