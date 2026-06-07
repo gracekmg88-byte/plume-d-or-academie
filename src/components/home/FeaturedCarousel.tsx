@@ -299,25 +299,10 @@ playOnInit: true,
     );
   }
 
-  // Error state
-  if (isError) {
-    return (
-      <section className="py-8 md:py-12 bg-background">
-        <div className="container">
-          <div className="rounded-xl border border-destructive/20 bg-destructive/5 p-6 text-center max-w-md mx-auto">
-            <AlertCircle className="h-8 w-8 mx-auto text-destructive mb-2" />
-            <p className="text-sm text-foreground mb-3">
-              Impossible de charger la sélection du moment
-            </p>
-            <Button size="sm" variant="outline" onClick={() => query.refetch()} className="gap-2">
-              <RefreshCw className="h-3.5 w-3.5" />
-              Réessayer
-            </Button>
-          </div>
-        </div>
-      </section>
-    );
-  }
+  // Error state — fail silently to avoid scaring users on transient network blips.
+  // The hook already retries with backoff; we just hide the section if nothing comes back.
+  if (isError) return null;
+
 
   if (!publications || publications.length === 0) return null;
 

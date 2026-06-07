@@ -51,6 +51,10 @@ export function useFeaturedPublications(limit = 8) {
         .slice(0, limit);
     },
     staleTime: 5 * 60 * 1000,
-    retry: 1,
+    gcTime: 30 * 60 * 1000,
+    retry: 4,
+    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 8000),
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
   });
 }
