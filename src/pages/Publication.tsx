@@ -30,7 +30,7 @@ import { SEO } from "@/components/seo/SEO";
 import { Breadcrumb } from "@/components/publications/Breadcrumb";
 import { SimilarBooks } from "@/components/publications/SimilarBooks";
 import { buildPublicationPath, buildAuthorPath, parseSlugSuffix, categoryPath } from "@/lib/slug";
-import { prefetchRoute } from "@/lib/route-preload";
+import { ensureRouteReady, prefetchRoute } from "@/lib/route-preload";
 
 type Category = "livre" | "memoire" | "tfc" | "article";
 
@@ -147,13 +147,20 @@ export default function Publication() {
   );
 
   const handleBack = useCallback(
-    (e: React.MouseEvent) => {
+    async (e: React.MouseEvent) => {
       e.preventDefault();
       if (returnState?.returnTo && window.history.length > 1) {
         navigate(-1);
         return;
       }
-      navigate(backTarget, { replace: true, state: backState, preventScrollReset: true });
+
+      try {
+        await ensureRouteReady(backTarget);
+      } catch {
+        // ignore and continue navigation
+      }
+
+      navigate(backTarget, { replace: true, state: backState });
     },
     [navigate, returnState, backTarget, backState],
   );
@@ -292,7 +299,7 @@ export default function Publication() {
     }, 1500);
   }, [savePageProgress]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (navigationType !== "POP") {
       window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
     }
