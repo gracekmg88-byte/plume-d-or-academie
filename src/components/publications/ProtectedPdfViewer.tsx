@@ -172,7 +172,7 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
     };
   }, [scrollKey]);
 
-  // Restore saved scroll position after the first page renders
+  // Restore saved scroll position only once on initial viewer mount.
   useEffect(() => {
     if (loading || currentPage !== initialResolvedPage) return;
     const target = pendingScrollRef.current;
