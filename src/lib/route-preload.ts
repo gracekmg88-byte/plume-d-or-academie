@@ -105,19 +105,47 @@ const PREFIX_LOADERS: Array<[string, () => Promise<unknown>]> = [
 ];
 
 const warmed = new Set<string>();
+const warming = new Map<string, Promise<void>>();
 
-export function prefetchRoute(to: string) {
+function getRouteLoader(to: string) {
   if (!to || typeof to !== "string") return;
-  // Strip query/hash
   const path = to.split("?")[0].split("#")[0];
-  if (warmed.has(path)) return;
-  // Sort by longest prefix to match most specific route first
-  const match = [...PREFIX_LOADERS]
+  return [...PREFIX_LOADERS]
     .sort((a, b) => b[0].length - a[0].length)
     .find(([prefix]) => path === prefix || path.startsWith(prefix));
-  if (!match) return;
-  warmed.add(path);
-  void match[1]().catch(() => {
-    warmed.delete(path);
+}
+
+export function ensureRouteReady(to: string) {
+  if (!to || typeof to !== "string") return Promise.resolve();
+
+  const path = to.split("?")[0].split("#")[0];
+  if (warmed.has(path)) return Promise.resolve();
+
+  const inflight = warming.get(path);
+  if (inflight) return inflight;
+
+  const match = getRouteLoader(path);
+  if (!match) return Promise.resolve();
+
+  const promise = match[1]()
+    .then(() => {
+      warmed.add(path);
+    })
+    .catch((error) => {
+      warmed.delete(path);
+      throw error;
+    })
+    .finally(() => {
+      warming.delete(path);
+    });
+
+  warming.set(path, promise);
+  return promise;
+}
+
+export function prefetchRoute(to: string) {
+  void ensureRouteReady(to).catch(() => {
+    const path = to.split("?")[0].split("#")[0];
+    warming.delete(path);
   });
 }
