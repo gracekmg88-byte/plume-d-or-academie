@@ -1,5 +1,5 @@
 import { useEffect, useCallback, useState, useMemo, useRef, useLayoutEffect } from "react";
-import { useParams, Link, useSearchParams, useLocation, useNavigate, Navigate, useNavigationType } from "react-router-dom";
+import { useParams, Link, useSearchParams, useLocation, useNavigate, Navigate } from "react-router-dom";
 import { ArrowLeft, Book, FileText, GraduationCap, Newspaper, Eye, Calendar, User, Lock, Download, WifiOff, CheckCircle, Heart } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
@@ -46,7 +46,6 @@ export default function Publication() {
   const { id: rawId, slug } = useParams<{ id: string; slug: string }>();
   const location = useLocation();
   const navigate = useNavigate();
-  const navigationType = useNavigationType();
   const [searchParams] = useSearchParams();
   const pageFromUrl = parseInt(searchParams.get("page") || "0", 10);
   const isOnline = useOnlineStatus();
@@ -308,10 +307,6 @@ export default function Publication() {
   }, [savePageProgress]);
 
   useLayoutEffect(() => {
-    if (navigationType !== "POP") {
-      window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
-    }
-
     if (id && incrementedViewForIdRef.current !== id) {
       incrementedViewForIdRef.current = id;
       incrementViews.mutate(id);
@@ -338,7 +333,7 @@ export default function Publication() {
       document.body.style.webkitUserSelect = '';
       document.body.style.userSelect = '';
     };
-  }, [id, incrementViews, navigationType, preventCopy, preventKeyboardShortcuts, preventTouchMenu, preventDrag]);
+  }, [id, incrementViews, preventCopy, preventKeyboardShortcuts, preventTouchMenu, preventDrag]);
 
   // Use offline data when not online
   const displayPub = isOnline ? publication : (offlineData || publication);
@@ -528,7 +523,6 @@ export default function Publication() {
           to={backTarget}
           replace
           state={backState}
-          preventScrollReset
           onClick={handleBack}
           className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-8"
         >

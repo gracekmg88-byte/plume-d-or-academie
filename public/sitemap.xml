@@ -126,16 +126,6 @@
     </image:image>
   </url>
   <url>
-    <loc>https://plume-d-or-academie.lovable.app/livre/un-ocean-dans-un-verre-e874f6</loc>
-    <lastmod>2026-06-07</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/1780667139009.webp</image:loc>
-      <image:title>Un océan dans un verre</image:title>
-    </image:image>
-  </url>
-  <url>
     <loc>https://plume-d-or-academie.lovable.app/livre/20-facons-de-booster-votre-motivation-f35b29</loc>
     <lastmod>2026-06-06</lastmod>
     <changefreq>monthly</changefreq>
@@ -143,6 +133,16 @@
     <image:image>
       <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/1773389297281.webp</image:loc>
       <image:title>20 façons de booster votre motivation</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://plume-d-or-academie.lovable.app/livre/un-ocean-dans-un-verre-e874f6</loc>
+    <lastmod>2026-06-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/1780667139009.webp</image:loc>
+      <image:title>Un océan dans un verre</image:title>
     </image:image>
   </url>
   <url>
@@ -166,6 +166,16 @@
     </image:image>
   </url>
   <url>
+    <loc>https://plume-d-or-academie.lovable.app/livre/lafrique-en-200-proverbes-61cc84</loc>
+    <lastmod>2026-06-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/1773776784286.webp</image:loc>
+      <image:title>L’Afrique en 200 proverbes</image:title>
+    </image:image>
+  </url>
+  <url>
     <loc>https://plume-d-or-academie.lovable.app/livre/le-secret-de-la-cybersecurite-87dec0</loc>
     <lastmod>2026-06-05</lastmod>
     <changefreq>monthly</changefreq>
@@ -183,16 +193,6 @@
     <image:image>
       <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/compressed_db5e1cf9-f542-4243-b420-c1e4362416b1.webp</image:loc>
       <image:title>Étude et optimisation d’un LAN multiservices dans une organisation privée : Cas de l’entreprise CMCK</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://plume-d-or-academie.lovable.app/livre/lafrique-en-200-proverbes-61cc84</loc>
-    <lastmod>2026-06-07</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/1773776784286.webp</image:loc>
-      <image:title>L’Afrique en 200 proverbes</image:title>
     </image:image>
   </url>
   <url>
@@ -246,16 +246,6 @@
     </image:image>
   </url>
   <url>
-    <loc>https://plume-d-or-academie.lovable.app/livre/le-secret-du-lieu-secret-018e91</loc>
-    <lastmod>2026-06-05</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/1773394591010.webp</image:loc>
-      <image:title>Le secret du lieu secret</image:title>
-    </image:image>
-  </url>
-  <url>
     <loc>https://plume-d-or-academie.lovable.app/livre/la-seduction-du-diable-reflexions-sur-la-question-du-mal-89fb7f</loc>
     <lastmod>2026-06-07</lastmod>
     <changefreq>monthly</changefreq>
@@ -263,6 +253,16 @@
     <image:image>
       <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/1773776457029.webp</image:loc>
       <image:title>La Séduction du Diable – Réflexions sur la question du mal  </image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://plume-d-or-academie.lovable.app/livre/le-secret-du-lieu-secret-018e91</loc>
+    <lastmod>2026-06-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/1773394591010.webp</image:loc>
+      <image:title>Le secret du lieu secret</image:title>
     </image:image>
   </url>
   <url>
@@ -466,16 +466,6 @@
     </image:image>
   </url>
   <url>
-    <loc>https://plume-d-or-academie.lovable.app/livre/ce-que-jaurais-aime-savoir-avant-de-me-marier-7281ec</loc>
-    <lastmod>2026-06-07</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/1773777376386.webp</image:loc>
-      <image:title>Ce que j’aurais aimé savoir avant de me marier  </image:title>
-    </image:image>
-  </url>
-  <url>
     <loc>https://plume-d-or-academie.lovable.app/livre/comment-surmonter-lechec-104630</loc>
     <lastmod>2026-06-06</lastmod>
     <changefreq>monthly</changefreq>
@@ -503,6 +493,16 @@
     <image:image>
       <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/compressed_dec9d54a-a872-499b-a023-18d0855955ab.webp</image:loc>
       <image:title>Lexique de la cuisine et des métiers de la restauration</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://plume-d-or-academie.lovable.app/livre/ce-que-jaurais-aime-savoir-avant-de-me-marier-7281ec</loc>
+    <lastmod>2026-06-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/1773777376386.webp</image:loc>
+      <image:title>Ce que j’aurais aimé savoir avant de me marier  </image:title>
     </image:image>
   </url>
   <url>
@@ -616,16 +616,6 @@
     </image:image>
   </url>
   <url>
-    <loc>https://plume-d-or-academie.lovable.app/article/consommation-abusive-du-tramadol-chez-les-jeunes-de-la-commune-kabondo-a-kisanga-6532b0</loc>
-    <lastmod>2026-06-07</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/1779916721823.webp</image:loc>
-      <image:title>Consommation abusive du tramadol chez les jeunes de la commune Kabondo à Kisangani  </image:title>
-    </image:image>
-  </url>
-  <url>
     <loc>https://plume-d-or-academie.lovable.app/livre/crypto-monnaies-generer-des-revenus-passifs-avec-le-bitcoin-et-les-cryptomonnaie-a8d210</loc>
     <lastmod>2026-06-05</lastmod>
     <changefreq>monthly</changefreq>
@@ -643,6 +633,16 @@
     <image:image>
       <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/compressed_0079569b-cd3a-4b29-aa38-8e647303dfaf.webp</image:loc>
       <image:title>Recrutement, outil efficace de gestion d’une entreprise : Cas de la Kamoto Copper Company (KCC)</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://plume-d-or-academie.lovable.app/article/consommation-abusive-du-tramadol-chez-les-jeunes-de-la-commune-kabondo-a-kisanga-6532b0</loc>
+    <lastmod>2026-06-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/1779916721823.webp</image:loc>
+      <image:title>Consommation abusive du tramadol chez les jeunes de la commune Kabondo à Kisangani  </image:title>
     </image:image>
   </url>
   <url>
@@ -807,7 +807,7 @@
   </url>
   <url>
     <loc>https://plume-d-or-academie.lovable.app/livre/jai-plante-jeune-jai-recolte-jeune-la-revolution-silencieuse-dun-jeune-qui-a-ref-db8701</loc>
-    <lastmod>2026-06-06</lastmod>
+    <lastmod>2026-06-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -841,17 +841,22 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://plume-d-or-academie.lovable.app/auteur/patrick-mpuramana</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
     <loc>https://plume-d-or-academie.lovable.app/auteur/steve-chandler</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://plume-d-or-academie.lovable.app/auteur/patrick-mpuramana</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://plume-d-or-academie.lovable.app/auteur/michael-armstrong</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://plume-d-or-academie.lovable.app/auteur/virginie-ehonian</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -862,11 +867,6 @@
   </url>
   <url>
     <loc>https://plume-d-or-academie.lovable.app/auteur/tshila-mudianji-vanessa</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://plume-d-or-academie.lovable.app/auteur/virginie-ehonian</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -896,12 +896,12 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://plume-d-or-academie.lovable.app/auteur/marcelo-tunasi</loc>
+    <loc>https://plume-d-or-academie.lovable.app/auteur/alain-cugno</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://plume-d-or-academie.lovable.app/auteur/alain-cugno</loc>
+    <loc>https://plume-d-or-academie.lovable.app/auteur/marcelo-tunasi</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -1001,12 +1001,12 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://plume-d-or-academie.lovable.app/auteur/gary-chapman</loc>
+    <loc>https://plume-d-or-academie.lovable.app/auteur/dale-carnegie</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://plume-d-or-academie.lovable.app/auteur/dale-carnegie</loc>
+    <loc>https://plume-d-or-academie.lovable.app/auteur/gary-chapman</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -1056,12 +1056,12 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://plume-d-or-academie.lovable.app/auteur/ph-kayumba-et-collaborateurs</loc>
+    <loc>https://plume-d-or-academie.lovable.app/auteur/markus-miller</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://plume-d-or-academie.lovable.app/auteur/markus-miller</loc>
+    <loc>https://plume-d-or-academie.lovable.app/auteur/ph-kayumba-et-collaborateurs</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
