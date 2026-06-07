@@ -51,6 +51,14 @@ export default function Publication() {
   const [searchParams] = useSearchParams();
   const pageFromUrl = parseInt(searchParams.get("page") || "0", 10);
   const isOnline = useOnlineStatus();
+  const returnState = location.state as {
+    returnTo?: string;
+    returnKey?: string | null;
+    returnPublicationId?: string | null;
+  } | null;
+  const initialPublicationId = returnState?.returnPublicationId && UUID_RE.test(returnState.returnPublicationId)
+    ? returnState.returnPublicationId
+    : undefined;
 
   // Three URL shapes are supported:
   // 1) /publication/:id where :id is a UUID
@@ -60,12 +68,16 @@ export default function Publication() {
   const slugSuffix = parseSlugSuffix(slug);
 
   const [resolvedUuid, setResolvedUuid] = useState<string | null | undefined>(
-    isUuid ? rawId : undefined,
+    isUuid ? rawId : initialPublicationId,
   );
 
   useEffect(() => {
     if (isUuid) {
       setResolvedUuid(rawId);
+      return;
+    }
+    if (initialPublicationId) {
+      setResolvedUuid(initialPublicationId);
       return;
     }
     // Reset to undefined so the skeleton stays visible while we resolve.
@@ -100,7 +112,7 @@ export default function Publication() {
       if (!cancelled) setResolvedUuid(data?.id ?? null);
     })();
     return () => { cancelled = true; };
-  }, [rawId, isUuid, slugSuffix]);
+  }, [rawId, isUuid, slugSuffix, initialPublicationId]);
 
   const id = isUuid ? rawId : (resolvedUuid || "");
   const { data: publication, isLoading, error } = usePublication(id);
@@ -122,11 +134,6 @@ export default function Publication() {
   const currentPageRef = useRef<number>(resumePage);
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const incrementedViewForIdRef = useRef<string | null>(null);
-  const returnState = location.state as {
-    returnTo?: string;
-    returnKey?: string | null;
-    returnPublicationId?: string | null;
-  } | null;
   const returnTo = typeof returnState?.returnTo === "string"
     ? returnState.returnTo
     : "/bibliotheque";
