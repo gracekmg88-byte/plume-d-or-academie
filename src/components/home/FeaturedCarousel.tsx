@@ -130,10 +130,10 @@ function CarouselCard({
           </div>
         </div>
         <div className="p-3 space-y-1 min-w-0">
-          <h3 className="font-serif text-sm md:text-base font-semibold text-foreground line-clamp-2 break-words group-hover:text-primary transition-colors">
+          <h3 className="font-serif text-sm md:text-base font-semibold text-foreground break-words group-hover:text-primary transition-colors">
             {pub.title}
           </h3>
-          <p className="text-xs text-muted-foreground line-clamp-1 break-words">{pub.author}</p>
+          <p className="text-xs text-muted-foreground break-words">{pub.author}</p>
         </div>
       </div>
     </a>
