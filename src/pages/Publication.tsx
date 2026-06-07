@@ -25,7 +25,6 @@ import { CommentsList } from "@/components/publications/CommentsList";
 import { CertificationSection } from "@/components/publications/CertificationSection";
 import { format } from "date-fns";
 import { fr, enUS } from "date-fns/locale";
-import { toast } from "sonner";
 import { SEO } from "@/components/seo/SEO";
 import { Breadcrumb } from "@/components/publications/Breadcrumb";
 import { SimilarBooks } from "@/components/publications/SimilarBooks";
@@ -203,9 +202,6 @@ export default function Publication() {
           const page = data[0].last_page_read;
           setResumePage(page);
           currentPageRef.current = page;
-          toast("📖 Reprise de lecture", {
-            description: `Reprise à la page ${page}`,
-          });
         }
       });
   }, [id, user, pageFromUrl]);
@@ -603,7 +599,7 @@ export default function Publication() {
             </div>
 
             <div className="lg:hidden">
-              <div className="mx-auto w-full max-w-[18.5rem] sm:max-w-sm">
+              <div className="mx-auto w-full max-w-[17.5rem] sm:max-w-[19rem] md:max-w-sm">
                 <div className="aspect-[3/4] rounded-xl overflow-hidden bg-muted shadow-elegant">
                   {displayPub.cover_image_url ? (
                     <CachedImage
