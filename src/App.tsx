@@ -131,6 +131,11 @@ function ScrollManager() {
       return undefined;
     }
 
+    if (prev.pathname !== pathname && !isPublicationPath(prev.pathname) && isPublicationPath(pathname)) {
+      isRestoringRef.current = false;
+      return undefined;
+    }
+
     const navState = location.state as {
       restoredFromPublication?: boolean;
       returnKey?: string | null;
