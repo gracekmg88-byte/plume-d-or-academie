@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
 import "react-pdf/dist/esm/Page/TextLayer.css";
-import { Lock, ZoomIn, ZoomOut, ChevronLeft, ChevronRight, AlertCircle, RefreshCw, Maximize2, Minimize2, BookmarkCheck } from "lucide-react";
+import { Lock, ZoomIn, ZoomOut, ChevronLeft, ChevronRight, AlertCircle, RefreshCw, Maximize2, Minimize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { getCachedPdfBlobUrl } from "@/lib/pdf-cache";
@@ -59,7 +59,6 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [showResumeBadge, setShowResumeBadge] = useState(initialResolvedPage > 1);
   const [needsFullscreenGesture, setNeedsFullscreenGesture] = useState(false);
   const [autoFullscreenDisabled, setAutoFullscreenDisabled] = useState<boolean>(() => {
     try { return localStorage.getItem(`${FULLSCREEN_AUTO_DISABLED_PREFIX}${fileUrl}`) === "1"; }
@@ -196,9 +195,6 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
   useEffect(() => {
     if (initialPage && initialPage > 1) {
       setCurrentPage(initialPage);
-      setShowResumeBadge(true);
-      const t = setTimeout(() => setShowResumeBadge(false), 5000);
-      return () => clearTimeout(t);
     }
   }, [initialPage]);
 
@@ -412,14 +408,6 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
               ? "Réactiver la reprise auto du plein écran"
               : "Désactiver la reprise auto du plein écran"}
           </button>
-        </div>
-      )}
-
-      {/* Resume badge */}
-      {showResumeBadge && (
-        <div className="absolute top-14 left-1/2 -translate-x-1/2 z-30 bg-primary text-primary-foreground text-xs px-3 py-1.5 rounded-full shadow-elegant flex items-center gap-1.5 animate-slide-up">
-          <BookmarkCheck className="h-3.5 w-3.5" />
-          Reprise à la page {currentPage}
         </div>
       )}
 

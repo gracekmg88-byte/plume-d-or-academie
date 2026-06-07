@@ -2,9 +2,9 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, useLocation, useNavigationType } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation, useNavigationType, matchPath } from "react-router-dom";
 
-import { lazy, Suspense, useEffect, useLayoutEffect, useRef, useState, useTransition } from "react";
+import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useRef, useState, useTransition } from "react";
 import { warmUpCache } from "@/lib/image-cache";
 import { PushNotificationInit } from "@/components/PushNotificationInit";
 import { ThemeProvider } from "@/contexts/ThemeContext";
@@ -96,6 +96,12 @@ function ScrollManager() {
   const rafRef = useRef<number | null>(null);
   const cancelRestoreRef = useRef<(() => void) | null>(null);
 
+  const isPublicationPath = useCallback(
+    (path: string) => ["/publication/:id", "/livre/:slug", "/memoire/:slug", "/tfc/:slug", "/article/:slug"]
+      .some((pattern) => Boolean(matchPath(pattern, path))),
+    [],
+  );
+
   useEffect(() => {
     if (!("scrollRestoration" in window.history)) return;
 
@@ -120,6 +126,16 @@ function ScrollManager() {
       saveScrollPosition(prev.key, prev.pathname, lastScrollYRef.current);
     }
 
+    if (prev.pathname !== pathname && isPublicationPath(prev.pathname) && !isPublicationPath(pathname)) {
+      isRestoringRef.current = false;
+      return undefined;
+    }
+
+    if (prev.pathname !== pathname && !isPublicationPath(prev.pathname) && isPublicationPath(pathname)) {
+      isRestoringRef.current = false;
+      return undefined;
+    }
+
     const navState = location.state as {
       restoredFromPublication?: boolean;
       returnKey?: string | null;
@@ -133,7 +149,7 @@ function ScrollManager() {
       const savedY = getSavedScrollPosition(restoreKey, pathname);
       const targetCardId = isReturnFromPublication ? navState?.returnPublicationId ?? null : null;
 
-      if (pathname.startsWith("/publication/") || pathname.startsWith("/livre/") || pathname.startsWith("/memoire/") || pathname.startsWith("/tfc/") || pathname.startsWith("/article/")) {
+      if (isPublicationPath(pathname)) {
         isRestoringRef.current = false;
         return undefined;
       }
@@ -204,7 +220,7 @@ function ScrollManager() {
         cancelRestoreRef.current = null;
       }
     };
-  }, [pathname, key, navType, location.state]);
+  }, [pathname, key, navType, location.state, isPublicationPath]);
 
   // Continuously save scroll position, but not during restoration
   useEffect(() => {

@@ -524,7 +524,7 @@ export default function Publication() {
 
         <div className="grid lg:grid-cols-3 gap-8 lg:gap-12">
           {/* Cover Image */}
-          <div className="lg:col-span-1">
+          <div className="hidden lg:block lg:col-span-1">
             <div className="sticky top-24">
               <div className="aspect-[3/4] rounded-xl overflow-hidden bg-muted shadow-elegant">
                 {displayPub.cover_image_url ? (
@@ -582,6 +582,50 @@ export default function Publication() {
                 description={displayPub.description || undefined}
                 publicationId={id!}
               />
+            </div>
+
+            <div className="lg:hidden">
+              <div className="mx-auto max-w-[220px]">
+                <div className="aspect-[3/4] rounded-xl overflow-hidden bg-muted shadow-elegant">
+                  {displayPub.cover_image_url ? (
+                    <CachedImage
+                      src={displayPub.cover_image_url}
+                      alt={coverAlt}
+                      className="h-full w-full object-cover"
+                      containerClassName="h-full w-full"
+                      fallbackIcon={<Icon className="h-20 w-20 text-muted-foreground/30" />}
+                      loading="eager"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-muted to-accent">
+                      <Icon className="h-20 w-20 text-muted-foreground/30" />
+                    </div>
+                  )}
+                </div>
+
+                <div className="mt-4 space-y-3">
+                  {displayPub.file_url && hasFullAccess && isOnline && allowDownloads && (displayPub as any).allow_download !== false && (
+                    <a
+                      href={displayPub.file_url}
+                      download
+                      onClick={() => {
+                        incrementDownloads.mutate(displayPub.id);
+                      }}
+                    >
+                      <Button className="w-full gap-2">
+                        <Download className="h-4 w-4" />
+                        {t("pub.download")}
+                      </Button>
+                    </a>
+                  )}
+                  {isCached && (
+                    <div className="flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 justify-center">
+                      <CheckCircle className="h-3.5 w-3.5" />
+                      <span>{t("pub.availableOffline")}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
 
             <h1 className="font-serif text-3xl md:text-4xl lg:text-5xl font-bold text-foreground leading-tight">
