@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useState, useMemo, useRef } from "react";
+import { useEffect, useCallback, useState, useMemo, useRef, useLayoutEffect } from "react";
 import { useParams, Link, useSearchParams, useLocation, useNavigate, Navigate, useNavigationType } from "react-router-dom";
 import { ArrowLeft, Book, FileText, GraduationCap, Newspaper, Eye, Calendar, User, Lock, Download, WifiOff, CheckCircle, Heart } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
@@ -591,7 +591,7 @@ export default function Publication() {
             </div>
 
             <div className="lg:hidden">
-              <div className="mx-auto w-full max-w-sm">
+              <div className="mx-auto w-full max-w-[18.5rem] sm:max-w-sm">
                 <div className="aspect-[3/4] rounded-xl overflow-hidden bg-muted shadow-elegant">
                   {displayPub.cover_image_url ? (
                     <CachedImage
