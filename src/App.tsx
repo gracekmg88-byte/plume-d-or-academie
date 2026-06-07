@@ -4,7 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation, useNavigationType } from "react-router-dom";
 
-import { lazy, Suspense, useEffect, useLayoutEffect, useRef } from "react";
+import { lazy, Suspense, useEffect, useLayoutEffect, useRef, useState, useTransition } from "react";
 import { warmUpCache } from "@/lib/image-cache";
 import { PushNotificationInit } from "@/components/PushNotificationInit";
 import { ThemeProvider } from "@/contexts/ThemeContext";
@@ -86,8 +86,7 @@ const queryClient = new QueryClient({
 // Pre-load image cache index at startup for instant lookups on native
 warmUpCache().catch(() => {});
 
-function ScrollManager() {
-  const location = useLocation();
+function ScrollManager({ location }: { location: ReturnType<typeof useLocation> }) {
   const { pathname, key } = location;
   const navType = useNavigationType();
   const prevRef = useRef({ pathname, key });
@@ -276,11 +275,22 @@ function NavigationWarmup() {
 
 function AnimatedRoutes() {
   const location = useLocation();
+  const [renderedLocation, setRenderedLocation] = useState(location);
+  const [, startTransition] = useTransition();
+
+  useEffect(() => {
+    if (location.key === renderedLocation.key) return;
+    startTransition(() => {
+      setRenderedLocation(location);
+    });
+  }, [location, renderedLocation.key]);
 
   return (
-    <ErrorBoundary resetKey={location.key}>
+    <>
+      <ScrollManager location={renderedLocation} />
+      <ErrorBoundary resetKey={renderedLocation.key}>
       <Suspense fallback={<PageLoader />}>
-        <Routes location={location}>
+        <Routes location={renderedLocation}>
           <Route path="/" element={<Index />} />
           <Route path="/bibliotheque" element={<Bibliotheque />} />
           <Route path="/diagnostic-catalogue" element={<CatalogDiagnostic />} />
@@ -315,7 +325,8 @@ function AnimatedRoutes() {
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
-    </ErrorBoundary>
+      </ErrorBoundary>
+    </>
   );
 }
 
@@ -331,7 +342,6 @@ const App = () => (
               <PushNotificationInit />
               <BrowserRouter>
                 <NavigationWarmup />
-                <ScrollManager />
                 <AnimatedRoutes />
               </BrowserRouter>
             </TooltipProvider>
