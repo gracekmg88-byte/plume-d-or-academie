@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useState, useMemo, useRef } from "react";
+import { useEffect, useCallback, useState, useMemo, useRef, useLayoutEffect } from "react";
 import { useParams, Link, useSearchParams, useLocation, useNavigate, Navigate, useNavigationType } from "react-router-dom";
 import { ArrowLeft, Book, FileText, GraduationCap, Newspaper, Eye, Calendar, User, Lock, Download, WifiOff, CheckCircle, Heart } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
@@ -30,7 +30,7 @@ import { SEO } from "@/components/seo/SEO";
 import { Breadcrumb } from "@/components/publications/Breadcrumb";
 import { SimilarBooks } from "@/components/publications/SimilarBooks";
 import { buildPublicationPath, buildAuthorPath, parseSlugSuffix, categoryPath } from "@/lib/slug";
-import { prefetchRoute } from "@/lib/route-preload";
+import { ensureRouteReady, prefetchRoute } from "@/lib/route-preload";
 
 type Category = "livre" | "memoire" | "tfc" | "article";
 
@@ -51,6 +51,14 @@ export default function Publication() {
   const [searchParams] = useSearchParams();
   const pageFromUrl = parseInt(searchParams.get("page") || "0", 10);
   const isOnline = useOnlineStatus();
+  const returnState = location.state as {
+    returnTo?: string;
+    returnKey?: string | null;
+    returnPublicationId?: string | null;
+  } | null;
+  const initialPublicationId = returnState?.returnPublicationId && UUID_RE.test(returnState.returnPublicationId)
+    ? returnState.returnPublicationId
+    : undefined;
 
   // Three URL shapes are supported:
   // 1) /publication/:id where :id is a UUID
@@ -60,12 +68,16 @@ export default function Publication() {
   const slugSuffix = parseSlugSuffix(slug);
 
   const [resolvedUuid, setResolvedUuid] = useState<string | null | undefined>(
-    isUuid ? rawId : undefined,
+    isUuid ? rawId : initialPublicationId,
   );
 
   useEffect(() => {
     if (isUuid) {
       setResolvedUuid(rawId);
+      return;
+    }
+    if (initialPublicationId) {
+      setResolvedUuid(initialPublicationId);
       return;
     }
     // Reset to undefined so the skeleton stays visible while we resolve.
@@ -100,7 +112,7 @@ export default function Publication() {
       if (!cancelled) setResolvedUuid(data?.id ?? null);
     })();
     return () => { cancelled = true; };
-  }, [rawId, isUuid, slugSuffix]);
+  }, [rawId, isUuid, slugSuffix, initialPublicationId]);
 
   const id = isUuid ? rawId : (resolvedUuid || "");
   const { data: publication, isLoading, error } = usePublication(id);
@@ -122,11 +134,6 @@ export default function Publication() {
   const currentPageRef = useRef<number>(resumePage);
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const incrementedViewForIdRef = useRef<string | null>(null);
-  const returnState = location.state as {
-    returnTo?: string;
-    returnKey?: string | null;
-    returnPublicationId?: string | null;
-  } | null;
   const returnTo = typeof returnState?.returnTo === "string"
     ? returnState.returnTo
     : "/bibliotheque";
@@ -147,13 +154,25 @@ export default function Publication() {
   );
 
   const handleBack = useCallback(
-    (e: React.MouseEvent) => {
+    async (e: React.MouseEvent) => {
       e.preventDefault();
       if (returnState?.returnTo && window.history.length > 1) {
+        try {
+          await ensureRouteReady(returnState.returnTo);
+        } catch {
+          // ignore and continue navigation
+        }
         navigate(-1);
         return;
       }
-      navigate(backTarget, { replace: true, state: backState, preventScrollReset: true });
+
+      try {
+        await ensureRouteReady(backTarget);
+      } catch {
+        // ignore and continue navigation
+      }
+
+      navigate(backTarget, { replace: true, state: backState });
     },
     [navigate, returnState, backTarget, backState],
   );
@@ -292,7 +311,7 @@ export default function Publication() {
     }, 1500);
   }, [savePageProgress]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (navigationType !== "POP") {
       window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
     }
@@ -584,7 +603,7 @@ export default function Publication() {
             </div>
 
             <div className="lg:hidden">
-              <div className="mx-auto w-full max-w-sm">
+              <div className="mx-auto w-full max-w-[18.5rem] sm:max-w-sm">
                 <div className="aspect-[3/4] rounded-xl overflow-hidden bg-muted shadow-elegant">
                   {displayPub.cover_image_url ? (
                     <CachedImage
