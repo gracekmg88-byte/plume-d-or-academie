@@ -308,10 +308,6 @@ export default function Publication() {
   }, [savePageProgress]);
 
   useLayoutEffect(() => {
-    if (navigationType !== "POP") {
-      window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
-    }
-
     if (id && incrementedViewForIdRef.current !== id) {
       incrementedViewForIdRef.current = id;
       incrementViews.mutate(id);
@@ -338,7 +334,7 @@ export default function Publication() {
       document.body.style.webkitUserSelect = '';
       document.body.style.userSelect = '';
     };
-  }, [id, incrementViews, navigationType, preventCopy, preventKeyboardShortcuts, preventTouchMenu, preventDrag]);
+  }, [id, incrementViews, preventCopy, preventKeyboardShortcuts, preventTouchMenu, preventDrag]);
 
   // Use offline data when not online
   const displayPub = isOnline ? publication : (offlineData || publication);
@@ -528,7 +524,6 @@ export default function Publication() {
           to={backTarget}
           replace
           state={backState}
-          preventScrollReset
           onClick={handleBack}
           className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-8"
         >
