@@ -21,7 +21,6 @@ import { useLibraryLayout } from "@/hooks/useLibraryLayout";
 import { usePublicationsRealtime } from "@/hooks/usePublicationsRealtime";
 import { SEO } from "@/components/seo/SEO";
 import heroBiblioImage from "@/assets/hero-bibliotheque.webp";
-import { getCurrentHistoryEntryKey, getSavedScrollPosition, saveScrollPosition } from "@/lib/scroll-restoration";
 
 type Category = "all" | "livre" | "memoire" | "tfc" | "article";
 
@@ -52,7 +51,6 @@ export default function Bibliotheque() {
   // Offline cached publications
   const [offlinePubs, setOfflinePubs] = useState<OfflinePublication[]>([]);
   const [offlineLoading, setOfflineLoading] = useState(!isOnline);
-  const didInitialRestoreRef = useRef(false);
 
   useEffect(() => {
     if (!isOnline) {
@@ -187,53 +185,6 @@ export default function Bibliotheque() {
     setSearchParams(nextParams, { replace: true });
     scrollToGrid();
   }, [scrollToGrid, searchParams, setSearchParams]);
-
-  useEffect(() => {
-    if (didInitialRestoreRef.current || actualLoading) return;
-
-    didInitialRestoreRef.current = true;
-    const navState = location.state as { restoredFromPublication?: boolean; returnKey?: string | null } | null;
-    const restoreKey = navState?.restoredFromPublication ? navState.returnKey ?? undefined : getCurrentHistoryEntryKey() ?? undefined;
-    const savedY = getSavedScrollPosition(restoreKey, location.pathname);
-
-    if (savedY <= 0) {
-      window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
-      return;
-    }
-
-    let raf = 0;
-    let cancelled = false;
-    const restore = () => {
-      if (cancelled) return;
-      const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-      const target = Math.min(savedY, Math.max(0, maxScroll));
-      window.scrollTo({ top: target, left: 0, behavior: "instant" as ScrollBehavior });
-
-      if (maxScroll < savedY) {
-        raf = window.requestAnimationFrame(restore);
-      }
-    };
-
-    raf = window.requestAnimationFrame(restore);
-
-    return () => {
-      cancelled = true;
-      if (raf) window.cancelAnimationFrame(raf);
-    };
-  }, [actualLoading, location.key, location.pathname, location.state]);
-
-  useEffect(() => {
-    didInitialRestoreRef.current = false;
-  }, [location.key]);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      saveScrollPosition(getCurrentHistoryEntryKey() ?? undefined, location.pathname, window.scrollY);
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [location.pathname]);
 
   return (
     <Layout>
