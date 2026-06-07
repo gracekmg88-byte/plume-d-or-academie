@@ -218,7 +218,7 @@ export function PublicationCard({
               <span className="text-xs uppercase tracking-wider text-primary font-semibold mb-2">
                 À découvrir
               </span>
-              <h3 className="font-serif text-2xl md:text-3xl font-bold leading-tight line-clamp-3 group-hover:text-primary transition-colors">
+              <h3 className="font-serif text-2xl md:text-3xl font-bold leading-tight break-words group-hover:text-primary transition-colors">
                 {title}
               </h3>
               <p className="mt-2 text-base text-muted-foreground">{author}</p>
