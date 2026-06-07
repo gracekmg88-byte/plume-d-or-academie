@@ -157,6 +157,11 @@ export default function Publication() {
     async (e: React.MouseEvent) => {
       e.preventDefault();
       if (returnState?.returnTo && window.history.length > 1) {
+        try {
+          await ensureRouteReady(returnState.returnTo);
+        } catch {
+          // ignore and continue navigation
+        }
         navigate(-1);
         return;
       }
