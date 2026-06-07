@@ -51,9 +51,6 @@ export default function Bibliotheque() {
   // Offline cached publications
   const [offlinePubs, setOfflinePubs] = useState<OfflinePublication[]>([]);
   const [offlineLoading, setOfflineLoading] = useState(!isOnline);
-  const restoredCardRef = useRef<string | null>(null);
-  const restorationAttemptRef = useRef(0);
-  const hasConsumedRestoreStateRef = useRef(false);
 
   useEffect(() => {
     if (!isOnline) {
@@ -174,7 +171,7 @@ export default function Bibliotheque() {
   };
 
   const scrollToGrid = useCallback(() => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
   }, []);
 
   const handlePageChange = useCallback((page: number) => {
@@ -188,79 +185,6 @@ export default function Bibliotheque() {
     setSearchParams(nextParams, { replace: true });
     scrollToGrid();
   }, [scrollToGrid, searchParams, setSearchParams]);
-
-  useEffect(() => {
-    const navState = location.state as { restoredFromPublication?: boolean; returnPublicationId?: string | null } | null;
-    const targetPublicationId = navState?.restoredFromPublication ? navState.returnPublicationId : null;
-
-    if (!targetPublicationId || actualLoading || restoredCardRef.current === targetPublicationId || hasConsumedRestoreStateRef.current) {
-      return;
-    }
-
-    const restoreCard = () => {
-      const card = document.querySelector<HTMLElement>(`[data-publication-card-id="${targetPublicationId}"]`);
-      if (!card) return false;
-
-      const cardTop = card.getBoundingClientRect().top + window.scrollY;
-      const stickyOffset = window.innerWidth >= 768 ? 112 : 96;
-      const targetTop = Math.max(0, cardTop - stickyOffset - 12);
-
-      window.scrollTo({ top: targetTop, left: 0, behavior: "instant" as ScrollBehavior });
-      restoredCardRef.current = targetPublicationId;
-      hasConsumedRestoreStateRef.current = true;
-
-      if (window.history.state?.usr?.restoredFromPublication) {
-        window.history.replaceState(
-          {
-            ...window.history.state,
-            usr: {
-              ...window.history.state.usr,
-              restoredFromPublication: false,
-            },
-          },
-          "",
-          window.location.href,
-        );
-      }
-      return true;
-    };
-
-    let raf = 0;
-    let cancelled = false;
-    restorationAttemptRef.current = 0;
-
-    const attemptRestore = () => {
-      if (cancelled) return;
-      if (restoreCard()) return;
-
-      restorationAttemptRef.current += 1;
-      if (restorationAttemptRef.current < 24) {
-        raf = window.requestAnimationFrame(attemptRestore);
-      }
-    };
-
-    raf = window.requestAnimationFrame(attemptRestore);
-
-    return () => {
-      cancelled = true;
-      if (raf) window.cancelAnimationFrame(raf);
-    };
-  }, [actualLoading, location.state, paginatedPublications]);
-
-  useEffect(() => {
-    const navState = location.state as { restoredFromPublication?: boolean } | null;
-    if (navState?.restoredFromPublication) return;
-
-    restoredCardRef.current = null;
-    restorationAttemptRef.current = 0;
-  }, [location.key, location.state]);
-
-  useEffect(() => {
-    const navState = location.state as { restoredFromPublication?: boolean } | null;
-    if (!navState?.restoredFromPublication) {
-      hasConsumedRestoreStateRef.current = false;
-    }
-  }, [location.key, location.state]);
 
   return (
     <Layout>

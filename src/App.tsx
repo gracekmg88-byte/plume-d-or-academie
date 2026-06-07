@@ -2,9 +2,9 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, useLocation, useNavigationType, matchPath } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation, useNavigationType } from "react-router-dom";
 
-import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useRef, useState, useTransition } from "react";
+import { lazy, Suspense, useEffect, useLayoutEffect, useRef, useState, useTransition } from "react";
 import { warmUpCache } from "@/lib/image-cache";
 import { PushNotificationInit } from "@/components/PushNotificationInit";
 import { ThemeProvider } from "@/contexts/ThemeContext";
@@ -86,8 +86,7 @@ const queryClient = new QueryClient({
 // Pre-load image cache index at startup for instant lookups on native
 warmUpCache().catch(() => {});
 
-function ScrollManager() {
-  const location = useLocation();
+function ScrollManager({ location }: { location: ReturnType<typeof useLocation> }) {
   const { pathname, key } = location;
   const navType = useNavigationType();
   const prevRef = useRef({ pathname, key });
@@ -95,12 +94,6 @@ function ScrollManager() {
   const isRestoringRef = useRef(false);
   const rafRef = useRef<number | null>(null);
   const cancelRestoreRef = useRef<(() => void) | null>(null);
-
-  const isPublicationPath = useCallback(
-    (path: string) => ["/publication/:id", "/livre/:slug", "/memoire/:slug", "/tfc/:slug", "/article/:slug"]
-      .some((pattern) => Boolean(matchPath(pattern, path))),
-    [],
-  );
 
   useEffect(() => {
     if (!("scrollRestoration" in window.history)) return;
@@ -126,20 +119,9 @@ function ScrollManager() {
       saveScrollPosition(prev.key, prev.pathname, lastScrollYRef.current);
     }
 
-    if (prev.pathname !== pathname && isPublicationPath(prev.pathname) && !isPublicationPath(pathname)) {
-      isRestoringRef.current = false;
-      return undefined;
-    }
-
-    if (prev.pathname !== pathname && !isPublicationPath(prev.pathname) && isPublicationPath(pathname)) {
-      isRestoringRef.current = false;
-      return undefined;
-    }
-
     const navState = location.state as {
       restoredFromPublication?: boolean;
       returnKey?: string | null;
-      returnPublicationId?: string | null;
     } | null;
     const isReturnFromPublication = Boolean(navState?.restoredFromPublication);
     const shouldRestore = navType === "POP" || isReturnFromPublication;
@@ -147,32 +129,15 @@ function ScrollManager() {
     if (shouldRestore) {
       const restoreKey = isReturnFromPublication && navState?.returnKey ? navState.returnKey : key;
       const savedY = getSavedScrollPosition(restoreKey, pathname);
-      const targetCardId = isReturnFromPublication ? navState?.returnPublicationId ?? null : null;
-
-      if (isPublicationPath(pathname)) {
-        isRestoringRef.current = false;
-        return undefined;
-      }
 
       isRestoringRef.current = true;
       let cancelled = false;
       const start = performance.now();
       const TIMEOUT_MS = 3000;
 
-      const computeCardTarget = (): number | null => {
-        if (!targetCardId) return null;
-        const card = document.querySelector<HTMLElement>(`[data-publication-card-id="${targetCardId}"]`);
-        if (!card) return null;
-        const rect = card.getBoundingClientRect();
-        const cardTop = rect.top + window.scrollY;
-        const stickyOffset = window.innerWidth >= 768 ? 112 : 96;
-        return Math.max(0, cardTop - stickyOffset - 12);
-      };
-
       const tryRestore = () => {
         if (cancelled) return;
-        const cardTarget = computeCardTarget();
-        const desired = cardTarget !== null ? cardTarget : savedY;
+        const desired = savedY;
         const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
         const target = Math.min(desired, Math.max(0, maxScroll));
 
@@ -182,8 +147,7 @@ function ScrollManager() {
         }
 
         const needMoreHeight = maxScroll < desired;
-        const cardNotFoundYet = targetCardId && cardTarget === null;
-        if ((needMoreHeight || cardNotFoundYet) && performance.now() - start < TIMEOUT_MS) {
+        if (needMoreHeight && performance.now() - start < TIMEOUT_MS) {
           rafRef.current = window.requestAnimationFrame(tryRestore);
         } else {
           window.setTimeout(() => {
@@ -192,7 +156,7 @@ function ScrollManager() {
         }
       };
 
-      if (savedY > 0 || targetCardId) {
+      if (savedY > 0) {
         rafRef.current = window.requestAnimationFrame(tryRestore);
         cancelRestoreRef.current = () => {
           cancelled = true;
@@ -220,7 +184,7 @@ function ScrollManager() {
         cancelRestoreRef.current = null;
       }
     };
-  }, [pathname, key, navType, location.state, isPublicationPath]);
+  }, [pathname, key, navType, location.state]);
 
   // Continuously save scroll position, but not during restoration
   useEffect(() => {
@@ -240,20 +204,20 @@ function ScrollManager() {
 }
 
 function PageLoader() {
-  // Render a header-shaped skeleton so back-navigation between lazy routes
-  // never shows a fully blank/white screen during the suspense window.
   return (
     <div className="flex min-h-screen flex-col bg-background" aria-hidden="true">
       <div className="h-16 w-full border-b border-border bg-card/80 backdrop-blur" />
       <div className="flex-1">
-        <div className="container py-8">
-          <div className="animate-pulse space-y-6">
-            <div className="h-6 w-32 rounded bg-muted" />
-            <div className="h-10 w-3/4 rounded bg-muted" />
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-              {Array.from({ length: 10 }).map((_, i) => (
-                <div key={i} className="aspect-[2/3] w-full rounded-lg bg-muted" />
-              ))}
+        <div className="container py-10 md:py-14">
+          <div className="animate-pulse space-y-8">
+            <div className="space-y-3">
+              <div className="h-4 w-24 rounded bg-muted" />
+              <div className="h-10 w-full max-w-xl rounded bg-muted" />
+              <div className="h-4 w-full max-w-2xl rounded bg-muted" />
+            </div>
+            <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_280px]">
+              <div className="min-h-[320px] rounded-lg bg-muted" />
+              <div className="hidden rounded-lg bg-muted md:block" />
             </div>
           </div>
         </div>
@@ -311,21 +275,20 @@ function NavigationWarmup() {
 
 function AnimatedRoutes() {
   const location = useLocation();
-  // Keep the previous location's tree mounted while the next route's lazy
-  // chunk loads. React's startTransition tells React it's OK to keep showing
-  // the old UI until the new one is ready — no Suspense fallback flash.
   const [renderedLocation, setRenderedLocation] = useState(location);
   const [, startTransition] = useTransition();
 
   useEffect(() => {
     if (location.key === renderedLocation.key) return;
-    startTransition(() => setRenderedLocation(location));
+    startTransition(() => {
+      setRenderedLocation(location);
+    });
   }, [location, renderedLocation.key]);
 
   return (
-    <ErrorBoundary resetKey={renderedLocation.key}>
-      {/* Fallback is only shown on the very first load, never on subsequent
-          navigations — the previous tree stays visible during transitions. */}
+    <>
+      <ScrollManager location={renderedLocation} />
+      <ErrorBoundary resetKey={renderedLocation.key}>
       <Suspense fallback={<PageLoader />}>
         <Routes location={renderedLocation}>
           <Route path="/" element={<Index />} />
@@ -362,7 +325,8 @@ function AnimatedRoutes() {
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
-    </ErrorBoundary>
+      </ErrorBoundary>
+    </>
   );
 }
 
@@ -378,7 +342,6 @@ const App = () => (
               <PushNotificationInit />
               <BrowserRouter>
                 <NavigationWarmup />
-                <ScrollManager />
                 <AnimatedRoutes />
               </BrowserRouter>
             </TooltipProvider>
