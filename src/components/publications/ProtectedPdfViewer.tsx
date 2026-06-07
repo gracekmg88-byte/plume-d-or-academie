@@ -174,7 +174,7 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
 
   // Restore saved scroll position after the first page renders
   useEffect(() => {
-    if (loading) return;
+    if (loading || currentPage !== initialResolvedPage) return;
     const target = pendingScrollRef.current;
     if (!target) return;
     const el = scrollAreaRef.current;
@@ -188,7 +188,7 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
       });
     });
     return () => { cancelAnimationFrame(raf1); cancelAnimationFrame(raf2); };
-  }, [loading, scale, currentPage]);
+  }, [currentPage, initialResolvedPage, loading]);
 
 
   // Sync with initialPage when it changes (e.g. from DB fetch)
@@ -421,8 +421,8 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
         style={{ WebkitOverflowScrolling: "touch", touchAction: "pan-x pan-y" }}
       >
         {loading && (
-          <div className="absolute inset-0 z-10 bg-background/70 backdrop-blur-[1px]" aria-hidden="true">
-            <div className="h-full w-full animate-pulse bg-gradient-to-b from-background/0 via-background/10 to-background/0" />
+          <div className="absolute inset-0 z-10 bg-background/85" aria-hidden="true">
+            <div className="h-full w-full animate-pulse bg-muted/60" />
           </div>
         )}
         {resolvedUrl && (
