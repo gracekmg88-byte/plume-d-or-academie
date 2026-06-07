@@ -165,7 +165,7 @@ export function PublicationCard({
                 {viewsCount}
               </span>
             </div>
-            <h3 className="font-serif text-base sm:text-lg font-semibold leading-tight line-clamp-2 group-hover:text-primary transition-colors">
+            <h3 className="font-serif text-base sm:text-lg font-semibold leading-tight break-words group-hover:text-primary transition-colors">
               {title}
             </h3>
             <p className="mt-1 text-sm text-muted-foreground">{author}</p>
@@ -218,7 +218,7 @@ export function PublicationCard({
               <span className="text-xs uppercase tracking-wider text-primary font-semibold mb-2">
                 À découvrir
               </span>
-              <h3 className="font-serif text-2xl md:text-3xl font-bold leading-tight line-clamp-3 group-hover:text-primary transition-colors">
+              <h3 className="font-serif text-2xl md:text-3xl font-bold leading-tight break-words group-hover:text-primary transition-colors">
                 {title}
               </h3>
               <p className="mt-2 text-base text-muted-foreground">{author}</p>
@@ -262,10 +262,10 @@ export function PublicationCard({
             </Badge>
           </div>
           <CardContent className="p-2.5 min-w-0">
-            <h3 className="font-serif text-sm font-semibold leading-tight line-clamp-2 break-words group-hover:text-primary transition-colors">
+            <h3 className="font-serif text-sm font-semibold leading-tight break-words group-hover:text-primary transition-colors">
               {title}
             </h3>
-            <p className="mt-0.5 text-xs text-muted-foreground line-clamp-1 break-words">{author}</p>
+            <p className="mt-0.5 text-xs text-muted-foreground break-words">{author}</p>
           </CardContent>
         </Card>
       </Link>
@@ -303,10 +303,10 @@ export function PublicationCard({
         </div>
 
         <CardContent className="p-3 sm:p-4 min-w-0">
-          <h3 className="font-serif text-base sm:text-lg font-semibold leading-tight line-clamp-2 break-words group-hover:text-primary transition-colors">
+          <h3 className="font-serif text-base sm:text-lg font-semibold leading-tight break-words group-hover:text-primary transition-colors">
             {title}
           </h3>
-          <p className="mt-1 text-xs sm:text-sm text-muted-foreground break-words line-clamp-1">{author}</p>
+          <p className="mt-1 text-xs sm:text-sm text-muted-foreground break-words">{author}</p>
           {description && (
             <p className="mt-2 hidden sm:line-clamp-2 sm:block text-sm text-muted-foreground leading-relaxed">
               {description}
