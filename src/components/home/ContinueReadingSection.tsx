@@ -98,10 +98,10 @@ export function ContinueReadingSection() {
                       <Icon className="h-3 w-3" />
                       {config.label}
                     </div>
-                    <h3 className="text-sm font-semibold text-foreground truncate group-hover:text-primary transition-colors">
+                    <h3 className="text-sm font-semibold text-foreground break-words group-hover:text-primary transition-colors">
                       {item.title}
                     </h3>
-                    <p className="text-xs text-muted-foreground truncate">{item.author}</p>
+                    <p className="text-xs text-muted-foreground break-words">{item.author}</p>
                     <p className="text-xs text-primary font-medium mt-1 flex items-center gap-1">
                       Reprendre à la page {item.last_page_read}
                       <ArrowRight className="h-3 w-3 group-hover:translate-x-1 transition-transform" />
