@@ -35,21 +35,22 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-      <div className="container flex h-16 items-center justify-between md:h-20">
+      <div className="container flex h-16 items-center justify-between gap-2 md:h-20">
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-2 group">
-          <div className="relative flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground transition-transform group-hover:scale-105">
+        <Link to="/" className="flex items-center gap-2 group min-w-0 flex-shrink">
+          <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground transition-transform group-hover:scale-105">
             <Feather className="h-5 w-5" />
           </div>
-          <div className="flex flex-col">
-            <span className="font-serif text-lg font-bold leading-tight text-foreground md:text-xl">
+          <div className="flex flex-col min-w-0">
+            <span className="font-serif text-base font-bold leading-tight text-foreground truncate sm:text-lg md:text-xl">
               KMG Bibliothèque
             </span>
-            <span className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+            <span className="hidden text-[10px] font-medium uppercase tracking-widest text-muted-foreground sm:inline">
               KMG
             </span>
           </div>
         </Link>
+
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-1">
