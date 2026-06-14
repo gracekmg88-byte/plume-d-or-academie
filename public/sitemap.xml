@@ -87,7 +87,7 @@
   </url>
   <url>
     <loc>https://plume-d-or-academie.lovable.app/livre/16-jours-pour-developper-la-puissance-de-votre-memoire-18d42b</loc>
-    <lastmod>2026-06-11</lastmod>
+    <lastmod>2026-06-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -207,7 +207,7 @@
   </url>
   <url>
     <loc>https://plume-d-or-academie.lovable.app/livre/la-seduction-du-diable-reflexions-sur-la-question-du-mal-89fb7f</loc>
-    <lastmod>2026-06-13</lastmod>
+    <lastmod>2026-06-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -246,16 +246,6 @@
     </image:image>
   </url>
   <url>
-    <loc>https://plume-d-or-academie.lovable.app/livre/angeologie-la-doctrine-sur-les-anges-dd197f</loc>
-    <lastmod>2026-06-11</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/compressed_dd197f8c-008a-4fd5-ae9c-a6215f8bd034.webp</image:loc>
-      <image:title>Angéologie : La doctrine sur les anges</image:title>
-    </image:image>
-  </url>
-  <url>
     <loc>https://plume-d-or-academie.lovable.app/livre/51-prompts-geniaux-pour-tirer-le-meilleur-de-chatgpt-ccd532</loc>
     <lastmod>2026-06-10</lastmod>
     <changefreq>monthly</changefreq>
@@ -273,6 +263,16 @@
     <image:image>
       <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/compressed_a75876ac-0163-4e74-8ae2-bc4a23de2e22.webp</image:loc>
       <image:title>L’Onction et le Saint-Esprit : Deux entités spirituelles qui se manifestent différemment</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://plume-d-or-academie.lovable.app/livre/angeologie-la-doctrine-sur-les-anges-dd197f</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/compressed_dd197f8c-008a-4fd5-ae9c-a6215f8bd034.webp</image:loc>
+      <image:title>Angéologie : La doctrine sur les anges</image:title>
     </image:image>
   </url>
   <url>
@@ -296,16 +296,6 @@
     </image:image>
   </url>
   <url>
-    <loc>https://plume-d-or-academie.lovable.app/memoire/la-liberte-de-la-presse-et-ses-limites-en-droit-positif-congolais-fe554c</loc>
-    <lastmod>2026-06-14</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/compressed_fe554cfa-fdfc-432d-b155-0f147a87105c.webp</image:loc>
-      <image:title>La liberté de la presse et ses limites en droit positif congolais</image:title>
-    </image:image>
-  </url>
-  <url>
     <loc>https://plume-d-or-academie.lovable.app/livre/apprenez-a-programmer-en-python-4e-edition-bb0aec</loc>
     <lastmod>2026-06-11</lastmod>
     <changefreq>monthly</changefreq>
@@ -316,13 +306,13 @@
     </image:image>
   </url>
   <url>
-    <loc>https://plume-d-or-academie.lovable.app/memoire/innovations-technologiques-et-performance-organisationnelle-cas-des-pme-du-secte-526125</loc>
+    <loc>https://plume-d-or-academie.lovable.app/memoire/la-liberte-de-la-presse-et-ses-limites-en-droit-positif-congolais-fe554c</loc>
     <lastmod>2026-06-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
-      <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/1772902644171.webp</image:loc>
-      <image:title>Innovations technologiques et performance organisationnelle : Cas des PME du secteur de la restauration à Lubumbashi</image:title>
+      <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/compressed_fe554cfa-fdfc-432d-b155-0f147a87105c.webp</image:loc>
+      <image:title>La liberté de la presse et ses limites en droit positif congolais</image:title>
     </image:image>
   </url>
   <url>
@@ -333,6 +323,16 @@
     <image:image>
       <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/1773394917403.webp</image:loc>
       <image:title>Les thérapies quantiques</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://plume-d-or-academie.lovable.app/memoire/innovations-technologiques-et-performance-organisationnelle-cas-des-pme-du-secte-526125</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/1772902644171.webp</image:loc>
+      <image:title>Innovations technologiques et performance organisationnelle : Cas des PME du secteur de la restauration à Lubumbashi</image:title>
     </image:image>
   </url>
   <url>
@@ -477,7 +477,7 @@
   </url>
   <url>
     <loc>https://plume-d-or-academie.lovable.app/livre/la-prophetie-biblique-la-guerre-entre-les-deux-posterites-22fcaf</loc>
-    <lastmod>2026-06-13</lastmod>
+    <lastmod>2026-06-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -666,16 +666,6 @@
     </image:image>
   </url>
   <url>
-    <loc>https://plume-d-or-academie.lovable.app/livre/lhomme-qui-voulait-etre-heureux-d9c860</loc>
-    <lastmod>2026-06-10</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/1773392389869.webp</image:loc>
-      <image:title>L’homme qui voulait être heureux</image:title>
-    </image:image>
-  </url>
-  <url>
     <loc>https://plume-d-or-academie.lovable.app/livre/resume-de-lapocalypse-bf0125</loc>
     <lastmod>2026-06-12</lastmod>
     <changefreq>monthly</changefreq>
@@ -683,6 +673,16 @@
     <image:image>
       <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/compressed_bf012537-c24c-4f23-ba63-be8efe7569b8.webp</image:loc>
       <image:title>Résumé de l’Apocalypse</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://plume-d-or-academie.lovable.app/livre/lhomme-qui-voulait-etre-heureux-d9c860</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/1773392389869.webp</image:loc>
+      <image:title>L’homme qui voulait être heureux</image:title>
     </image:image>
   </url>
   <url>
@@ -727,22 +727,12 @@
   </url>
   <url>
     <loc>https://plume-d-or-academie.lovable.app/livre/thomas-sankara-lespoir-assassine-ebab54</loc>
-    <lastmod>2026-06-13</lastmod>
+    <lastmod>2026-06-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
       <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/1773774773612.webp</image:loc>
       <image:title>Thomas Sankara, l’espoir assassiné  </image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://plume-d-or-academie.lovable.app/livre/david-et-goliath-quand-les-outsiders-defient-les-geants-63aa6f</loc>
-    <lastmod>2026-06-11</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/1773393489311.webp</image:loc>
-      <image:title>David et Goliath : Quand les outsiders défient les géants</image:title>
     </image:image>
   </url>
   <url>
@@ -756,16 +746,6 @@
     </image:image>
   </url>
   <url>
-    <loc>https://plume-d-or-academie.lovable.app/livre/vocabulaire-de-base-hebreu-biblique-d0f348</loc>
-    <lastmod>2026-06-11</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/compressed_d0f348c6-3cab-4632-b77c-73fc8f9dfb24.webp</image:loc>
-      <image:title>Vocabulaire de base – Hébreu biblique</image:title>
-    </image:image>
-  </url>
-  <url>
     <loc>https://plume-d-or-academie.lovable.app/livre/le-chemin-parcouru-b5434c</loc>
     <lastmod>2026-06-14</lastmod>
     <changefreq>monthly</changefreq>
@@ -776,13 +756,23 @@
     </image:image>
   </url>
   <url>
-    <loc>https://plume-d-or-academie.lovable.app/livre/comment-eviter-le-divorce-2eba1d</loc>
+    <loc>https://plume-d-or-academie.lovable.app/livre/vocabulaire-de-base-hebreu-biblique-d0f348</loc>
     <lastmod>2026-06-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
-      <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/1780942358623.webp</image:loc>
-      <image:title>Comment éviter le divorce</image:title>
+      <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/compressed_d0f348c6-3cab-4632-b77c-73fc8f9dfb24.webp</image:loc>
+      <image:title>Vocabulaire de base – Hébreu biblique</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://plume-d-or-academie.lovable.app/livre/david-et-goliath-quand-les-outsiders-defient-les-geants-63aa6f</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/1773393489311.webp</image:loc>
+      <image:title>David et Goliath : Quand les outsiders défient les géants</image:title>
     </image:image>
   </url>
   <url>
@@ -823,6 +813,16 @@
     <image:image>
       <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/1781440397497.webp</image:loc>
       <image:title>Parler Kilega aujourd’hui : honte ou fierté – Un défi pour l’avenir des Balega</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://plume-d-or-academie.lovable.app/livre/comment-eviter-le-divorce-2eba1d</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/1780942358623.webp</image:loc>
+      <image:title>Comment éviter le divorce</image:title>
     </image:image>
   </url>
   <url>
@@ -926,17 +926,17 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://plume-d-or-academie.lovable.app/auteur/roland-kleger</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
     <loc>https://plume-d-or-academie.lovable.app/auteur/onur-karapinar</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://plume-d-or-academie.lovable.app/auteur/kouakou-kouadio-alain-fernand</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://plume-d-or-academie.lovable.app/auteur/roland-kleger</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -951,22 +951,22 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://plume-d-or-academie.lovable.app/auteur/dina-lupupa</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
     <loc>https://plume-d-or-academie.lovable.app/auteur/gerard-swinnen</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://plume-d-or-academie.lovable.app/auteur/kashoba-munongo-jenny</loc>
+    <loc>https://plume-d-or-academie.lovable.app/auteur/dina-lupupa</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://plume-d-or-academie.lovable.app/auteur/luc-bodin</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://plume-d-or-academie.lovable.app/auteur/kashoba-munongo-jenny</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -1106,12 +1106,12 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://plume-d-or-academie.lovable.app/auteur/laurent-gounelle</loc>
+    <loc>https://plume-d-or-academie.lovable.app/auteur/guilhen-antier-christophe-singer</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://plume-d-or-academie.lovable.app/auteur/guilhen-antier-christophe-singer</loc>
+    <loc>https://plume-d-or-academie.lovable.app/auteur/laurent-gounelle</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -1131,17 +1131,7 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://plume-d-or-academie.lovable.app/auteur/malcolm-gladwell</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
     <loc>https://plume-d-or-academie.lovable.app/auteur/antoine-glaser-stephen-smith</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://plume-d-or-academie.lovable.app/auteur/jean-daniel-macchi-faculte-autonome-de-theologie-protestante-universite-de-genev</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -1151,12 +1141,22 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://plume-d-or-academie.lovable.app/auteur/patrick-mpuramana</loc>
+    <loc>https://plume-d-or-academie.lovable.app/auteur/jean-daniel-macchi-faculte-autonome-de-theologie-protestante-universite-de-genev</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://plume-d-or-academie.lovable.app/auteur/malcolm-gladwell</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://plume-d-or-academie.lovable.app/auteur/bahati-banze</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://plume-d-or-academie.lovable.app/auteur/patrick-mpuramana</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>

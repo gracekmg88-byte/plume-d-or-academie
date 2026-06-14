@@ -132,6 +132,7 @@ export default function Publication() {
   const currentPageRef = useRef<number>(resumePage);
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const incrementedViewForIdRef = useRef<string | null>(null);
+  const routeKey = `${location.pathname}${location.search}`;
   const returnTo = typeof returnState?.returnTo === "string"
     ? returnState.returnTo
     : "/bibliotheque";
@@ -204,6 +205,12 @@ export default function Publication() {
         }
       });
   }, [id, user, pageFromUrl]);
+
+  useEffect(() => {
+    setOfflineData(null);
+    setOfflineLoading(!isOnline);
+    setIsCached(false);
+  }, [routeKey, isOnline]);
 
   const hasFullAccess = hidePremiumUI || isPremium;
   const dateLocale = language === "fr" ? fr : enUS;
@@ -523,6 +530,7 @@ export default function Publication() {
           to={backTarget}
           replace
           state={backState}
+          preventScrollReset
           onClick={handleBack}
           className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-8"
         >
