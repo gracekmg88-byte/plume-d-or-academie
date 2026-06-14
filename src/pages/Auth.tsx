@@ -367,11 +367,8 @@ export default function Auth() {
           </Tabs>
 
           <p className="text-center text-sm text-muted-foreground mt-6">
-            En vous inscrivant, vous bénéficiez d'un compte{" "}
-            <span className="font-semibold">gratuit</span> avec accès limité.{" "}
-            <Link to="/abonnement" className="text-primary hover:underline">
-              Passer à Premium
-            </Link>
+            En vous inscrivant, vous bénéficiez d'un accès{" "}
+            <span className="font-semibold">100% gratuit</span> à toute la bibliothèque.
           </p>
         </div>
 
