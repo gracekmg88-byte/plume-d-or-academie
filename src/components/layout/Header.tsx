@@ -131,7 +131,7 @@ export function Header() {
         </div>
 
         {/* Mobile Menu Button */}
-        <div className="flex md:hidden items-center gap-1">
+        <div className="flex md:hidden items-center gap-0.5 shrink-0">
           <Button variant="ghost" size="icon" onClick={() => setLanguage(language === "fr" ? "en" : "fr")} className="h-9 w-9">
             <Globe className="h-4 w-4" />
           </Button>
@@ -147,6 +147,7 @@ export function Header() {
             {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
         </div>
+
       </div>
 
       {/* Mobile Menu */}
