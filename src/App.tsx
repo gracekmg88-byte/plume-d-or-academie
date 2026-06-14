@@ -87,9 +87,10 @@ const queryClient = new QueryClient({
 warmUpCache().catch(() => {});
 
 function ScrollManager({ location }: { location: ReturnType<typeof useLocation> }) {
-  const { pathname, key } = location;
+  const { pathname, search, key } = location;
+  const routeId = `${pathname}${search}`;
   const navType = useNavigationType();
-  const prevRef = useRef({ pathname, key });
+  const prevRef = useRef({ pathname, search, key });
   const lastScrollYRef = useRef(0);
   const isRestoringRef = useRef(false);
   const rafRef = useRef<number | null>(null);
@@ -113,10 +114,10 @@ function ScrollManager({ location }: { location: ReturnType<typeof useLocation> 
       cancelRestoreRef.current();
       cancelRestoreRef.current = null;
     }
-    prevRef.current = { pathname, key };
+    prevRef.current = { pathname, search, key };
 
-    if ((prev.pathname !== pathname || prev.key !== key) && prev.pathname) {
-      saveScrollPosition(prev.key, prev.pathname, lastScrollYRef.current);
+    if ((prev.pathname !== pathname || prev.search !== search || prev.key !== key) && prev.pathname) {
+      saveScrollPosition(prev.key, `${prev.pathname}${prev.search}`, lastScrollYRef.current);
     }
 
     const navState = location.state as {
@@ -128,43 +129,96 @@ function ScrollManager({ location }: { location: ReturnType<typeof useLocation> 
 
     if (shouldRestore) {
       const restoreKey = isReturnFromPublication && navState?.returnKey ? navState.returnKey : key;
-      const savedY = getSavedScrollPosition(restoreKey, pathname);
+      const savedY = getSavedScrollPosition(restoreKey, routeId);
 
       isRestoringRef.current = true;
-      let cancelled = false;
-      const start = performance.now();
-      const TIMEOUT_MS = 3000;
-
-      const tryRestore = () => {
-        if (cancelled) return;
-        const desired = savedY;
-        const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-        const target = Math.min(desired, Math.max(0, maxScroll));
-
-        if (target > 0 && Math.abs(window.scrollY - target) > 2) {
-          window.scrollTo({ top: target, left: 0, behavior: "instant" as ScrollBehavior });
-          lastScrollYRef.current = target;
-        }
-
-        const needMoreHeight = maxScroll < desired;
-        if (needMoreHeight && performance.now() - start < TIMEOUT_MS) {
-          rafRef.current = window.requestAnimationFrame(tryRestore);
-        } else {
-          window.setTimeout(() => {
-            isRestoringRef.current = false;
-          }, 100);
-        }
-      };
-
       if (savedY > 0) {
-        rafRef.current = window.requestAnimationFrame(tryRestore);
-        cancelRestoreRef.current = () => {
-          cancelled = true;
+        let cancelled = false;
+        let resizeObserver: ResizeObserver | null = null;
+        let mutationObserver: MutationObserver | null = null;
+        let settleTimeout: number | null = null;
+        let hardTimeout: number | null = null;
+
+        const cleanup = () => {
           if (rafRef.current !== null) {
             window.cancelAnimationFrame(rafRef.current);
             rafRef.current = null;
           }
+          if (settleTimeout !== null) {
+            window.clearTimeout(settleTimeout);
+            settleTimeout = null;
+          }
+          if (hardTimeout !== null) {
+            window.clearTimeout(hardTimeout);
+            hardTimeout = null;
+          }
+          resizeObserver?.disconnect();
+          mutationObserver?.disconnect();
           isRestoringRef.current = false;
+        };
+
+        const scheduleAttempt = () => {
+          if (cancelled) return;
+          if (rafRef.current !== null) {
+            window.cancelAnimationFrame(rafRef.current);
+          }
+          rafRef.current = window.requestAnimationFrame(() => {
+            if (cancelled) return;
+
+            const maxScroll = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+            const target = Math.min(savedY, maxScroll);
+
+            if (Math.abs(window.scrollY - target) > 2) {
+              window.scrollTo({ top: target, left: 0, behavior: "instant" as ScrollBehavior });
+            }
+
+            lastScrollYRef.current = target;
+
+            if (maxScroll >= savedY || Math.abs(window.scrollY - target) <= 2) {
+              if (settleTimeout !== null) {
+                window.clearTimeout(settleTimeout);
+              }
+              settleTimeout = window.setTimeout(() => {
+                if (!cancelled) {
+                  cleanup();
+                }
+              }, 120);
+            }
+          });
+        };
+
+        scheduleAttempt();
+
+        if (typeof ResizeObserver !== "undefined") {
+          resizeObserver = new ResizeObserver(() => {
+            scheduleAttempt();
+          });
+          resizeObserver.observe(document.documentElement);
+          if (document.body) {
+            resizeObserver.observe(document.body);
+          }
+        }
+
+        if (typeof MutationObserver !== "undefined" && document.body) {
+          mutationObserver = new MutationObserver(() => {
+            scheduleAttempt();
+          });
+          mutationObserver.observe(document.body, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+          });
+        }
+
+        hardTimeout = window.setTimeout(() => {
+          if (!cancelled) {
+            cleanup();
+          }
+        }, 8000);
+
+        cancelRestoreRef.current = () => {
+          cancelled = true;
+          cleanup();
         };
       } else if (!isReturnFromPublication) {
         window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
@@ -173,7 +227,7 @@ function ScrollManager({ location }: { location: ReturnType<typeof useLocation> 
       } else {
         isRestoringRef.current = false;
       }
-    } else if (prev.pathname !== pathname) {
+    } else if (prev.pathname !== pathname || prev.search !== search) {
       window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
       lastScrollYRef.current = 0;
     }
@@ -184,7 +238,7 @@ function ScrollManager({ location }: { location: ReturnType<typeof useLocation> 
         cancelRestoreRef.current = null;
       }
     };
-  }, [pathname, key, navType, location.state]);
+  }, [pathname, search, key, navType, routeId, location.state]);
 
   // Continuously save scroll position, but not during restoration
   useEffect(() => {
@@ -193,14 +247,20 @@ function ScrollManager({ location }: { location: ReturnType<typeof useLocation> 
     const handleScroll = () => {
       lastScrollYRef.current = window.scrollY;
       if (!isRestoringRef.current) {
-        saveScrollPosition(key, pathname, window.scrollY);
+        saveScrollPosition(key, routeId, window.scrollY);
       }
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [pathname, key]);
+  }, [routeId, key]);
 
   return null;
+}
+
+function PublicationRoute() {
+  const location = useLocation();
+
+  return <Publication key={location.pathname} />;
 }
 
 function PageLoader() {
@@ -285,11 +345,11 @@ function AnimatedRoutes() {
           <Route path="/" element={<Index />} />
           <Route path="/bibliotheque" element={<Bibliotheque />} />
           <Route path="/diagnostic-catalogue" element={<CatalogDiagnostic />} />
-          <Route path="/publication/:id" element={<Publication />} />
-          <Route path="/livre/:slug" element={<Publication />} />
-          <Route path="/memoire/:slug" element={<Publication />} />
-          <Route path="/tfc/:slug" element={<Publication />} />
-          <Route path="/article/:slug" element={<Publication />} />
+          <Route path="/publication/:id" element={<PublicationRoute />} />
+          <Route path="/livre/:slug" element={<PublicationRoute />} />
+          <Route path="/memoire/:slug" element={<PublicationRoute />} />
+          <Route path="/tfc/:slug" element={<PublicationRoute />} />
+          <Route path="/article/:slug" element={<PublicationRoute />} />
           <Route path="/auteur/:slug" element={<Auteur />} />
           <Route path="/a-propos" element={<APropos />} />
           <Route path="/contact" element={<Contact />} />
