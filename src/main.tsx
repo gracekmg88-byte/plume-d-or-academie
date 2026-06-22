@@ -4,7 +4,6 @@ import App from "./App.tsx";
 import "./index.css";
 
 const CACHE_RESET_RELOAD_FLAG = "plume-cache-reset-reload-done";
-const BF_CACHE_RELOAD_FLAG = "plume-bfcache-reload-done";
 const APP_RUNTIME_VERSION = "2026-05-28-02";
 const RUNTIME_VERSION_KEY = "plume-runtime-version";
 
@@ -121,17 +120,6 @@ const cleanupLegacyRuntime = async () => {
 };
 
 void cleanupLegacyRuntime();
-
-window.addEventListener("pageshow", (event) => {
-  const navEntry = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming | undefined;
-  const restoredFromBackForwardCache = event.persisted || navEntry?.type === "back_forward";
-
-  if (restoredFromBackForwardCache) {
-    forceFreshReloadOnce(BF_CACHE_RELOAD_FLAG);
-  } else {
-    sessionStorage.removeItem(BF_CACHE_RELOAD_FLAG);
-  }
-});
 
 createRoot(document.getElementById("root")!).render(
   <HelmetProvider>
