@@ -84,7 +84,6 @@ export function PublicationCard({
   const publicationPath = buildPublicationPath({ id, title, category });
   const linkState = useMemo(
     () => ({
-      returnTo: `${pathname}${window.location.search}`,
       returnTo: `${pathname}${search}`,
       returnKey: getCurrentHistoryEntryKey(),
       returnPublicationId: UUID_RE.test(id) ? id : undefined,
