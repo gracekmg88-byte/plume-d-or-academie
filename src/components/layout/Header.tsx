@@ -1,4 +1,5 @@
 import { useState, type MouseEvent } from "react";
+import { flushSync } from "react-dom";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Menu, X, BookOpen, Feather, User, LogIn, Crown, Sun, Moon, Globe, MessageCircle, Download } from "lucide-react";
 import { NotificationCenter } from "@/components/layout/NotificationCenter";
@@ -51,8 +52,10 @@ export function Header() {
     }
     saveScrollPosition(getCurrentHistoryEntryKey(), `${location.pathname}${location.search}`, window.scrollY);
     await ensureNavigationReady(href);
-    setMobileMenuOpen(false);
-    navigate(href);
+    flushSync(() => {
+      setMobileMenuOpen(false);
+      navigate(href);
+    });
   };
 
   return (
