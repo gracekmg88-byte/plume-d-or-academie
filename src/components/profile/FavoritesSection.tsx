@@ -9,6 +9,18 @@ import { ensureNavigationReady } from "@/lib/route-preload";
 import { preloadImage } from "@/components/ui/cached-image";
 import { fetchPublication } from "@/hooks/usePublications";
 
+type FavoritePublication = {
+  id: string;
+  title: string;
+  author: string;
+  cover_image_url?: string | null;
+};
+
+type FavoriteWithPublication = {
+  id: string;
+  publications?: FavoritePublication | null;
+};
+
 export function FavoritesSection() {
   const { favorites, isLoading } = useFavorites();
   const { language } = useLanguage();
@@ -92,7 +104,7 @@ export function FavoritesSection() {
       ) : (
         <div className="space-y-2">
           {favorites.map((fav) => {
-            const pub = (fav as any).publications;
+            const pub = (fav as FavoriteWithPublication).publications;
             if (!pub) return null;
             return (
               <div
