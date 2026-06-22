@@ -12,6 +12,7 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AuthProvider } from "@/hooks/useAuth";
 import { getSavedScrollPosition, saveScrollPosition } from "@/lib/scroll-restoration";
 import {
+  ensureNavigationReady,
   loadAProposPage,
   loadAbonnementPage,
   loadAdminDashboardPage,
@@ -312,10 +313,7 @@ function PublicationRoute() {
 }
 
 function PageLoader() {
-  // Plain background — no skeleton blocks — to avoid the "flash of placeholder
-  // images" when navigating between routes. Route bundles are prefetched on
-  // hover/focus/touch, so this fallback is usually invisible.
-  return <div className="min-h-screen bg-background" aria-hidden="true" />;
+  return null;
 }
 
 function NavigationWarmup() {
@@ -351,23 +349,23 @@ function NavigationWarmup() {
       if (path && prefetchRouteFn) prefetchRouteFn(path);
     };
 
-    const holdBeforeNavigation = (e: Event) => {
+    const prepareBeforeNavigation = (e: Event) => {
       const path = extractPath(e.target);
       if (!path) return;
       const currentPath = `${window.location.pathname}${window.location.search}`;
-      if (path !== currentPath) holdRouteVisuals(3000);
+      if (path !== currentPath) void ensureNavigationReady(path);
     };
 
     document.addEventListener("mouseover", handler, { passive: true });
     document.addEventListener("focusin", handler, { passive: true });
     document.addEventListener("touchstart", handler, { passive: true });
-    document.addEventListener("click", holdBeforeNavigation, { capture: true, passive: true });
+    document.addEventListener("pointerdown", prepareBeforeNavigation, { capture: true, passive: true });
 
     return () => {
       document.removeEventListener("mouseover", handler);
       document.removeEventListener("focusin", handler);
       document.removeEventListener("touchstart", handler);
-      document.removeEventListener("click", holdBeforeNavigation, { capture: true });
+      document.removeEventListener("pointerdown", prepareBeforeNavigation, { capture: true });
     };
   }, []);
 

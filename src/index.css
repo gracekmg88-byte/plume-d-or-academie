@@ -140,11 +140,6 @@
     line-height: 1.65;
   }
 
-  html.route-visual-hold img,
-  html.route-visual-hold .route-restoration-sensitive {
-    visibility: hidden !important;
-  }
-
   html.route-visual-hold *,
   html.route-visual-hold *::before,
   html.route-visual-hold *::after {

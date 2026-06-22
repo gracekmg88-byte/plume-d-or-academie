@@ -53,7 +53,8 @@ export const CachedImage = memo(function CachedImage({
   const imgRef = useRef<HTMLImageElement>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
   const [inView, setInView] = useState(isCached);
-  const { fetchPriority, ...imgProps } = props;
+  const { fetchPriority, loading, ...imgProps } = props;
+  const shouldLoadImmediately = loading === "eager" || fetchPriority === "high";
 
   // On native: resolve cached local URI or download & cache
   useEffect(() => {
@@ -83,7 +84,7 @@ export const CachedImage = memo(function CachedImage({
   // Web: lazy load with IntersectionObserver
   useEffect(() => {
     if (isNative) return; // handled above
-    if (isCached) {
+    if (isCached || shouldLoadImmediately) {
       setResolvedSrc(src);
       setInView(true);
       return;
@@ -105,7 +106,7 @@ export const CachedImage = memo(function CachedImage({
     observerRef.current.observe(el);
 
     return () => observerRef.current?.disconnect();
-  }, [src, isCached, isNative]);
+  }, [src, isCached, isNative, shouldLoadImmediately]);
 
   const handleLoad = useCallback(() => {
     imageCache.add(src);
@@ -155,7 +156,7 @@ export const CachedImage = memo(function CachedImage({
           ref={imgRef}
           src={resolvedSrc}
           alt={alt}
-          loading="lazy"
+          loading={loading ?? "lazy"}
           decoding="async"
           onLoad={handleLoad}
           onError={handleError}

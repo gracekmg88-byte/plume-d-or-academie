@@ -1,17 +1,62 @@
 import { Heart, BookOpen } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { useFavorites } from "@/hooks/useFavorites";
 import { FavoriteButton } from "@/components/publications/FavoriteButton";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { getCurrentHistoryEntryKey, saveScrollPosition } from "@/lib/scroll-restoration";
+import { ensureNavigationReady } from "@/lib/route-preload";
+import { preloadImage } from "@/components/ui/cached-image";
+import { fetchPublication } from "@/hooks/usePublications";
+
+type FavoritePublication = {
+  id: string;
+  title: string;
+  author: string;
+  cover_image_url?: string | null;
+};
+
+type FavoriteWithPublication = {
+  id: string;
+  publications?: FavoritePublication | null;
+};
 
 export function FavoritesSection() {
   const { favorites, isLoading } = useFavorites();
   const { language } = useLanguage();
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const saveScroll = () => {
-    saveScrollPosition(getCurrentHistoryEntryKey(), pathname, window.scrollY);
+    saveScrollPosition(getCurrentHistoryEntryKey(), `${pathname}${search}`, window.scrollY);
+  };
+
+  const openPublication = async (
+    event: React.MouseEvent<HTMLAnchorElement>,
+    pub: { id: string; cover_image_url?: string | null },
+  ) => {
+    if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    event.preventDefault();
+    const entryKey = getCurrentHistoryEntryKey();
+    const target = `/publication/${pub.id}`;
+    saveScrollPosition(entryKey, `${pathname}${search}`, window.scrollY);
+    await Promise.allSettled([
+      ensureNavigationReady(target),
+      pub.cover_image_url ? preloadImage(pub.cover_image_url) : Promise.resolve(),
+      queryClient.ensureQueryData({
+        queryKey: ["publication", pub.id],
+        queryFn: () => fetchPublication(pub.id),
+        staleTime: 60_000,
+      }),
+    ]);
+    navigate(target, {
+      state: {
+        returnTo: `${pathname}${search}`,
+        returnKey: entryKey,
+        returnPublicationId: pub.id,
+      },
+    });
   };
 
   if (isLoading) {
@@ -59,7 +104,7 @@ export function FavoritesSection() {
       ) : (
         <div className="space-y-2">
           {favorites.map((fav) => {
-            const pub = (fav as any).publications;
+            const pub = (fav as FavoriteWithPublication).publications;
             if (!pub) return null;
             return (
               <div
@@ -69,12 +114,13 @@ export function FavoritesSection() {
                 <Link
                   to={`/publication/${pub.id}`}
                   state={{
-                    returnTo: `${pathname}${window.location.search}`,
-                      returnKey: getCurrentHistoryEntryKey(),
+                    returnTo: `${pathname}${search}`,
+                    returnKey: getCurrentHistoryEntryKey(),
                     returnPublicationId: pub.id,
                   }}
                   data-publication-card-id={pub.id}
-                  onClick={saveScroll}
+                  onMouseEnter={saveScroll}
+                  onClick={(event) => openPublication(event, pub)}
                   className="min-w-0 flex-1 mr-3 hover:text-primary transition-colors"
                 >
                   <p className="text-sm font-medium text-foreground truncate">

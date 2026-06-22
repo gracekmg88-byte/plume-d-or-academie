@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { useState, type MouseEvent } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Menu, X, BookOpen, Feather, User, LogIn, Crown, Sun, Moon, Globe, MessageCircle, Download } from "lucide-react";
 import { NotificationCenter } from "@/components/layout/NotificationCenter";
 import { Button } from "@/components/ui/button";
@@ -9,19 +9,25 @@ import { useSubscription } from "@/hooks/useSubscription";
 import { useBillingConfig } from "@/hooks/useBillingConfig";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { ensureNavigationReady } from "@/lib/route-preload";
+import { getCurrentHistoryEntryKey, saveScrollPosition } from "@/lib/scroll-restoration";
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const { user, isAdmin } = useAuth();
   const { isPremium } = useSubscription();
   const { hidePremiumUI } = useBillingConfig();
   const { theme, toggleTheme } = useTheme();
   const { language, setLanguage, t } = useLanguage();
 
+  const capacitorBridge = window as Window & {
+    Capacitor?: { isNativePlatform?: () => boolean };
+  };
   const isNativeApp =
     window.matchMedia("(display-mode: standalone)").matches ||
-    (window as any).Capacitor?.isNativePlatform?.();
+    capacitorBridge.Capacitor?.isNativePlatform?.();
 
   const navLinks = [
     { href: "/", label: t("nav.home") },
@@ -33,11 +39,24 @@ export function Header() {
     ...(!isNativeApp ? [{ href: "/installer", label: t("nav.install"), icon: Download }] : []),
   ];
 
+  const handleInternalNavigation = async (href: string, event: MouseEvent<HTMLElement>) => {
+    if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+      return;
+    }
+
+    event.preventDefault();
+    setMobileMenuOpen(false);
+    if (href === `${location.pathname}${location.search}`) return;
+    saveScrollPosition(getCurrentHistoryEntryKey(), `${location.pathname}${location.search}`, window.scrollY);
+    await ensureNavigationReady(href);
+    navigate(href);
+  };
+
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
       <div className="container flex h-16 items-center justify-between gap-2 md:h-20">
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-2 group min-w-0 flex-shrink">
+        <Link to="/" onClick={(event) => handleInternalNavigation("/", event)} className="flex items-center gap-2 group min-w-0 flex-shrink">
           <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground transition-transform group-hover:scale-105">
             <Feather className="h-5 w-5" />
           </div>
@@ -58,6 +77,7 @@ export function Header() {
             <Link
               key={link.href}
               to={link.href}
+              onClick={(event) => handleInternalNavigation(link.href, event)}
               className={cn(
                 "relative px-4 py-2 text-sm font-medium transition-colors rounded-md",
                 location.pathname === link.href
@@ -102,7 +122,7 @@ export function Header() {
           {user ? (
             <>
               <NotificationCenter />
-              <Link to="/profil">
+              <Link to="/profil" onClick={(event) => handleInternalNavigation("/profil", event)}>
                 <Button variant="ghost" size="sm" className="gap-2">
                   <User className="h-4 w-4" />
                   {t("nav.profile")}
@@ -112,7 +132,7 @@ export function Header() {
                 </Button>
               </Link>
               {isAdmin && (
-                <Link to="/admin/dashboard">
+                <Link to="/admin/dashboard" onClick={(event) => handleInternalNavigation("/admin/dashboard", event)}>
                   <Button variant="outline" size="sm" className="gap-2">
                     <BookOpen className="h-4 w-4" />
                     {t("nav.admin")}
@@ -121,7 +141,7 @@ export function Header() {
               )}
             </>
           ) : (
-            <Link to="/auth">
+              <Link to="/auth" onClick={(event) => handleInternalNavigation("/auth", event)}>
               <Button variant="ghost" size="sm" className="gap-2">
                 <LogIn className="h-4 w-4" />
                 {t("nav.login")}
@@ -158,7 +178,7 @@ export function Header() {
               <Link
                 key={link.href}
                 to={link.href}
-                onClick={() => setMobileMenuOpen(false)}
+                onClick={(event) => handleInternalNavigation(link.href, event)}
                 className={cn(
                   "block px-4 py-3 rounded-lg text-base font-medium transition-colors",
                   location.pathname === link.href
@@ -174,7 +194,7 @@ export function Header() {
                 <>
                   <Link
                     to="/profil"
-                    onClick={() => setMobileMenuOpen(false)}
+                    onClick={(event) => handleInternalNavigation("/profil", event)}
                     className="flex items-center gap-2 px-4 py-3 rounded-lg text-base font-medium text-muted-foreground hover:bg-accent hover:text-foreground"
                   >
                     <User className="h-4 w-4" />
@@ -184,7 +204,7 @@ export function Header() {
                   {isAdmin && (
                     <Link
                       to="/admin/dashboard"
-                      onClick={() => setMobileMenuOpen(false)}
+                      onClick={(event) => handleInternalNavigation("/admin/dashboard", event)}
                       className="flex items-center gap-2 px-4 py-3 rounded-lg text-base font-medium text-muted-foreground hover:bg-accent hover:text-foreground"
                     >
                       <BookOpen className="h-4 w-4" />
@@ -195,7 +215,7 @@ export function Header() {
               ) : (
                 <Link
                   to="/auth"
-                  onClick={() => setMobileMenuOpen(false)}
+                  onClick={(event) => handleInternalNavigation("/auth", event)}
                   className="flex items-center gap-2 px-4 py-3 rounded-lg text-base font-medium text-muted-foreground hover:bg-accent hover:text-foreground"
                 >
                   <LogIn className="h-4 w-4" />

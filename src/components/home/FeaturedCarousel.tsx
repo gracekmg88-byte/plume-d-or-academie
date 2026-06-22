@@ -6,10 +6,10 @@ import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
 import { ChevronLeft, ChevronRight, Sparkles, Eye, Download, AlertCircle, RefreshCw } from "lucide-react";
 import { useFeaturedPublications, type FeaturedPublication } from "@/hooks/useFeaturedPublications";
-import { CachedImage, preloadImages } from "@/components/ui/cached-image";
+import { CachedImage, preloadImage, preloadImages } from "@/components/ui/cached-image";
 import { Button } from "@/components/ui/button";
 import { getCurrentHistoryEntryKey, saveScrollPosition } from "@/lib/scroll-restoration";
-import { ensureRouteReady, preloadPublicationFlow } from "@/lib/route-preload";
+import { ensureNavigationReady, preloadPublicationFlow } from "@/lib/route-preload";
 import { fetchPublication } from "@/hooks/usePublications";
 
 const categoryLabel: Record<string, string> = {
@@ -185,8 +185,10 @@ playOnInit: true,
         sessionStorage.setItem(LAST_FEATURED_PICK_AT, String(Date.now()));
       } catch {}
       preloadPublicationFlow();
+      const selectedPublication = publications?.find((pub) => pub.id === id);
       await Promise.allSettled([
-        ensureRouteReady(`/publication/${id}`),
+        ensureNavigationReady(`/publication/${id}`),
+        selectedPublication?.cover_image_url ? preloadImage(selectedPublication.cover_image_url) : Promise.resolve(),
         queryClient.ensureQueryData({
           queryKey: ["publication", id],
           queryFn: () => fetchPublication(id),
@@ -202,7 +204,7 @@ playOnInit: true,
          preventScrollReset: true,
       });
     },
-    [emblaApi, location.pathname, location.search, navigate, queryClient]
+    [emblaApi, location.pathname, location.search, navigate, publications, queryClient]
   );
 
 

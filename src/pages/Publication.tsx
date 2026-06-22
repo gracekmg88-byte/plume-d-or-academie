@@ -29,7 +29,7 @@ import { SEO } from "@/components/seo/SEO";
 import { Breadcrumb } from "@/components/publications/Breadcrumb";
 import { SimilarBooks } from "@/components/publications/SimilarBooks";
 import { buildPublicationPath, buildAuthorPath, parseSlugSuffix, categoryPath } from "@/lib/slug";
-import { ensureRouteReady, prefetchRoute } from "@/lib/route-preload";
+import { ensureNavigationReady, prefetchRoute } from "@/lib/route-preload";
 
 type Category = "livre" | "memoire" | "tfc" | "article";
 
@@ -157,7 +157,7 @@ export default function Publication() {
       e.preventDefault();
       if (returnState?.returnTo && window.history.length > 1) {
         try {
-          await ensureRouteReady(returnState.returnTo);
+          await ensureNavigationReady(returnState.returnTo);
         } catch {
           // ignore and continue navigation
         }
@@ -166,7 +166,7 @@ export default function Publication() {
       }
 
       try {
-        await ensureRouteReady(backTarget);
+        await ensureNavigationReady(backTarget);
       } catch {
         // ignore and continue navigation
       }
