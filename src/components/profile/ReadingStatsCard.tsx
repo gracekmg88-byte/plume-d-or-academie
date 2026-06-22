@@ -2,9 +2,13 @@ import { BookOpen, Clock, BarChart3, TrendingUp } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useReadingHistory } from "@/hooks/useReadingHistory";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { getCurrentHistoryEntryKey, saveScrollPosition } from "@/lib/scroll-restoration";
 import { Bar, BarChart, XAxis, YAxis, ResponsiveContainer } from "recharts";
+import { ensureNavigationReady } from "@/lib/route-preload";
+import { preloadImage } from "@/components/ui/cached-image";
+import { fetchPublication } from "@/hooks/usePublications";
 
 const categoryLabels: Record<string, Record<string, string>> = {
   fr: { livre: "Livres", memoire: "Mémoires", tfc: "TFC", article: "Articles" },
@@ -25,10 +29,39 @@ function formatDuration(seconds: number, lang: string): string {
 export function ReadingStatsCard() {
   const { stats, isLoading } = useReadingHistory();
   const { language } = useLanguage();
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const saveScroll = () => {
-    saveScrollPosition(getCurrentHistoryEntryKey(), pathname, window.scrollY);
+    saveScrollPosition(getCurrentHistoryEntryKey(), `${pathname}${search}`, window.scrollY);
+  };
+
+  const openPublication = async (
+    event: React.MouseEvent<HTMLAnchorElement>,
+    read: NonNullable<typeof stats>["recentReads"][number],
+  ) => {
+    if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    event.preventDefault();
+    const entryKey = getCurrentHistoryEntryKey();
+    const target = `/publication/${read.publication_id}`;
+    saveScrollPosition(entryKey, `${pathname}${search}`, window.scrollY);
+    await Promise.allSettled([
+      ensureNavigationReady(target),
+      read.cover_image_url ? preloadImage(read.cover_image_url) : Promise.resolve(),
+      queryClient.ensureQueryData({
+        queryKey: ["publication", read.publication_id],
+        queryFn: () => fetchPublication(read.publication_id),
+        staleTime: 60_000,
+      }),
+    ]);
+    navigate(target, {
+      state: {
+        returnTo: `${pathname}${search}`,
+        returnKey: entryKey,
+        returnPublicationId: read.publication_id,
+      },
+    });
   };
 
   if (isLoading) {
@@ -172,12 +205,13 @@ export function ReadingStatsCard() {
                   key={r.publication_id}
                   to={`/publication/${r.publication_id}`}
                   state={{
-                    returnTo: `${pathname}${window.location.search}`,
+                    returnTo: `${pathname}${search}`,
                     returnKey: getCurrentHistoryEntryKey(),
                     returnPublicationId: r.publication_id,
                   }}
                   data-publication-card-id={r.publication_id}
-                  onClick={saveScroll}
+                  onMouseEnter={saveScroll}
+                  onClick={(event) => openPublication(event, r)}
                   className="flex items-center gap-3 bg-muted/50 rounded-lg px-3 py-2.5 hover:bg-muted transition-colors"
                 >
                   <div className="min-w-0 flex-1">
