@@ -267,26 +267,10 @@ function PublicationRoute() {
 }
 
 function PageLoader() {
-  return (
-    <div className="flex min-h-screen flex-col bg-background" aria-hidden="true">
-      <div className="h-16 w-full border-b border-border bg-card/80 backdrop-blur" />
-      <div className="flex-1">
-        <div className="container py-10 md:py-14">
-          <div className="animate-pulse space-y-8">
-            <div className="space-y-3">
-              <div className="h-4 w-24 rounded bg-muted" />
-              <div className="h-10 w-full max-w-xl rounded bg-muted" />
-              <div className="h-4 w-full max-w-2xl rounded bg-muted" />
-            </div>
-            <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_280px]">
-              <div className="min-h-[320px] rounded-lg bg-muted" />
-              <div className="hidden rounded-lg bg-muted md:block" />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+  // Plain background — no skeleton blocks — to avoid the "flash of placeholder
+  // images" when navigating between routes. Route bundles are prefetched on
+  // hover/focus/touch, so this fallback is usually invisible.
+  return <div className="min-h-screen bg-background" aria-hidden="true" />;
 }
 
 function NavigationWarmup() {
