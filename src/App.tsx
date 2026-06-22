@@ -138,6 +138,7 @@ function ScrollManager({ location }: { location: ReturnType<typeof useLocation> 
         let mutationObserver: MutationObserver | null = null;
         let settleTimeout: number | null = null;
         let hardTimeout: number | null = null;
+        let reachedTarget = false;
 
         const cleanup = () => {
           if (rafRef.current !== null) {
@@ -157,37 +158,30 @@ function ScrollManager({ location }: { location: ReturnType<typeof useLocation> 
           isRestoringRef.current = false;
         };
 
-        const scheduleAttempt = () => {
+        const attemptScroll = () => {
           if (cancelled) return;
-          if (rafRef.current !== null) {
-            window.cancelAnimationFrame(rafRef.current);
+          const maxScroll = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+          const target = Math.min(savedY, maxScroll);
+
+          // Only correct if we've drifted away from savedY (don't pull back down
+          // from a position the user can't actually reach yet).
+          if (Math.abs(window.scrollY - target) > 2) {
+            window.scrollTo(0, target);
           }
-          rafRef.current = window.requestAnimationFrame(() => {
-            if (cancelled) return;
 
-            const maxScroll = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
-            const target = Math.min(savedY, maxScroll);
+          lastScrollYRef.current = target;
 
-            if (Math.abs(window.scrollY - target) > 2) {
-              window.scrollTo({ top: target, left: 0, behavior: "instant" as ScrollBehavior });
-            }
-
-            lastScrollYRef.current = target;
-
-            if (maxScroll >= savedY || Math.abs(window.scrollY - target) <= 2) {
-              if (settleTimeout !== null) {
-                window.clearTimeout(settleTimeout);
-              }
-              settleTimeout = window.setTimeout(() => {
-                if (!cancelled) {
-                  cleanup();
-                }
-              }, 120);
-            }
-          });
+          if (maxScroll >= savedY) {
+            reachedTarget = true;
+            if (settleTimeout !== null) window.clearTimeout(settleTimeout);
+            settleTimeout = window.setTimeout(() => {
+              if (!cancelled) cleanup();
+            }, 200);
+          }
         };
 
-        scheduleAttempt();
+        // Synchronous first scroll BEFORE paint to avoid the "flash to top" jump.
+        attemptScroll();
 
         if (typeof ResizeObserver !== "undefined") {
           resizeObserver = new ResizeObserver(() => {
