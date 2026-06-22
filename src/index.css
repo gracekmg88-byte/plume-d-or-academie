@@ -140,6 +140,21 @@
     line-height: 1.65;
   }
 
+  html.route-visual-hold img,
+  html.route-visual-hold .route-restoration-sensitive {
+    visibility: hidden !important;
+  }
+
+  html.route-visual-hold *,
+  html.route-visual-hold *::before,
+  html.route-visual-hold *::after {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+    transition-duration: 0s !important;
+    transition-delay: 0s !important;
+    scroll-behavior: auto !important;
+  }
+
   h1, h2, h3, h4, h5, h6 {
     @apply font-serif;
     font-weight: 700;
