@@ -99,7 +99,7 @@ export function ContinueReadingSection() {
                   to={`/publication/${item.publication_id}?page=${item.last_page_read}`}
                   state={{
                     returnTo: `${pathname}${search}`,
-                        returnKey: getCurrentHistoryEntryKey(),
+                    returnKey: getCurrentHistoryEntryKey(),
                     returnPublicationId: item.publication_id,
                   }}
                   onMouseEnter={saveScroll}
