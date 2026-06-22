@@ -373,6 +373,7 @@ function AnimatedRoutes() {
           <Route path="/installer" element={<InstallApp />} />
           <Route path="/verify/:number" element={<VerifyCertificate />} />
           <Route path="/verification" element={<VerifyHome />} />
+          <Route path="/confidentialite" element={<Confidentialite />} />
           <Route path="/admin/certificates" element={<AdminGuard><AdminCertificates /></AdminGuard>} />
           <Route path="/admin/seo" element={<AdminGuard><AdminSeo /></AdminGuard>} />
           <Route path="/admin/auth-logs" element={<AdminGuard><AdminAuthLogs /></AdminGuard>} />
