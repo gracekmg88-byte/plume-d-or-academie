@@ -45,11 +45,17 @@ export function Header() {
     }
 
     event.preventDefault();
-    setMobileMenuOpen(false);
-    if (href === `${location.pathname}${location.search}`) return;
+    if (href === `${location.pathname}${location.search}`) {
+      setMobileMenuOpen(false);
+      return;
+    }
     saveScrollPosition(getCurrentHistoryEntryKey(), `${location.pathname}${location.search}`, window.scrollY);
+    // Keep the mobile menu visible (covers the page) during preload so the user
+    // never sees the underlying page flash through. Close it only after we
+    // have actually navigated to the new route.
     await ensureNavigationReady(href);
     navigate(href);
+    setMobileMenuOpen(false);
   };
 
   return (
