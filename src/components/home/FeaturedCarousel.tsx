@@ -9,7 +9,7 @@ import { useFeaturedPublications, type FeaturedPublication } from "@/hooks/useFe
 import { CachedImage, preloadImages } from "@/components/ui/cached-image";
 import { Button } from "@/components/ui/button";
 import { getCurrentHistoryEntryKey, saveScrollPosition } from "@/lib/scroll-restoration";
-import { preloadPublicationFlow } from "@/lib/route-preload";
+import { ensureRouteReady, preloadPublicationFlow } from "@/lib/route-preload";
 import { fetchPublication } from "@/hooks/usePublications";
 
 const categoryLabel: Record<string, string> = {
@@ -173,25 +173,26 @@ playOnInit: true,
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
 
   const handleNavigate = useCallback(
-    (id: string) => {
+    async (id: string) => {
       // Respect Embla drag/swipe — don't navigate if user was swiping
       const clickAllowed = (emblaApi as any)?.clickAllowed?.();
       if (emblaApi && clickAllowed === false) return;
 
       const entryKey = getCurrentHistoryEntryKey();
-      saveScrollPosition(entryKey, location.pathname, window.scrollY);
+      saveScrollPosition(entryKey, `${location.pathname}${location.search}`, window.scrollY);
       try {
         sessionStorage.setItem(LAST_FEATURED_PICK_KEY, id);
         sessionStorage.setItem(LAST_FEATURED_PICK_AT, String(Date.now()));
       } catch {}
       preloadPublicationFlow();
-      queryClient
-        .prefetchQuery({
+      await Promise.allSettled([
+        ensureRouteReady(`/publication/${id}`),
+        queryClient.ensureQueryData({
           queryKey: ["publication", id],
           queryFn: () => fetchPublication(id),
           staleTime: 60_000,
-        })
-        .catch(() => {});
+        }),
+      ]);
        navigate(`/publication/${id}`, {
         state: {
           returnTo: `${location.pathname}${location.search}`,
