@@ -99,14 +99,17 @@ export function PublicationCard({
 
     event.preventDefault();
 
-    try {
-      await ensureRouteReady(publicationPath);
-    } catch {
-      // Continue navigation even if preloading fails.
-    }
+    await Promise.allSettled([
+      ensureRouteReady(publicationPath),
+      queryClient.ensureQueryData({
+        queryKey: ["publication", id],
+        queryFn: () => fetchPublication(id),
+        staleTime: 60_000,
+      }),
+    ]);
 
     navigate(publicationPath, { state: linkState });
-  }, [linkState, navigate, prepareNavigation, publicationPath]);
+  }, [id, linkState, navigate, prepareNavigation, publicationPath, queryClient]);
 
   // Prefetch metadata + warm thumbnail when card scrolls into view
   useEffect(() => {
