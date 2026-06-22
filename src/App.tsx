@@ -333,14 +333,23 @@ function NavigationWarmup() {
       if (path && prefetchRouteFn) prefetchRouteFn(path);
     };
 
+    const holdBeforeNavigation = (e: Event) => {
+      const path = extractPath(e.target);
+      if (!path) return;
+      const currentPath = `${window.location.pathname}${window.location.search}`;
+      if (path !== currentPath) holdRouteVisuals(3000);
+    };
+
     document.addEventListener("mouseover", handler, { passive: true });
     document.addEventListener("focusin", handler, { passive: true });
     document.addEventListener("touchstart", handler, { passive: true });
+    document.addEventListener("click", holdBeforeNavigation, { capture: true, passive: true });
 
     return () => {
       document.removeEventListener("mouseover", handler);
       document.removeEventListener("focusin", handler);
       document.removeEventListener("touchstart", handler);
+      document.removeEventListener("click", holdBeforeNavigation, { capture: true });
     };
   }, []);
 
