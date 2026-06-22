@@ -110,6 +110,10 @@ function releaseRouteVisuals() {
 }
 
 function releaseRouteVisualsAfterPaint(delay = 180) {
+  if (routeVisualHoldTimeout !== null) {
+    window.clearTimeout(routeVisualHoldTimeout);
+    routeVisualHoldTimeout = null;
+  }
   window.requestAnimationFrame(() => {
     window.requestAnimationFrame(() => {
       routeVisualHoldTimeout = window.setTimeout(() => {
