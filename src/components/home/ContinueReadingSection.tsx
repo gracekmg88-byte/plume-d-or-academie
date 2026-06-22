@@ -1,10 +1,12 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { BookOpen, ArrowRight, Book, GraduationCap, FileText, Newspaper } from "lucide-react";
-import { CachedImage } from "@/components/ui/cached-image";
+import { CachedImage, preloadImage } from "@/components/ui/cached-image";
 import { useContinueReading } from "@/hooks/useContinueReading";
 import { cn } from "@/lib/utils";
-import { preloadPublicationFlow } from "@/lib/route-preload";
+import { ensureNavigationReady, preloadPublicationFlow } from "@/lib/route-preload";
 import { getCurrentHistoryEntryKey, saveScrollPosition } from "@/lib/scroll-restoration";
+import { fetchPublication } from "@/hooks/usePublications";
 
 const categoryConfig: Record<string, { label: string; icon: typeof Book; className: string }> = {
   livre: { label: "Livre", icon: Book, className: "bg-primary/10 text-primary" },
@@ -15,11 +17,37 @@ const categoryConfig: Record<string, { label: string; icon: typeof Book; classNa
 
 export function ContinueReadingSection() {
   const { data: items, isLoading } = useContinueReading(3);
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const saveScroll = () => {
-    saveScrollPosition(getCurrentHistoryEntryKey(), pathname, window.scrollY);
+    saveScrollPosition(getCurrentHistoryEntryKey(), `${pathname}${search}`, window.scrollY);
     preloadPublicationFlow();
+  };
+
+  const openPublication = async (event: React.MouseEvent<HTMLAnchorElement>, item: NonNullable<typeof items>[number]) => {
+    if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    event.preventDefault();
+    const entryKey = getCurrentHistoryEntryKey();
+    const target = `/publication/${item.publication_id}?page=${item.last_page_read}`;
+    saveScrollPosition(entryKey, `${pathname}${search}`, window.scrollY);
+    await Promise.allSettled([
+      ensureNavigationReady(target),
+      item.cover_image_url ? preloadImage(item.cover_image_url) : Promise.resolve(),
+      queryClient.ensureQueryData({
+        queryKey: ["publication", item.publication_id],
+        queryFn: () => fetchPublication(item.publication_id),
+        staleTime: 60_000,
+      }),
+    ]);
+    navigate(target, {
+      state: {
+        returnTo: `${pathname}${search}`,
+        returnKey: entryKey,
+        returnPublicationId: item.publication_id,
+      },
+    });
   };
 
   if (isLoading) {
@@ -70,12 +98,12 @@ export function ContinueReadingSection() {
                 <Link
                   to={`/publication/${item.publication_id}?page=${item.last_page_read}`}
                   state={{
-                    returnTo: `${pathname}${window.location.search}`,
+                    returnTo: `${pathname}${search}`,
                         returnKey: getCurrentHistoryEntryKey(),
                     returnPublicationId: item.publication_id,
                   }}
                   onMouseEnter={saveScroll}
-                  onClick={saveScroll}
+                  onClick={(event) => openPublication(event, item)}
                   className="group flex gap-4 bg-background rounded-xl border border-border p-4 hover:shadow-elegant transition-all duration-300 h-full"
                 >
                   <div className="w-16 h-20 rounded-lg overflow-hidden bg-muted shrink-0">
