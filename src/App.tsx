@@ -147,9 +147,13 @@ function ScrollManager({ location }: { location: ReturnType<typeof useLocation> 
       cancelRestoreRef.current();
       cancelRestoreRef.current = null;
     }
+    const routeChanged = prev.pathname !== pathname || prev.search !== search || prev.key !== key;
+    if (routeChanged) {
+      holdRouteVisuals(3000);
+    }
     prevRef.current = { pathname, search, key };
 
-    if ((prev.pathname !== pathname || prev.search !== search || prev.key !== key) && prev.pathname) {
+    if (routeChanged && prev.pathname) {
       saveScrollPosition(prev.key, `${prev.pathname}${prev.search}`, lastScrollYRef.current);
     }
 
