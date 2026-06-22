@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { X, Smartphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -7,19 +7,14 @@ const PLAY_STORE_URL =
 const DISMISSED_KEY = "app-download-banner-dismissed";
 
 export function AppDownloadBanner() {
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    // Only show on web browsers, not in installed PWA or Capacitor
+  const [visible, setVisible] = useState(() => {
+    if (typeof window === "undefined") return false;
     const isStandalone =
       window.matchMedia("(display-mode: standalone)").matches ||
       (window as any).Capacitor?.isNativePlatform?.();
     const dismissed = localStorage.getItem(DISMISSED_KEY);
-
-    if (!isStandalone && !dismissed) {
-      setVisible(true);
-    }
-  }, []);
+    return !isStandalone && !dismissed;
+  });
 
   if (!visible) return null;
 

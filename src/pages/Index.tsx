@@ -94,7 +94,7 @@ export default function Index() {
           <div className="absolute inset-0 bg-gradient-to-r from-secondary/95 via-secondary/80 to-secondary/60" />
         </div>
         <div className="relative container py-20 md:py-32 lg:py-40">
-          <div className="max-w-2xl space-y-6 animate-slide-up">
+          <div className="max-w-2xl space-y-6">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/20 text-primary-foreground border border-primary/30">
               <Book className="h-4 w-4" />
               <span className="text-sm font-medium">{t("hero.badge")}</span>
