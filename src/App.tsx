@@ -87,6 +87,28 @@ const queryClient = new QueryClient({
 // Pre-load image cache index at startup for instant lookups on native
 warmUpCache().catch(() => {});
 
+const ROUTE_VISUAL_HOLD_CLASS = "route-visual-hold";
+let routeVisualHoldTimeout: number | null = null;
+
+function holdRouteVisuals(timeout = 2500) {
+  document.documentElement.classList.add(ROUTE_VISUAL_HOLD_CLASS);
+  if (routeVisualHoldTimeout !== null) {
+    window.clearTimeout(routeVisualHoldTimeout);
+  }
+  routeVisualHoldTimeout = window.setTimeout(() => {
+    document.documentElement.classList.remove(ROUTE_VISUAL_HOLD_CLASS);
+    routeVisualHoldTimeout = null;
+  }, timeout);
+}
+
+function releaseRouteVisuals() {
+  if (routeVisualHoldTimeout !== null) {
+    window.clearTimeout(routeVisualHoldTimeout);
+    routeVisualHoldTimeout = null;
+  }
+  document.documentElement.classList.remove(ROUTE_VISUAL_HOLD_CLASS);
+}
+
 function ScrollManager({ location }: { location: ReturnType<typeof useLocation> }) {
   const { pathname, search, key } = location;
   const routeId = `${pathname}${search}`;
@@ -134,6 +156,7 @@ function ScrollManager({ location }: { location: ReturnType<typeof useLocation> 
 
       isRestoringRef.current = true;
       if (savedY > 0) {
+        holdRouteVisuals(8000);
         let cancelled = false;
         let resizeObserver: ResizeObserver | null = null;
         let mutationObserver: MutationObserver | null = null;
@@ -157,6 +180,7 @@ function ScrollManager({ location }: { location: ReturnType<typeof useLocation> 
           resizeObserver?.disconnect();
           mutationObserver?.disconnect();
           isRestoringRef.current = false;
+          releaseRouteVisuals();
         };
 
         const attemptScroll = () => {
@@ -227,12 +251,15 @@ function ScrollManager({ location }: { location: ReturnType<typeof useLocation> 
         window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
         lastScrollYRef.current = 0;
         isRestoringRef.current = false;
+        releaseRouteVisuals();
       } else {
         isRestoringRef.current = false;
+        releaseRouteVisuals();
       }
     } else if (prev.pathname !== pathname || prev.search !== search) {
       window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
       lastScrollYRef.current = 0;
+      releaseRouteVisuals();
     }
 
     return () => {
