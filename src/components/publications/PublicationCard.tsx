@@ -47,7 +47,7 @@ export function PublicationCard({
   viewsCount,
   variant = "grid",
 }: PublicationCardProps) {
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const config = categoryConfig[category];
@@ -77,18 +77,19 @@ export function PublicationCard({
 
   const prepareNavigation = useCallback(() => {
     const entryKey = getCurrentHistoryEntryKey();
-    saveScrollPosition(entryKey, pathname, window.scrollY);
+    saveScrollPosition(entryKey, `${pathname}${search}`, window.scrollY);
     prefetchAll();
-  }, [pathname, prefetchAll]);
+  }, [pathname, prefetchAll, search]);
 
   const publicationPath = buildPublicationPath({ id, title, category });
   const linkState = useMemo(
     () => ({
       returnTo: `${pathname}${window.location.search}`,
+      returnTo: `${pathname}${search}`,
       returnKey: getCurrentHistoryEntryKey(),
       returnPublicationId: UUID_RE.test(id) ? id : undefined,
     }),
-    [id, pathname],
+    [id, pathname, search],
   );
 
   const handleNavigate = useCallback(async (event: MouseEvent<HTMLAnchorElement>) => {
