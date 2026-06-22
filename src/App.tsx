@@ -183,6 +183,15 @@ function ScrollManager({ location }: { location: ReturnType<typeof useLocation> 
         // Synchronous first scroll BEFORE paint to avoid the "flash to top" jump.
         attemptScroll();
 
+        const scheduleAttempt = () => {
+          if (cancelled || reachedTarget) return;
+          if (rafRef.current !== null) return;
+          rafRef.current = window.requestAnimationFrame(() => {
+            rafRef.current = null;
+            attemptScroll();
+          });
+        };
+
         if (typeof ResizeObserver !== "undefined") {
           resizeObserver = new ResizeObserver(() => {
             scheduleAttempt();
