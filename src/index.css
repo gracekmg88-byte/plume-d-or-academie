@@ -138,6 +138,7 @@
   body {
     @apply bg-background text-foreground font-sans antialiased;
     line-height: 1.65;
+    min-height: 100vh;
   }
 
   html.route-visual-hold *,
