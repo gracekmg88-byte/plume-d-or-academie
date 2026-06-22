@@ -9,7 +9,7 @@ import { FavoriteButton } from "@/components/publications/FavoriteButton";
 import { cn } from "@/lib/utils";
 import { fetchPublication } from "@/hooks/usePublications";
 import { getCurrentHistoryEntryKey, saveScrollPosition } from "@/lib/scroll-restoration";
-import { ensureRouteReady, preloadPublicationFlow } from "@/lib/route-preload";
+import { ensureNavigationReady, preloadPublicationFlow } from "@/lib/route-preload";
 import { buildPublicationPath } from "@/lib/slug";
 import { cacheImage } from "@/lib/image-cache";
 import { Capacitor } from "@capacitor/core";
@@ -99,8 +99,15 @@ export function PublicationCard({
 
     event.preventDefault();
 
+    const coverReady = coverImageUrl
+      ? Capacitor.isNativePlatform()
+        ? cacheImage(coverImageUrl)
+        : preloadImage(coverImageUrl)
+      : Promise.resolve();
+
     await Promise.allSettled([
-      ensureRouteReady(publicationPath),
+      ensureNavigationReady(publicationPath),
+      coverReady,
       queryClient.ensureQueryData({
         queryKey: ["publication", id],
         queryFn: () => fetchPublication(id),
@@ -109,7 +116,7 @@ export function PublicationCard({
     ]);
 
     navigate(publicationPath, { state: linkState });
-  }, [id, linkState, navigate, prepareNavigation, publicationPath, queryClient]);
+  }, [coverImageUrl, id, linkState, navigate, prepareNavigation, publicationPath, queryClient]);
 
   // Prefetch metadata + warm thumbnail when card scrolls into view
   useEffect(() => {
@@ -130,7 +137,6 @@ export function PublicationCard({
     );
     io.observe(el);
     return () => io.disconnect();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [prefetchAll]);
 
   const linkProps = {

@@ -1,3 +1,7 @@
+import heroLibraryImage from "@/assets/hero-library.webp";
+import heroBibliothequeImage from "@/assets/hero-bibliotheque.webp";
+import { preloadImage } from "@/components/ui/cached-image";
+
 export const loadBibliothequePage = () => import("@/pages/Bibliotheque");
 export const loadPublicationPage = () => import("@/pages/Publication");
 export const loadAProposPage = () => import("@/pages/APropos");
@@ -107,6 +111,11 @@ const PREFIX_LOADERS: Array<[string, () => Promise<unknown>]> = [
 const warmed = new Set<string>();
 const warming = new Map<string, Promise<void>>();
 
+const ROUTE_ASSETS: Array<[string, string[]]> = [
+  ["/bibliotheque", [heroBibliothequeImage]],
+  ["/", [heroLibraryImage]],
+];
+
 function getRouteLoader(to: string) {
   if (!to || typeof to !== "string") return;
   const path = to.split("?")[0].split("#")[0];
@@ -143,8 +152,19 @@ export function ensureRouteReady(to: string) {
   return promise;
 }
 
+export function ensureRouteAssetsReady(to: string) {
+  const path = to.split("?")[0].split("#")[0] || "/";
+  const match = ROUTE_ASSETS.find(([route]) => route === path);
+  if (!match) return Promise.resolve();
+  return Promise.allSettled(match[1].map((url) => preloadImage(url))).then(() => undefined);
+}
+
+export function ensureNavigationReady(to: string) {
+  return Promise.allSettled([ensureRouteReady(to), ensureRouteAssetsReady(to)]).then(() => undefined);
+}
+
 export function prefetchRoute(to: string) {
-  void ensureRouteReady(to).catch(() => {
+  void ensureNavigationReady(to).catch(() => {
     const path = to.split("?")[0].split("#")[0];
     warming.delete(path);
   });
