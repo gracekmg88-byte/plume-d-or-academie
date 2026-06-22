@@ -48,7 +48,7 @@ export default function Contact() {
           <div className="absolute inset-0 bg-gradient-to-r from-secondary/95 via-secondary/85 to-secondary/70" />
         </div>
         <div className="relative container">
-          <div className="max-w-3xl animate-slide-up">
+          <div className="max-w-3xl">
             <h1 className="font-serif text-3xl md:text-4xl lg:text-5xl font-bold text-secondary-foreground mb-6">
               {t("contact.title")}
             </h1>

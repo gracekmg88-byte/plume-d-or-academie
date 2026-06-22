@@ -1,4 +1,5 @@
 import { useState, type MouseEvent } from "react";
+import { flushSync } from "react-dom";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Menu, X, BookOpen, Feather, User, LogIn, Crown, Sun, Moon, Globe, MessageCircle, Download } from "lucide-react";
 import { NotificationCenter } from "@/components/layout/NotificationCenter";
@@ -50,12 +51,11 @@ export function Header() {
       return;
     }
     saveScrollPosition(getCurrentHistoryEntryKey(), `${location.pathname}${location.search}`, window.scrollY);
-    // Keep the mobile menu visible (covers the page) during preload so the user
-    // never sees the underlying page flash through. Close it only after we
-    // have actually navigated to the new route.
     await ensureNavigationReady(href);
-    navigate(href);
-    setMobileMenuOpen(false);
+    flushSync(() => {
+      setMobileMenuOpen(false);
+      navigate(href);
+    });
   };
 
   return (
@@ -178,7 +178,7 @@ export function Header() {
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden fixed inset-x-0 top-16 bottom-0 z-40 border-t border-border bg-background overflow-y-auto animate-fade-in">
+        <div className="md:hidden border-t border-border bg-background animate-fade-in">
           <nav className="container py-4 space-y-1">
             {navLinks.map((link) => (
               <Link
