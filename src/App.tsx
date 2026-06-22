@@ -87,6 +87,42 @@ const queryClient = new QueryClient({
 // Pre-load image cache index at startup for instant lookups on native
 warmUpCache().catch(() => {});
 
+const ROUTE_VISUAL_HOLD_CLASS = "route-visual-hold";
+let routeVisualHoldTimeout: number | null = null;
+
+function holdRouteVisuals(timeout = 2500) {
+  document.documentElement.classList.add(ROUTE_VISUAL_HOLD_CLASS);
+  if (routeVisualHoldTimeout !== null) {
+    window.clearTimeout(routeVisualHoldTimeout);
+  }
+  routeVisualHoldTimeout = window.setTimeout(() => {
+    document.documentElement.classList.remove(ROUTE_VISUAL_HOLD_CLASS);
+    routeVisualHoldTimeout = null;
+  }, timeout);
+}
+
+function releaseRouteVisuals() {
+  if (routeVisualHoldTimeout !== null) {
+    window.clearTimeout(routeVisualHoldTimeout);
+    routeVisualHoldTimeout = null;
+  }
+  document.documentElement.classList.remove(ROUTE_VISUAL_HOLD_CLASS);
+}
+
+function releaseRouteVisualsAfterPaint(delay = 180) {
+  if (routeVisualHoldTimeout !== null) {
+    window.clearTimeout(routeVisualHoldTimeout);
+    routeVisualHoldTimeout = null;
+  }
+  window.requestAnimationFrame(() => {
+    window.requestAnimationFrame(() => {
+      routeVisualHoldTimeout = window.setTimeout(() => {
+        releaseRouteVisuals();
+      }, delay);
+    });
+  });
+}
+
 function ScrollManager({ location }: { location: ReturnType<typeof useLocation> }) {
   const { pathname, search, key } = location;
   const routeId = `${pathname}${search}`;
@@ -115,9 +151,13 @@ function ScrollManager({ location }: { location: ReturnType<typeof useLocation> 
       cancelRestoreRef.current();
       cancelRestoreRef.current = null;
     }
+    const routeChanged = prev.pathname !== pathname || prev.search !== search || prev.key !== key;
+    if (routeChanged) {
+      holdRouteVisuals(3000);
+    }
     prevRef.current = { pathname, search, key };
 
-    if ((prev.pathname !== pathname || prev.search !== search || prev.key !== key) && prev.pathname) {
+    if (routeChanged && prev.pathname) {
       saveScrollPosition(prev.key, `${prev.pathname}${prev.search}`, lastScrollYRef.current);
     }
 
@@ -134,6 +174,7 @@ function ScrollManager({ location }: { location: ReturnType<typeof useLocation> 
 
       isRestoringRef.current = true;
       if (savedY > 0) {
+        holdRouteVisuals(8000);
         let cancelled = false;
         let resizeObserver: ResizeObserver | null = null;
         let mutationObserver: MutationObserver | null = null;
@@ -157,6 +198,7 @@ function ScrollManager({ location }: { location: ReturnType<typeof useLocation> 
           resizeObserver?.disconnect();
           mutationObserver?.disconnect();
           isRestoringRef.current = false;
+          releaseRouteVisuals();
         };
 
         const attemptScroll = () => {
@@ -227,12 +269,15 @@ function ScrollManager({ location }: { location: ReturnType<typeof useLocation> 
         window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
         lastScrollYRef.current = 0;
         isRestoringRef.current = false;
+        releaseRouteVisualsAfterPaint();
       } else {
         isRestoringRef.current = false;
+        releaseRouteVisualsAfterPaint();
       }
     } else if (prev.pathname !== pathname || prev.search !== search) {
       window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
       lastScrollYRef.current = 0;
+      releaseRouteVisualsAfterPaint();
     }
 
     return () => {
@@ -306,14 +351,23 @@ function NavigationWarmup() {
       if (path && prefetchRouteFn) prefetchRouteFn(path);
     };
 
+    const holdBeforeNavigation = (e: Event) => {
+      const path = extractPath(e.target);
+      if (!path) return;
+      const currentPath = `${window.location.pathname}${window.location.search}`;
+      if (path !== currentPath) holdRouteVisuals(3000);
+    };
+
     document.addEventListener("mouseover", handler, { passive: true });
     document.addEventListener("focusin", handler, { passive: true });
     document.addEventListener("touchstart", handler, { passive: true });
+    document.addEventListener("click", holdBeforeNavigation, { capture: true, passive: true });
 
     return () => {
       document.removeEventListener("mouseover", handler);
       document.removeEventListener("focusin", handler);
       document.removeEventListener("touchstart", handler);
+      document.removeEventListener("click", holdBeforeNavigation, { capture: true });
     };
   }, []);
 

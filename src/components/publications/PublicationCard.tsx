@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback, type MouseEvent } from "react";
+import { useEffect, useRef, useCallback, useMemo, type MouseEvent } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Book, FileText, GraduationCap, Newspaper, Eye } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -35,6 +35,8 @@ const categoryConfig: Record<Category, { label: string; icon: typeof Book; class
   article: { label: "Article", icon: Newspaper, className: "bg-purple-500/10 text-purple-600" },
 };
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export function PublicationCard({
   id,
   title,
@@ -45,7 +47,7 @@ export function PublicationCard({
   viewsCount,
   variant = "grid",
 }: PublicationCardProps) {
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const config = categoryConfig[category];
@@ -75,16 +77,19 @@ export function PublicationCard({
 
   const prepareNavigation = useCallback(() => {
     const entryKey = getCurrentHistoryEntryKey();
-    saveScrollPosition(entryKey, pathname, window.scrollY);
+    saveScrollPosition(entryKey, `${pathname}${search}`, window.scrollY);
     prefetchAll();
-  }, [pathname, prefetchAll]);
+  }, [pathname, prefetchAll, search]);
 
   const publicationPath = buildPublicationPath({ id, title, category });
-  const linkState = {
-    returnTo: `${pathname}${window.location.search}`,
-    returnKey: getCurrentHistoryEntryKey(),
-    returnPublicationId: id,
-  };
+  const linkState = useMemo(
+    () => ({
+      returnTo: `${pathname}${search}`,
+      returnKey: getCurrentHistoryEntryKey(),
+      returnPublicationId: UUID_RE.test(id) ? id : undefined,
+    }),
+    [id, pathname, search],
+  );
 
   const handleNavigate = useCallback(async (event: MouseEvent<HTMLAnchorElement>) => {
     prepareNavigation();
@@ -94,14 +99,17 @@ export function PublicationCard({
 
     event.preventDefault();
 
-    try {
-      await ensureRouteReady(publicationPath);
-    } catch {
-      // Continue navigation even if preloading fails.
-    }
+    await Promise.allSettled([
+      ensureRouteReady(publicationPath),
+      queryClient.ensureQueryData({
+        queryKey: ["publication", id],
+        queryFn: () => fetchPublication(id),
+        staleTime: 60_000,
+      }),
+    ]);
 
     navigate(publicationPath, { state: linkState });
-  }, [linkState, navigate, prepareNavigation, publicationPath]);
+  }, [id, linkState, navigate, prepareNavigation, publicationPath, queryClient]);
 
   // Prefetch metadata + warm thumbnail when card scrolls into view
   useEffect(() => {
