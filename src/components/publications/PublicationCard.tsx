@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback, type MouseEvent } from "react";
+import { useEffect, useRef, useCallback, useMemo, type MouseEvent } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Book, FileText, GraduationCap, Newspaper, Eye } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -34,6 +34,8 @@ const categoryConfig: Record<Category, { label: string; icon: typeof Book; class
   tfc: { label: "TFC", icon: FileText, className: "bg-green-500/10 text-green-600" },
   article: { label: "Article", icon: Newspaper, className: "bg-purple-500/10 text-purple-600" },
 };
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export function PublicationCard({
   id,
@@ -80,11 +82,14 @@ export function PublicationCard({
   }, [pathname, prefetchAll]);
 
   const publicationPath = buildPublicationPath({ id, title, category });
-  const linkState = {
-    returnTo: `${pathname}${window.location.search}`,
-    returnKey: getCurrentHistoryEntryKey(),
-    returnPublicationId: id,
-  };
+  const linkState = useMemo(
+    () => ({
+      returnTo: `${pathname}${window.location.search}`,
+      returnKey: getCurrentHistoryEntryKey(),
+      returnPublicationId: UUID_RE.test(id) ? id : undefined,
+    }),
+    [id, pathname],
+  );
 
   const handleNavigate = useCallback(async (event: MouseEvent<HTMLAnchorElement>) => {
     prepareNavigation();
