@@ -109,6 +109,16 @@ function releaseRouteVisuals() {
   document.documentElement.classList.remove(ROUTE_VISUAL_HOLD_CLASS);
 }
 
+function releaseRouteVisualsAfterPaint(delay = 180) {
+  window.requestAnimationFrame(() => {
+    window.requestAnimationFrame(() => {
+      routeVisualHoldTimeout = window.setTimeout(() => {
+        releaseRouteVisuals();
+      }, delay);
+    });
+  });
+}
+
 function ScrollManager({ location }: { location: ReturnType<typeof useLocation> }) {
   const { pathname, search, key } = location;
   const routeId = `${pathname}${search}`;
@@ -251,15 +261,15 @@ function ScrollManager({ location }: { location: ReturnType<typeof useLocation> 
         window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
         lastScrollYRef.current = 0;
         isRestoringRef.current = false;
-        releaseRouteVisuals();
+        releaseRouteVisualsAfterPaint();
       } else {
         isRestoringRef.current = false;
-        releaseRouteVisuals();
+        releaseRouteVisualsAfterPaint();
       }
     } else if (prev.pathname !== pathname || prev.search !== search) {
       window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
       lastScrollYRef.current = 0;
-      releaseRouteVisuals();
+      releaseRouteVisualsAfterPaint();
     }
 
     return () => {
