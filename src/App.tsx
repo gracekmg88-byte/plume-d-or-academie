@@ -66,6 +66,7 @@ const AdminSeo = lazy(() => import("./pages/admin/AdminSeo"));
 const Auteur = lazy(() => import("./pages/Auteur"));
 const AdminAuthLogs = lazy(() => import("./pages/admin/AdminAuthLogs"));
 const CatalogDiagnostic = lazy(() => import("./pages/CatalogDiagnostic"));
+const Confidentialite = lazy(() => import("./pages/Confidentialite"));
 
 import { AdminGuard } from "@/components/auth/AdminGuard";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
