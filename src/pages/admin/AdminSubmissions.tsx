@@ -16,6 +16,7 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { useAdminSubmissions, useUpdateSubmissionStatus, type Submission } from "@/hooks/useSubmissions";
 import { useCreatePublication } from "@/hooks/usePublications";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -55,6 +56,51 @@ export default function AdminSubmissions() {
     );
   }
 
+  const isStoragePath = (value: string) =>
+    !!value && !value.startsWith("http://") && !value.startsWith("https://");
+
+  const openSubmissionFile = async (fileUrl: string) => {
+    try {
+      if (!isStoragePath(fileUrl)) {
+        window.open(fileUrl, "_blank", "noopener,noreferrer");
+        return;
+      }
+      const { data, error } = await supabase.storage
+        .from("submissions")
+        .createSignedUrl(fileUrl, 60 * 10);
+      if (error || !data) throw error ?? new Error("Signed URL error");
+      window.open(data.signedUrl, "_blank", "noopener,noreferrer");
+    } catch (e) {
+      console.error(e);
+      toast.error("Impossible d'ouvrir le fichier.");
+    }
+  };
+
+  const promoteFileToPublic = async (fileUrl: string): Promise<string> => {
+    // If it's already a public URL (legacy submissions), keep it.
+    if (!isStoragePath(fileUrl)) return fileUrl;
+
+    const sourcePath = fileUrl;
+    const fileName = sourcePath.split("/").pop() ?? `submission-${Date.now()}.pdf`;
+    const destPath = `approved/${Date.now()}-${fileName}`;
+
+    const { data: downloaded, error: downloadErr } = await supabase.storage
+      .from("submissions")
+      .download(sourcePath);
+    if (downloadErr || !downloaded) throw downloadErr ?? new Error("Download failed");
+
+    const { error: uploadErr } = await supabase.storage
+      .from("publications")
+      .upload(destPath, downloaded, {
+        contentType: downloaded.type || "application/pdf",
+        upsert: false,
+      });
+    if (uploadErr) throw uploadErr;
+
+    const { data: urlData } = supabase.storage.from("publications").getPublicUrl(destPath);
+    return urlData.publicUrl;
+  };
+
   const handleAction = async () => {
     if (!selected || !action) return;
 
@@ -65,14 +111,15 @@ export default function AdminSubmissions() {
         admin_note: adminNote || undefined,
       });
 
-      // If approved, auto-create publication
+      // If approved, copy the private file to the public bucket and create publication.
       if (action === "approve") {
+        const publicFileUrl = await promoteFileToPublic(selected.file_url);
         await createPublication.mutateAsync({
           title: selected.title,
           author: selected.student_name,
           description: selected.description || `${selected.university} — ${selected.faculty} (${selected.academic_year})`,
           category: selected.category as "memoire" | "tfc" | "article",
-          file_url: selected.file_url,
+          file_url: publicFileUrl,
           is_published: true,
         });
         toast.success("Soumission approuvée et publiée !");
@@ -171,11 +218,14 @@ export default function AdminSubmissions() {
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-1">
                           {sub.file_url && (
-                            <a href={sub.file_url} target="_blank" rel="noopener noreferrer">
-                              <Button variant="ghost" size="icon" title="Voir le fichier">
-                                <Eye className="h-4 w-4" />
-                              </Button>
-                            </a>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              title="Voir le fichier"
+                              onClick={() => openSubmissionFile(sub.file_url)}
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
                           )}
                           {sub.status === "pending" && (
                             <>
