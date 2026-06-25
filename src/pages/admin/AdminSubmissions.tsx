@@ -218,11 +218,14 @@ export default function AdminSubmissions() {
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-1">
                           {sub.file_url && (
-                            <a href={sub.file_url} target="_blank" rel="noopener noreferrer">
-                              <Button variant="ghost" size="icon" title="Voir le fichier">
-                                <Eye className="h-4 w-4" />
-                              </Button>
-                            </a>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              title="Voir le fichier"
+                              onClick={() => openSubmissionFile(sub.file_url)}
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
                           )}
                           {sub.status === "pending" && (
                             <>
