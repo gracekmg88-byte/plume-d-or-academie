@@ -113,8 +113,8 @@ export default function DepotMemoire() {
       console.warn("PDF optimization skipped:", err);
     }
 
-    const fileName = `submissions/${user.id}/${Date.now()}-${toUpload.name}`;
-    const { error } = await supabase.storage.from("publications").upload(fileName, toUpload);
+    const fileName = `${user.id}/${Date.now()}-${toUpload.name}`;
+    const { error } = await supabase.storage.from("submissions").upload(fileName, toUpload);
 
     if (error) {
       toast.error("Erreur lors du téléversement.");
@@ -122,8 +122,8 @@ export default function DepotMemoire() {
       return;
     }
 
-    const { data: urlData } = supabase.storage.from("publications").getPublicUrl(fileName);
-    setFileUrl(urlData.publicUrl);
+    // Store the storage path (not a public URL). Admin will resolve via signed URL.
+    setFileUrl(fileName);
     setUploading(false);
     toast.success("Fichier téléversé !");
   };
