@@ -138,7 +138,8 @@ Deno.serve(async (req) => {
       },
     });
   } catch (err) {
-    return new Response(`<!-- sitemap error: ${(err as Error).message} -->`, {
+    console.error("sitemap error:", err);
+    return new Response(`<!-- sitemap temporarily unavailable -->`, {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/xml" },
     });
