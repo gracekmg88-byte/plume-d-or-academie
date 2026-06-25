@@ -16,6 +16,7 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { useAdminSubmissions, useUpdateSubmissionStatus, type Submission } from "@/hooks/useSubmissions";
 import { useCreatePublication } from "@/hooks/usePublications";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
