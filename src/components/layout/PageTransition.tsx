@@ -1,9 +1,15 @@
 import { ReactNode } from "react";
+import { useLocation } from "react-router-dom";
 
 interface PageTransitionProps {
   children: ReactNode;
 }
 
 export function PageTransition({ children }: PageTransitionProps) {
-  return <>{children}</>;
+  const location = useLocation();
+  return (
+    <div key={location.pathname} className="animate-page-text-in">
+      {children}
+    </div>
+  );
 }
