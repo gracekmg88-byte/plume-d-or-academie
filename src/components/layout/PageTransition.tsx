@@ -17,40 +17,15 @@ export function PageTransition({ children }: PageTransitionProps) {
   const location = useLocation();
   const routeKey = `${location.pathname}${location.search}`;
   const animated = ANIMATED_ROUTES.has(location.pathname);
-  const [transitionState, setTransitionState] = useState<"preparing" | "enter">(
-    animated ? "preparing" : "enter"
-  );
+  // Start directly in "enter" so the animation plays immediately on mount,
+  // in sync with the page's background/images — no preparing delay.
+  const [state, setState] = useState<"enter">("enter");
 
   useEffect(() => {
-    if (!animated) {
-      setTransitionState("enter");
-      return;
-    }
-
-    let frame = 0;
-    let timeout = 0;
-    let cancelled = false;
-
-    setTransitionState("preparing");
-
-    const startAnimation = () => {
-      if (cancelled) return;
-      if (document.documentElement.classList.contains("route-visual-hold")) {
-        timeout = window.setTimeout(startAnimation, 40);
-        return;
-      }
-      setTransitionState("enter");
-    };
-
-    frame = window.requestAnimationFrame(() => {
-      timeout = window.setTimeout(startAnimation, 40);
-    });
-
-    return () => {
-      cancelled = true;
-      window.cancelAnimationFrame(frame);
-      window.clearTimeout(timeout);
-    };
+    if (!animated) return;
+    // Force a re-trigger of the CSS animation on route change by toggling
+    // the class off then on within the same frame.
+    setState("enter");
   }, [routeKey, animated]);
 
   if (!animated) {
@@ -58,7 +33,10 @@ export function PageTransition({ children }: PageTransitionProps) {
   }
 
   return (
-    <div className={`page-transition-root page-transition-${transitionState}`}>
+    <div
+      key={routeKey}
+      className={`page-transition-root page-transition-${state}`}
+    >
       {children}
     </div>
   );
