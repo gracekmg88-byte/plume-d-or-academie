@@ -178,7 +178,7 @@ export function Header() {
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-border bg-background animate-mobile-menu-in">
+        <div className="md:hidden border-t border-border bg-background">
           <nav className="container py-4 space-y-1">
             {navLinks.map((link) => (
               <Link
