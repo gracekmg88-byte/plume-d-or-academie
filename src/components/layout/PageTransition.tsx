@@ -8,14 +8,14 @@ interface PageTransitionProps {
 export function PageTransition({ children }: PageTransitionProps) {
   const location = useLocation();
   const routeKey = `${location.pathname}${location.search}`;
-  const [animatedRoute, setAnimatedRoute] = useState<string | null>(null);
+  const [transitionState, setTransitionState] = useState<"preparing" | "enter">("enter");
 
   useEffect(() => {
     let frame = 0;
     let timeout = 0;
     let cancelled = false;
 
-    setAnimatedRoute(null);
+    setTransitionState("preparing");
 
     const startAnimation = () => {
       if (cancelled) return;
@@ -25,11 +25,11 @@ export function PageTransition({ children }: PageTransitionProps) {
         return;
       }
 
-      setAnimatedRoute(routeKey);
+      setTransitionState("enter");
     };
 
     frame = window.requestAnimationFrame(() => {
-      timeout = window.setTimeout(startAnimation, 80);
+      timeout = window.setTimeout(startAnimation, 40);
     });
 
     return () => {
@@ -40,9 +40,7 @@ export function PageTransition({ children }: PageTransitionProps) {
   }, [routeKey]);
 
   return (
-    <div
-      className={animatedRoute === routeKey ? "page-transition-root page-transition-enter" : "page-transition-root"}
-    >
+    <div className={`page-transition-root page-transition-${transitionState}`}>
       {children}
     </div>
   );
