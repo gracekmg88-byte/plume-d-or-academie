@@ -1,7 +1,7 @@
 import { useState, type MouseEvent } from "react";
 import { flushSync } from "react-dom";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Menu, X, BookOpen, Feather, User, LogIn, Crown, Sun, Moon, Globe, MessageCircle, Download } from "lucide-react";
+import { Menu, X, BookOpen, Feather, User, LogIn, Crown, Sun, Moon, Globe, MessageCircle } from "lucide-react";
 import { NotificationCenter } from "@/components/layout/NotificationCenter";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -23,13 +23,6 @@ export function Header() {
   const { theme, toggleTheme } = useTheme();
   const { language, setLanguage, t } = useLanguage();
 
-  const capacitorBridge = window as Window & {
-    Capacitor?: { isNativePlatform?: () => boolean };
-  };
-  const isNativeApp =
-    window.matchMedia("(display-mode: standalone)").matches ||
-    capacitorBridge.Capacitor?.isNativePlatform?.();
-
   const navLinks = [
     { href: "/", label: t("nav.home") },
     { href: "/bibliotheque", label: t("nav.library") },
@@ -37,7 +30,6 @@ export function Header() {
     { href: "/chat", label: t("nav.chat"), icon: MessageCircle },
     { href: "/a-propos", label: t("nav.about") },
     { href: "/contact", label: t("nav.contact") },
-    ...(!isNativeApp ? [{ href: "/installer", label: t("nav.install"), icon: Download }] : []),
   ];
 
   const handleInternalNavigation = async (href: string, event: MouseEvent<HTMLElement>) => {
