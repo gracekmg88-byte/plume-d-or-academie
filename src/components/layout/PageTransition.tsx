@@ -29,7 +29,7 @@ export function PageTransition({ children }: PageTransitionProps) {
     };
 
     frame = window.requestAnimationFrame(() => {
-      timeout = window.setTimeout(startAnimation, 120);
+      timeout = window.setTimeout(startAnimation, 80);
     });
 
     return () => {
