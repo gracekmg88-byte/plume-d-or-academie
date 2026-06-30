@@ -41,7 +41,6 @@ export function PageTransition({ children }: PageTransitionProps) {
 
   return (
     <div
-      key={routeKey}
       className={animatedRoute === routeKey ? "page-transition-root page-transition-enter" : "page-transition-root"}
     >
       {children}

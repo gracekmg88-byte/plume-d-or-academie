@@ -225,91 +225,33 @@
 .page-transition-root {
   opacity: 1;
   transform: translateY(0);
-  will-change: opacity, transform;
 }
 
-/* Whole page fade + slide-up */
-.page-transition-enter {
-  animation: pageRootIn 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-/* Stagger primary blocks: hero title, section headings, cards, buttons */
+/* Only the top page title and the text directly under it move on navigation. */
 .page-transition-enter :is(
   section:first-of-type h1,
   main h1:first-of-type
 ) {
-  animation: pageTextIn 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
-  animation-delay: 60ms;
+  animation: pageTopTextIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .page-transition-enter :is(
   section:first-of-type p,
   main > p:first-of-type
 ) {
-  animation: pageTextIn 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
-  animation-delay: 120ms;
+  animation: pageTopTextIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) 80ms both;
 }
 
-.page-transition-enter section:nth-of-type(2) {
-  animation: pageSectionIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
-  animation-delay: 160ms;
-}
-
-.page-transition-enter section:nth-of-type(3) {
-  animation: pageSectionIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
-  animation-delay: 220ms;
-}
-
-@keyframes pageRootIn {
+@keyframes pageTopTextIn {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
-
-@keyframes pageSectionIn {
-  from {
-    opacity: 0;
-    transform: translateY(16px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes pageTextIn {
-  from {
-    opacity: 0;
-    transform: translateY(14px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Mobile menu open/close */
-@keyframes mobileMenuIn {
-  from {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-mobile-menu-in {
-  animation: mobileMenuIn 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
-  transform-origin: top center;
-}
-
 
 @keyframes fadeIn {
   from {
