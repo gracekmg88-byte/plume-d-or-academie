@@ -20,7 +20,7 @@ export const loadAdminDevicesPage = () => import("@/pages/admin/AdminDevices");
 export const loadAdminSubmissionsPage = () => import("@/pages/admin/AdminSubmissions");
 export const loadDepotMemoirePage = () => import("@/pages/DepotMemoire");
 export const loadChatPage = () => import("@/pages/Chat");
-export const loadInstallAppPage = () => import("@/pages/InstallApp");
+
 export const loadNotFoundPage = () => import("@/pages/NotFound");
 export const loadAdminCertificatesPage = () => import("@/pages/admin/AdminCertificates");
 export const loadAdminSeoPage = () => import("@/pages/admin/AdminSeo");
@@ -56,7 +56,7 @@ export function preloadCommonRoutes() {
     loadAbonnementPage(),
     loadChatPage(),
     loadDepotMemoirePage(),
-    loadInstallAppPage(),
+    
     loadResetPasswordPage(),
     loadNotFoundPage(),
     loadAuteurPage(),
@@ -102,7 +102,7 @@ const PREFIX_LOADERS: Array<[string, () => Promise<unknown>]> = [
   ["/admin", loadAdminLoginPage],
   ["/depot-memoire", loadDepotMemoirePage],
   ["/chat", loadChatPage],
-  ["/installer", loadInstallAppPage],
+  
   ["/verify/", loadVerifyCertificatePage],
   ["/verification", loadVerifyHomePage],
   ["/diagnostic-catalogue", loadCatalogDiagnosticPage],

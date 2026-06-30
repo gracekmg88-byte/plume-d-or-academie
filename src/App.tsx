@@ -27,7 +27,7 @@ import {
   loadChatPage,
   loadContactPage,
   loadDepotMemoirePage,
-  loadInstallAppPage,
+  
   loadNotFoundPage,
   loadProfilPage,
   loadPublicationFormPage,
@@ -58,7 +58,7 @@ const AdminDevices = lazy(loadAdminDevicesPage);
 const AdminSubmissions = lazy(loadAdminSubmissionsPage);
 const DepotMemoire = lazy(loadDepotMemoirePage);
 const Chat = lazy(loadChatPage);
-const InstallApp = lazy(loadInstallAppPage);
+
 const NotFound = lazy(loadNotFoundPage);
 const VerifyCertificate = lazy(() => import("./pages/VerifyCertificate"));
 const VerifyHome = lazy(() => import("./pages/VerifyHome"));
@@ -406,7 +406,7 @@ function AnimatedRoutes() {
           <Route path="/admin/submissions" element={<AdminGuard><AdminSubmissions /></AdminGuard>} />
           <Route path="/depot-memoire" element={<DepotMemoire />} />
           <Route path="/chat" element={<Chat />} />
-          <Route path="/installer" element={<InstallApp />} />
+          <Route path="/installer" element={<NotFound />} />
           <Route path="/verify/:number" element={<VerifyCertificate />} />
           <Route path="/verification" element={<VerifyHome />} />
           <Route path="/confidentialite" element={<Confidentialite />} />
