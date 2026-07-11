@@ -385,10 +385,16 @@ async function renderStandard(doc: any, opts: CertificatePdfInput, fR: any, fB: 
 }
 
 function drawStampStandard(page: any, cx: number, cy: number, accent: any, navy: any, fB: any, pubDate: string) {
+  const ink = rgb(0.72, 0.11, 0.12);
   page.drawCircle({ x: cx, y: cy, size: 45, borderColor: accent, borderWidth: 1.5 });
   page.drawCircle({ x: cx, y: cy, size: 39, borderColor: accent, borderWidth: 0.4 });
   drawCentered(page, "KMG BIBLIOTHÈQUE", cx, cy + 14, 7, fB, navy);
   drawCentered(page, "ARTICLE", cx, cy + 2, 8.5, fB, accent);
   drawCentered(page, "CERTIFIÉ", cx, cy - 10, 8.5, fB, accent);
   drawCentered(page, new Date(pubDate).getFullYear().toString(), cx, cy - 22, 8.5, fB, navy);
+  // Empreinte encre rouge officielle
+  page.drawCircle({ x: cx + 32, y: cy - 6, size: 26, borderColor: ink, borderWidth: 1.4, opacity: 0.85 });
+  page.drawCircle({ x: cx + 32, y: cy - 6, size: 21, borderColor: ink, borderWidth: 0.4, opacity: 0.85 });
+  page.drawText("OFFICIEL", { x: cx + 16, y: cy - 4, size: 7, font: fB, color: ink, rotate: degrees(-12), opacity: 0.9 });
+  page.drawText("KMG", { x: cx + 25, y: cy - 14, size: 6, font: fB, color: ink, rotate: degrees(-12), opacity: 0.9 });
 }
