@@ -81,7 +81,7 @@ function truncate(s: string, n: number) { return s.length > n ? s.slice(0, n - 1
 function fmtDate(d: string) { return new Date(d).toLocaleDateString("fr-FR"); }
 
 // ─── MODÈLE PREMIUM (Livres) ───────────────────────────────────────────────
-async function renderPremium(doc: any, opts: CertificatePdfInput, fR: any, fB: any, fO: any, qrImg: any) {
+async function renderPremium(doc: any, opts: CertificatePdfInput, fR: any, fB: any, fO: any, fS: any, qrImg: any) {
   const page = doc.addPage([842, 595]);
   const { width, height } = page.getSize();
   const navy = rgb(0.043, 0.106, 0.2);
