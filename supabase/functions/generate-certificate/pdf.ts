@@ -282,12 +282,18 @@ async function renderAcademique(doc: any, opts: CertificatePdfInput, fR: any, fB
 }
 
 function drawStampAcademique(page: any, cx: number, cy: number, blue: any, blueDark: any, fB: any, pubDate: string) {
+  const ink = rgb(0.72, 0.11, 0.12);
   page.drawCircle({ x: cx, y: cy, size: 52, borderColor: blue, borderWidth: 2 });
   page.drawCircle({ x: cx, y: cy, size: 45, borderColor: blue, borderWidth: 0.4 });
   drawCentered(page, "KMG BIBLIOTHÈQUE", cx, cy + 18, 7.5, fB, blueDark);
   drawCentered(page, "ACADÉMIQUE", cx, cy + 4, 8.5, fB, blue);
   drawCentered(page, "CERTIFIÉ", cx, cy - 8, 9, fB, blue);
   drawCentered(page, new Date(pubDate).getFullYear().toString(), cx, cy - 24, 9, fB, blueDark);
+  // Empreinte encre rouge officielle
+  page.drawCircle({ x: cx - 38, y: cy - 10, size: 30, borderColor: ink, borderWidth: 1.5, opacity: 0.85 });
+  page.drawCircle({ x: cx - 38, y: cy - 10, size: 25, borderColor: ink, borderWidth: 0.4, opacity: 0.85 });
+  page.drawText("OFFICIEL", { x: cx - 55, y: cy - 8, size: 7.5, font: fB, color: ink, rotate: degrees(12), opacity: 0.9 });
+  page.drawText("KMG", { x: cx - 46, y: cy - 20, size: 6.5, font: fB, color: ink, rotate: degrees(12), opacity: 0.9 });
 }
 
 // ─── MODÈLE STANDARD (Articles) ────────────────────────────────────────────
