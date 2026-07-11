@@ -9,20 +9,22 @@ import fontkit from "https://esm.sh/@pdf-lib/fontkit@1.1.1";
 const DEJAVU_REGULAR_URL = "https://cdn.jsdelivr.net/npm/dejavu-fonts-ttf@2.37.3/ttf/DejaVuSans.ttf";
 const DEJAVU_BOLD_URL    = "https://cdn.jsdelivr.net/npm/dejavu-fonts-ttf@2.37.3/ttf/DejaVuSans-Bold.ttf";
 const DEJAVU_OBLIQUE_URL = "https://cdn.jsdelivr.net/npm/dejavu-fonts-ttf@2.37.3/ttf/DejaVuSans-Oblique.ttf";
+const SCRIPT_URL         = "https://raw.githubusercontent.com/google/fonts/main/ofl/greatvibes/GreatVibes-Regular.ttf";
 
-let cR: Uint8Array | null = null, cB: Uint8Array | null = null, cO: Uint8Array | null = null;
+let cR: Uint8Array | null = null, cB: Uint8Array | null = null, cO: Uint8Array | null = null, cS: Uint8Array | null = null;
 async function fetchFont(url: string, get: () => Uint8Array | null, set: (b: Uint8Array) => void) {
   const c = get(); if (c) return c;
   const r = await fetch(url); if (!r.ok) throw new Error(`Police indisponible (${r.status})`);
   const b = new Uint8Array(await r.arrayBuffer()); set(b); return b;
 }
 async function loadFonts() {
-  const [regular, bold, oblique] = await Promise.all([
+  const [regular, bold, oblique, script] = await Promise.all([
     fetchFont(DEJAVU_REGULAR_URL, () => cR, (b) => (cR = b)),
     fetchFont(DEJAVU_BOLD_URL,    () => cB, (b) => (cB = b)),
     fetchFont(DEJAVU_OBLIQUE_URL, () => cO, (b) => (cO = b)),
+    fetchFont(SCRIPT_URL,         () => cS, (b) => (cS = b)),
   ]);
-  return { regular, bold, oblique };
+  return { regular, bold, oblique, script };
 }
 
 export type Template = "premium" | "academique" | "standard";
