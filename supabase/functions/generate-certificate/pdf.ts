@@ -351,8 +351,9 @@ async function renderStandard(doc: any, opts: CertificatePdfInput, fR: any, fB: 
   });
   drawCentered(page, `Vérification : ${truncate(opts.verificationUrl, 75)}`, width / 2, blockY - 48, 8, fO, muted);
 
-  // Signature
+  // Signature manuscrite
   const sy = 90;
+  page.drawText("K. Mukendi", { x: 70, y: sy + 28, size: 24, font: fS, color: navy });
   page.drawLine({ start: { x: 60, y: sy + 22 }, end: { x: 280, y: sy + 22 }, color: navy, thickness: 0.6 });
   page.drawText("SIGNÉ NUMÉRIQUEMENT", { x: 60, y: sy + 8, size: 8, font: fB, color: navy });
   page.drawText("Direction KMG Bibliothèque", { x: 60, y: sy - 4, size: 9, font: fO, color: dark });
