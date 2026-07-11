@@ -9,20 +9,22 @@ import fontkit from "https://esm.sh/@pdf-lib/fontkit@1.1.1";
 const DEJAVU_REGULAR_URL = "https://cdn.jsdelivr.net/npm/dejavu-fonts-ttf@2.37.3/ttf/DejaVuSans.ttf";
 const DEJAVU_BOLD_URL    = "https://cdn.jsdelivr.net/npm/dejavu-fonts-ttf@2.37.3/ttf/DejaVuSans-Bold.ttf";
 const DEJAVU_OBLIQUE_URL = "https://cdn.jsdelivr.net/npm/dejavu-fonts-ttf@2.37.3/ttf/DejaVuSans-Oblique.ttf";
+const SCRIPT_URL         = "https://raw.githubusercontent.com/google/fonts/main/ofl/greatvibes/GreatVibes-Regular.ttf";
 
-let cR: Uint8Array | null = null, cB: Uint8Array | null = null, cO: Uint8Array | null = null;
+let cR: Uint8Array | null = null, cB: Uint8Array | null = null, cO: Uint8Array | null = null, cS: Uint8Array | null = null;
 async function fetchFont(url: string, get: () => Uint8Array | null, set: (b: Uint8Array) => void) {
   const c = get(); if (c) return c;
   const r = await fetch(url); if (!r.ok) throw new Error(`Police indisponible (${r.status})`);
   const b = new Uint8Array(await r.arrayBuffer()); set(b); return b;
 }
 async function loadFonts() {
-  const [regular, bold, oblique] = await Promise.all([
+  const [regular, bold, oblique, script] = await Promise.all([
     fetchFont(DEJAVU_REGULAR_URL, () => cR, (b) => (cR = b)),
     fetchFont(DEJAVU_BOLD_URL,    () => cB, (b) => (cB = b)),
     fetchFont(DEJAVU_OBLIQUE_URL, () => cO, (b) => (cO = b)),
+    fetchFont(SCRIPT_URL,         () => cS, (b) => (cS = b)),
   ]);
-  return { regular, bold, oblique };
+  return { regular, bold, oblique, script };
 }
 
 export type Template = "premium" | "academique" | "standard";
@@ -58,15 +60,16 @@ export interface CertificatePdfInput {
 export async function buildCertificatePdf(opts: CertificatePdfInput): Promise<Uint8Array> {
   const doc = await PDFDocument.create();
   doc.registerFontkit(fontkit);
-  const { regular, bold, oblique } = await loadFonts();
+  const { regular, bold, oblique, script } = await loadFonts();
   const fR = await doc.embedFont(regular, { subset: true });
   const fB = await doc.embedFont(bold, { subset: true });
   const fO = await doc.embedFont(oblique, { subset: true });
+  const fS = await doc.embedFont(script, { subset: true });
   const qrImg = await doc.embedPng(opts.qrBytes);
 
-  if (opts.template === "premium")    return await renderPremium(doc, opts, fR, fB, fO, qrImg);
-  if (opts.template === "academique") return await renderAcademique(doc, opts, fR, fB, fO, qrImg);
-  return await renderStandard(doc, opts, fR, fB, fO, qrImg);
+  if (opts.template === "premium")    return await renderPremium(doc, opts, fR, fB, fO, fS, qrImg);
+  if (opts.template === "academique") return await renderAcademique(doc, opts, fR, fB, fO, fS, qrImg);
+  return await renderStandard(doc, opts, fR, fB, fO, fS, qrImg);
 }
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
@@ -78,7 +81,7 @@ function truncate(s: string, n: number) { return s.length > n ? s.slice(0, n - 1
 function fmtDate(d: string) { return new Date(d).toLocaleDateString("fr-FR"); }
 
 // ─── MODÈLE PREMIUM (Livres) ───────────────────────────────────────────────
-async function renderPremium(doc: any, opts: CertificatePdfInput, fR: any, fB: any, fO: any, qrImg: any) {
+async function renderPremium(doc: any, opts: CertificatePdfInput, fR: any, fB: any, fO: any, fS: any, qrImg: any) {
   const page = doc.addPage([842, 595]);
   const { width, height } = page.getSize();
   const navy = rgb(0.043, 0.106, 0.2);
@@ -151,14 +154,15 @@ async function renderPremium(doc: any, opts: CertificatePdfInput, fR: any, fB: a
   line("Date certification :", fmtDate(new Date().toISOString()));
   line("Vérification :", truncate(opts.verificationUrl, 50));
 
-  // Signature
+  // Signature manuscrite
   const sy = 90;
+  page.drawText("K. Mukendi", { x: ix + 10, y: sy + 28, size: 26, font: fS, color: navy });
   page.drawLine({ start: { x: ix, y: sy + 22 }, end: { x: ix + 220, y: sy + 22 }, color: gold, thickness: 0.8 });
   page.drawText("SIGNÉ NUMÉRIQUEMENT", { x: ix, y: sy + 8, size: 8, font: fB, color: navy });
   page.drawText("Direction KMG Bibliothèque", { x: ix, y: sy - 4, size: 9, font: fO, color: dark });
   page.drawText(`${new Date().toLocaleString("fr-FR")} • ${opts.certificateNumber}`, { x: ix, y: sy - 16, size: 7, font: fR, color: muted });
 
-  // Cachet doré
+  // Sceau officiel doré
   drawStampPremium(page, width / 2, 115, gold, navy, fB, opts.publicationDate);
 
   // QR
@@ -173,6 +177,7 @@ async function renderPremium(doc: any, opts: CertificatePdfInput, fR: any, fB: a
 }
 
 function drawStampPremium(page: any, cx: number, cy: number, gold: any, navy: any, fB: any, pubDate: string) {
+  const ink = rgb(0.72, 0.11, 0.12);
   page.drawCircle({ x: cx, y: cy, size: 60, borderColor: gold, borderWidth: 2.5 });
   page.drawCircle({ x: cx, y: cy, size: 53, borderColor: gold, borderWidth: 0.6 });
   page.drawCircle({ x: cx, y: cy, size: 46, borderColor: navy, borderWidth: 0.4 });
@@ -181,10 +186,15 @@ function drawStampPremium(page: any, cx: number, cy: number, gold: any, navy: an
   drawCentered(page, "LIVRE", cx, cy + 2, 11, fB, gold);
   drawCentered(page, "CERTIFIÉ", cx, cy - 12, 10, fB, gold);
   drawCentered(page, new Date(pubDate).getFullYear().toString(), cx, cy - 28, 10, fB, navy);
+  // Empreinte encre rouge officielle
+  page.drawCircle({ x: cx + 42, y: cy - 8, size: 34, borderColor: ink, borderWidth: 1.8, opacity: 0.85 });
+  page.drawCircle({ x: cx + 42, y: cy - 8, size: 28, borderColor: ink, borderWidth: 0.5, opacity: 0.85 });
+  page.drawText("OFFICIEL", { x: cx + 22, y: cy - 6, size: 8, font: fB, color: ink, rotate: degrees(-14), opacity: 0.9 });
+  page.drawText("KMG", { x: cx + 32, y: cy - 18, size: 7, font: fB, color: ink, rotate: degrees(-14), opacity: 0.9 });
 }
 
 // ─── MODÈLE ACADÉMIQUE (Mémoires / TFC) ────────────────────────────────────
-async function renderAcademique(doc: any, opts: CertificatePdfInput, fR: any, fB: any, fO: any, qrImg: any) {
+async function renderAcademique(doc: any, opts: CertificatePdfInput, fR: any, fB: any, fO: any, fS: any, qrImg: any) {
   const page = doc.addPage([842, 595]);
   const { width, height } = page.getSize();
   const blue = rgb(0.10, 0.30, 0.55);
@@ -249,8 +259,9 @@ async function renderAcademique(doc: any, opts: CertificatePdfInput, fR: any, fB
   row("Date certification", fmtDate(new Date().toISOString()));
   row("Vérification", truncate(opts.verificationUrl, 48));
 
-  // Signature
+  // Signature manuscrite
   const sy = 65;
+  page.drawText("K. Mukendi", { x: ix + 10, y: sy + 28, size: 24, font: fS, color: blueDark });
   page.drawLine({ start: { x: ix, y: sy + 22 }, end: { x: ix + 200, y: sy + 22 }, color: blue, thickness: 0.8 });
   page.drawText("SIGNÉ NUMÉRIQUEMENT — Direction KMG Bibliothèque", { x: ix, y: sy + 8, size: 8, font: fB, color: blueDark });
   page.drawText(`${new Date().toLocaleString("fr-FR")} • ${opts.certificateNumber}`, { x: ix, y: sy - 4, size: 7, font: fR, color: muted });
@@ -271,16 +282,22 @@ async function renderAcademique(doc: any, opts: CertificatePdfInput, fR: any, fB
 }
 
 function drawStampAcademique(page: any, cx: number, cy: number, blue: any, blueDark: any, fB: any, pubDate: string) {
+  const ink = rgb(0.72, 0.11, 0.12);
   page.drawCircle({ x: cx, y: cy, size: 52, borderColor: blue, borderWidth: 2 });
   page.drawCircle({ x: cx, y: cy, size: 45, borderColor: blue, borderWidth: 0.4 });
   drawCentered(page, "KMG BIBLIOTHÈQUE", cx, cy + 18, 7.5, fB, blueDark);
   drawCentered(page, "ACADÉMIQUE", cx, cy + 4, 8.5, fB, blue);
   drawCentered(page, "CERTIFIÉ", cx, cy - 8, 9, fB, blue);
   drawCentered(page, new Date(pubDate).getFullYear().toString(), cx, cy - 24, 9, fB, blueDark);
+  // Empreinte encre rouge officielle
+  page.drawCircle({ x: cx - 38, y: cy - 10, size: 30, borderColor: ink, borderWidth: 1.5, opacity: 0.85 });
+  page.drawCircle({ x: cx - 38, y: cy - 10, size: 25, borderColor: ink, borderWidth: 0.4, opacity: 0.85 });
+  page.drawText("OFFICIEL", { x: cx - 55, y: cy - 8, size: 7.5, font: fB, color: ink, rotate: degrees(12), opacity: 0.9 });
+  page.drawText("KMG", { x: cx - 46, y: cy - 20, size: 6.5, font: fB, color: ink, rotate: degrees(12), opacity: 0.9 });
 }
 
 // ─── MODÈLE STANDARD (Articles) ────────────────────────────────────────────
-async function renderStandard(doc: any, opts: CertificatePdfInput, fR: any, fB: any, fO: any, qrImg: any) {
+async function renderStandard(doc: any, opts: CertificatePdfInput, fR: any, fB: any, fO: any, fS: any, qrImg: any) {
   const page = doc.addPage([842, 595]);
   const { width, height } = page.getSize();
   const navy = rgb(0.043, 0.106, 0.2);
@@ -346,8 +363,9 @@ async function renderStandard(doc: any, opts: CertificatePdfInput, fR: any, fB: 
   });
   drawCentered(page, `Vérification : ${truncate(opts.verificationUrl, 75)}`, width / 2, blockY - 48, 8, fO, muted);
 
-  // Signature
+  // Signature manuscrite
   const sy = 90;
+  page.drawText("K. Mukendi", { x: 70, y: sy + 28, size: 24, font: fS, color: navy });
   page.drawLine({ start: { x: 60, y: sy + 22 }, end: { x: 280, y: sy + 22 }, color: navy, thickness: 0.6 });
   page.drawText("SIGNÉ NUMÉRIQUEMENT", { x: 60, y: sy + 8, size: 8, font: fB, color: navy });
   page.drawText("Direction KMG Bibliothèque", { x: 60, y: sy - 4, size: 9, font: fO, color: dark });
@@ -367,10 +385,16 @@ async function renderStandard(doc: any, opts: CertificatePdfInput, fR: any, fB: 
 }
 
 function drawStampStandard(page: any, cx: number, cy: number, accent: any, navy: any, fB: any, pubDate: string) {
+  const ink = rgb(0.72, 0.11, 0.12);
   page.drawCircle({ x: cx, y: cy, size: 45, borderColor: accent, borderWidth: 1.5 });
   page.drawCircle({ x: cx, y: cy, size: 39, borderColor: accent, borderWidth: 0.4 });
   drawCentered(page, "KMG BIBLIOTHÈQUE", cx, cy + 14, 7, fB, navy);
   drawCentered(page, "ARTICLE", cx, cy + 2, 8.5, fB, accent);
   drawCentered(page, "CERTIFIÉ", cx, cy - 10, 8.5, fB, accent);
   drawCentered(page, new Date(pubDate).getFullYear().toString(), cx, cy - 22, 8.5, fB, navy);
+  // Empreinte encre rouge officielle
+  page.drawCircle({ x: cx + 32, y: cy - 6, size: 26, borderColor: ink, borderWidth: 1.4, opacity: 0.85 });
+  page.drawCircle({ x: cx + 32, y: cy - 6, size: 21, borderColor: ink, borderWidth: 0.4, opacity: 0.85 });
+  page.drawText("OFFICIEL", { x: cx + 16, y: cy - 4, size: 7, font: fB, color: ink, rotate: degrees(-12), opacity: 0.9 });
+  page.drawText("KMG", { x: cx + 25, y: cy - 14, size: 6, font: fB, color: ink, rotate: degrees(-12), opacity: 0.9 });
 }
