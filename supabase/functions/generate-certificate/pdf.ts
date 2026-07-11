@@ -60,15 +60,16 @@ export interface CertificatePdfInput {
 export async function buildCertificatePdf(opts: CertificatePdfInput): Promise<Uint8Array> {
   const doc = await PDFDocument.create();
   doc.registerFontkit(fontkit);
-  const { regular, bold, oblique } = await loadFonts();
+  const { regular, bold, oblique, script } = await loadFonts();
   const fR = await doc.embedFont(regular, { subset: true });
   const fB = await doc.embedFont(bold, { subset: true });
   const fO = await doc.embedFont(oblique, { subset: true });
+  const fS = await doc.embedFont(script, { subset: true });
   const qrImg = await doc.embedPng(opts.qrBytes);
 
-  if (opts.template === "premium")    return await renderPremium(doc, opts, fR, fB, fO, qrImg);
-  if (opts.template === "academique") return await renderAcademique(doc, opts, fR, fB, fO, qrImg);
-  return await renderStandard(doc, opts, fR, fB, fO, qrImg);
+  if (opts.template === "premium")    return await renderPremium(doc, opts, fR, fB, fO, fS, qrImg);
+  if (opts.template === "academique") return await renderAcademique(doc, opts, fR, fB, fO, fS, qrImg);
+  return await renderStandard(doc, opts, fR, fB, fO, fS, qrImg);
 }
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
