@@ -253,8 +253,9 @@ async function renderAcademique(doc: any, opts: CertificatePdfInput, fR: any, fB
   row("Date certification", fmtDate(new Date().toISOString()));
   row("Vérification", truncate(opts.verificationUrl, 48));
 
-  // Signature
+  // Signature manuscrite
   const sy = 65;
+  page.drawText("K. Mukendi", { x: ix + 10, y: sy + 28, size: 24, font: fS, color: blueDark });
   page.drawLine({ start: { x: ix, y: sy + 22 }, end: { x: ix + 200, y: sy + 22 }, color: blue, thickness: 0.8 });
   page.drawText("SIGNÉ NUMÉRIQUEMENT — Direction KMG Bibliothèque", { x: ix, y: sy + 8, size: 8, font: fB, color: blueDark });
   page.drawText(`${new Date().toLocaleString("fr-FR")} • ${opts.certificateNumber}`, { x: ix, y: sy - 4, size: 7, font: fR, color: muted });
