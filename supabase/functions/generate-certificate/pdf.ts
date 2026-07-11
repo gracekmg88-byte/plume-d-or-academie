@@ -177,6 +177,7 @@ async function renderPremium(doc: any, opts: CertificatePdfInput, fR: any, fB: a
 }
 
 function drawStampPremium(page: any, cx: number, cy: number, gold: any, navy: any, fB: any, pubDate: string) {
+  const ink = rgb(0.72, 0.11, 0.12);
   page.drawCircle({ x: cx, y: cy, size: 60, borderColor: gold, borderWidth: 2.5 });
   page.drawCircle({ x: cx, y: cy, size: 53, borderColor: gold, borderWidth: 0.6 });
   page.drawCircle({ x: cx, y: cy, size: 46, borderColor: navy, borderWidth: 0.4 });
@@ -185,6 +186,11 @@ function drawStampPremium(page: any, cx: number, cy: number, gold: any, navy: an
   drawCentered(page, "LIVRE", cx, cy + 2, 11, fB, gold);
   drawCentered(page, "CERTIFIÉ", cx, cy - 12, 10, fB, gold);
   drawCentered(page, new Date(pubDate).getFullYear().toString(), cx, cy - 28, 10, fB, navy);
+  // Empreinte encre rouge officielle
+  page.drawCircle({ x: cx + 42, y: cy - 8, size: 34, borderColor: ink, borderWidth: 1.8, opacity: 0.85 });
+  page.drawCircle({ x: cx + 42, y: cy - 8, size: 28, borderColor: ink, borderWidth: 0.5, opacity: 0.85 });
+  page.drawText("OFFICIEL", { x: cx + 22, y: cy - 6, size: 8, font: fB, color: ink, rotate: degrees(-14), opacity: 0.9 });
+  page.drawText("KMG", { x: cx + 32, y: cy - 18, size: 7, font: fB, color: ink, rotate: degrees(-14), opacity: 0.9 });
 }
 
 // ─── MODÈLE ACADÉMIQUE (Mémoires / TFC) ────────────────────────────────────
