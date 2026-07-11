@@ -188,7 +188,7 @@ function drawStampPremium(page: any, cx: number, cy: number, gold: any, navy: an
 }
 
 // ─── MODÈLE ACADÉMIQUE (Mémoires / TFC) ────────────────────────────────────
-async function renderAcademique(doc: any, opts: CertificatePdfInput, fR: any, fB: any, fO: any, qrImg: any) {
+async function renderAcademique(doc: any, opts: CertificatePdfInput, fR: any, fB: any, fO: any, fS: any, qrImg: any) {
   const page = doc.addPage([842, 595]);
   const { width, height } = page.getSize();
   const blue = rgb(0.10, 0.30, 0.55);
