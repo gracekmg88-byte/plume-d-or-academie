@@ -154,14 +154,15 @@ async function renderPremium(doc: any, opts: CertificatePdfInput, fR: any, fB: a
   line("Date certification :", fmtDate(new Date().toISOString()));
   line("Vérification :", truncate(opts.verificationUrl, 50));
 
-  // Signature
+  // Signature manuscrite
   const sy = 90;
+  page.drawText("K. Mukendi", { x: ix + 10, y: sy + 28, size: 26, font: fS, color: navy });
   page.drawLine({ start: { x: ix, y: sy + 22 }, end: { x: ix + 220, y: sy + 22 }, color: gold, thickness: 0.8 });
   page.drawText("SIGNÉ NUMÉRIQUEMENT", { x: ix, y: sy + 8, size: 8, font: fB, color: navy });
   page.drawText("Direction KMG Bibliothèque", { x: ix, y: sy - 4, size: 9, font: fO, color: dark });
   page.drawText(`${new Date().toLocaleString("fr-FR")} • ${opts.certificateNumber}`, { x: ix, y: sy - 16, size: 7, font: fR, color: muted });
 
-  // Cachet doré
+  // Sceau officiel doré
   drawStampPremium(page, width / 2, 115, gold, navy, fB, opts.publicationDate);
 
   // QR
