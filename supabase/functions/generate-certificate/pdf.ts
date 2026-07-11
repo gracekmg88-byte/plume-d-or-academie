@@ -285,7 +285,7 @@ function drawStampAcademique(page: any, cx: number, cy: number, blue: any, blueD
 }
 
 // ─── MODÈLE STANDARD (Articles) ────────────────────────────────────────────
-async function renderStandard(doc: any, opts: CertificatePdfInput, fR: any, fB: any, fO: any, qrImg: any) {
+async function renderStandard(doc: any, opts: CertificatePdfInput, fR: any, fB: any, fO: any, fS: any, qrImg: any) {
   const page = doc.addPage([842, 595]);
   const { width, height } = page.getSize();
   const navy = rgb(0.043, 0.106, 0.2);
