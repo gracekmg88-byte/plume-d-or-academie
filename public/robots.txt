@@ -15,4 +15,4 @@ Allow: /
 Disallow: /admin
 
 Sitemap: https://vlqjdszawxtwutuzvskt.supabase.co/functions/v1/sitemap
-Sitemap: https://plume-d-or-academie.lovable.app/sitemap.xml
+Sitemap: https://www.kmgbibliotheque.com/sitemap.xml

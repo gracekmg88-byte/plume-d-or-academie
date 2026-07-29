@@ -18,7 +18,7 @@ interface ShareButtonsProps {
 export function ShareButtons({ title, description, publicationId }: ShareButtonsProps) {
   const { t } = useLanguage();
   // Use published URL for sharing (not capacitor:// or preview URLs)
-  const publishedOrigin = "https://plume-d-or-academie.lovable.app";
+  const publishedOrigin = "https://www.kmgbibliotheque.com";
   const url = `${publishedOrigin}/publication/${publicationId}`;
   const text = description ? `${title} — ${description}` : title;
 

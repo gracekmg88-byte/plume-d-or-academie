@@ -69,7 +69,7 @@ Deno.serve(async (req) => {
       article: "📰 Article",
     };
 
-    const siteUrl = "https://plume-d-or-academie.lovable.app";
+    const siteUrl = "https://www.kmgbibliotheque.com";
 
     // Build email HTML
     const publicationsList = publications

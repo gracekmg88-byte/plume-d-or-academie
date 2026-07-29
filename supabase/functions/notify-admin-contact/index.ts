@@ -124,7 +124,7 @@ const handler = async (req: Request): Promise<Response> => {
               
               <div class="cta">
                 <a href="mailto:${encodeURIComponent(record.email)}?subject=Re: ${encodeURIComponent(record.subject)}">Répondre par email</a>
-                <a href="https://plume-d-or-academie.lovable.app/admin/messages" class="secondary">Voir tous les messages</a>
+                <a href="https://www.kmgbibliotheque.com/admin/messages" class="secondary">Voir tous les messages</a>
               </div>
 
             </div>

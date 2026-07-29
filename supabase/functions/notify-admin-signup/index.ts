@@ -112,7 +112,7 @@ const handler = async (req: Request): Promise<Response> => {
               </div>
               
               <div class="cta">
-                <a href="https://plume-d-or-academie.lovable.app/admin/users">Gérer les utilisateurs</a>
+                <a href="https://www.kmgbibliotheque.com/admin/users">Gérer les utilisateurs</a>
               </div>
             </div>
             <div class="footer">

@@ -2,7 +2,7 @@
 // No redeploy needed when a new book is published.
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 
-const BASE_URL = "https://plume-d-or-academie.lovable.app";
+const BASE_URL = "https://www.kmgbibliotheque.com";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "https://vlqjdszawxtwutuzvskt.supabase.co";
 const SUPABASE_ANON = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
 

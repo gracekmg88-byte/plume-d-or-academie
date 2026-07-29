@@ -6,7 +6,7 @@
 import { writeFileSync } from "fs";
 import { resolve } from "path";
 
-const BASE_URL = "https://plume-d-or-academie.lovable.app";
+const BASE_URL = "https://www.kmgbibliotheque.com";
 const SUPABASE_URL = "https://vlqjdszawxtwutuzvskt.supabase.co";
 const SUPABASE_ANON =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZscWpkc3phd3h0d3V0dXp2c2t0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg1MDM4NjksImV4cCI6MjA4NDA3OTg2OX0.zbFWoYJbXZgdM9lfpOV3-YxZayClpw_Vp8i-cFC_77A";
