@@ -461,9 +461,10 @@ export default function Publication() {
         : undefined,
     genre: categoryLabel,
     datePublished,
-    abstract: displayPub.summary || undefined,
-    identifier: displayPub.publication_number || undefined,
-    isbn: detectedIsbn || undefined,
+    abstract: (displayPub as { summary?: string | null }).summary || undefined,
+    identifier: (displayPub as { publication_number?: string | null }).publication_number || undefined,
+    isbn:
+      (displayPub.description || "").match(/ISBN[:\s]*([0-9Xx\-]{10,17})/)?.[1] || undefined,
     publisher: {
       "@type": "Organization",
       name: "KMG Bibliothèque",
