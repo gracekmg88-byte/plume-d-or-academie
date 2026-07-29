@@ -461,6 +461,9 @@ export default function Publication() {
         : undefined,
     genre: categoryLabel,
     datePublished,
+    abstract: displayPub.summary || undefined,
+    identifier: displayPub.publication_number || undefined,
+    isbn: detectedIsbn || undefined,
     publisher: {
       "@type": "Organization",
       name: "KMG Bibliothèque",
