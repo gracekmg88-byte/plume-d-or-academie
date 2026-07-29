@@ -423,7 +423,7 @@ export default function Publication() {
     title: displayPub.title,
     category: displayPub.category,
   });
-  const canonicalUrl = `https://plume-d-or-academie.lovable.app${canonicalPath}`;
+  const canonicalUrl = `https://www.kmgbibliotheque.com${canonicalPath}`;
   const authorPath = displayPub.author ? buildAuthorPath(displayPub.author) : null;
   const coverAlt = displayPub.author
     ? `Couverture de "${displayPub.title}" par ${displayPub.author}`
@@ -444,7 +444,7 @@ export default function Publication() {
       ? {
           "@type": "Person",
           name: displayPub.author,
-          url: authorPath ? `https://plume-d-or-academie.lovable.app${authorPath}` : undefined,
+          url: authorPath ? `https://www.kmgbibliotheque.com${authorPath}` : undefined,
         }
       : undefined,
     description: displayPub.description || pubDescription,
@@ -461,10 +461,14 @@ export default function Publication() {
         : undefined,
     genre: categoryLabel,
     datePublished,
+    abstract: (displayPub as { summary?: string | null }).summary || undefined,
+    identifier: (displayPub as { publication_number?: string | null }).publication_number || undefined,
+    isbn:
+      (displayPub.description || "").match(/ISBN[:\s]*([0-9Xx\-]{10,17})/)?.[1] || undefined,
     publisher: {
       "@type": "Organization",
       name: "KMG Bibliothèque",
-      url: "https://plume-d-or-academie.lovable.app",
+      url: "https://www.kmgbibliotheque.com",
     },
   };
 
@@ -472,9 +476,9 @@ export default function Publication() {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Accueil", item: "https://plume-d-or-academie.lovable.app" },
-      { "@type": "ListItem", position: 2, name: "Bibliothèque", item: "https://plume-d-or-academie.lovable.app/bibliotheque" },
-      { "@type": "ListItem", position: 3, name: categoryLabel, item: `https://plume-d-or-academie.lovable.app/bibliotheque?category=${displayPub.category}` },
+      { "@type": "ListItem", position: 1, name: "Accueil", item: "https://www.kmgbibliotheque.com" },
+      { "@type": "ListItem", position: 2, name: "Bibliothèque", item: "https://www.kmgbibliotheque.com/bibliotheque" },
+      { "@type": "ListItem", position: 3, name: categoryLabel, item: `https://www.kmgbibliotheque.com/bibliotheque?category=${displayPub.category}` },
       { "@type": "ListItem", position: 4, name: displayPub.title, item: canonicalUrl },
     ],
   };

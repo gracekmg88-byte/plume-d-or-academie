@@ -196,7 +196,7 @@ export default function Bibliotheque() {
           "@context": "https://schema.org",
           "@type": "CollectionPage",
           name: "Bibliothèque KMG Bibliothèque",
-          url: "https://plume-d-or-academie.lovable.app/bibliotheque",
+          url: "https://www.kmgbibliotheque.com/bibliotheque",
           description: "Catalogue de publications académiques francophones.",
           isPartOf: { "@type": "WebSite", name: "KMG Bibliothèque" },
         }}

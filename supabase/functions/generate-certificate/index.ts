@@ -7,7 +7,7 @@ import { buildCertificatePdf, pickTemplate } from "./pdf.ts";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
-const PUBLIC_BASE_URL = "https://plume-d-or-academie.lovable.app";
+const PUBLIC_BASE_URL = "https://www.kmgbibliotheque.com";
 
 function publicationPrefix(category?: string) {
   const c = category?.toLowerCase();

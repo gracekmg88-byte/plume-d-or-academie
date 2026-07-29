@@ -7,7 +7,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const SITE_URL = "https://plume-d-or-academie.lovable.app/";
+const SITE_URL = "https://www.kmgbibliotheque.com/";
 const SITEMAP_URL = "https://vlqjdszawxtwutuzvskt.supabase.co/functions/v1/sitemap";
 const GATEWAY = "https://connector-gateway.lovable.dev/google_search_console";
 

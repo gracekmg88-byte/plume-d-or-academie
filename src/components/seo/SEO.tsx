@@ -1,6 +1,6 @@
 import { Helmet } from "react-helmet-async";
 
-const SITE_URL = "https://plume-d-or-academie.lovable.app";
+const SITE_URL = "https://www.kmgbibliotheque.com";
 const SITE_NAME = "KMG Bibliothèque";
 const DEFAULT_IMAGE = `${SITE_URL}/og-image.png`;
 

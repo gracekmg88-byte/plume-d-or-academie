@@ -26,7 +26,7 @@ function baseInput(overrides: Partial<Parameters<typeof buildCertificatePdf>[0]>
     publicationDate: "2026-01-15T10:00:00.000Z",
     certificateNumber: "CERT-2026-001",
     publicationNumber: "KMG-ART-2026-001",
-    verificationUrl: "https://plume-d-or-academie.lovable.app/publication/KMG-ART-2026-001",
+    verificationUrl: "https://www.kmgbibliotheque.com/publication/KMG-ART-2026-001",
     qrBytes: MIN_PNG,
     ...overrides,
   };

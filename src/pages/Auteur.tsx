@@ -8,7 +8,7 @@ import { Breadcrumb } from "@/components/publications/Breadcrumb";
 import { PublicationCard } from "@/components/publications/PublicationCard";
 import { useAuthorPublications } from "@/hooks/useAuthorPublications";
 
-const SITE_URL = "https://plume-d-or-academie.lovable.app";
+const SITE_URL = "https://www.kmgbibliotheque.com";
 
 export default function Auteur() {
   const { slug } = useParams<{ slug: string }>();
