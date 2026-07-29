@@ -12,7 +12,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "predev": "npx tsx scripts/generate-sitemap.ts",
-    "prebuild": "npx tsx scripts/generate-sitemap.ts"
+    "prebuild": "npx tsx scripts/generate-sitemap.ts",
+    "postbuild": "npx tsx scripts/prerender.ts"
   },
   "dependencies": {
     "@capacitor/android": "^8.0.1",
