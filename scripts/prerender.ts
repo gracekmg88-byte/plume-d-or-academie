@@ -159,14 +159,16 @@ function buildHtml(
 
   html = html.replace("</head>", `  ${head}\n  </head>`);
 
-  // Contenu HTML immédiatement lisible par les robots.
-  html = html.replace(
-    /<div id="root">[\s\S]*?<\/div>/i,
-    `<div id="root">${opts.body}</div>`,
-  );
+  // Contenu HTML complet présent dès la première réponse du serveur.
+  // Placé dans <noscript> : les robots (Google, Bing, réseaux sociaux, IA)
+  // le lisent immédiatement, et aucun utilisateur ne voit de contenu
+  // non stylé clignoter avant le montage de React.
+  const seoBody = `<noscript>${opts.body}</noscript>`;
+  html = html.replace(/<div id="root">[\s\S]*?<\/div>/i, `<div id="root">${seoBody}</div>`);
   if (!html.includes('<div id="root">')) {
-    html = html.replace("<body>", `<body><div id="root">${opts.body}</div>`);
+    html = html.replace("<body>", `<body><div id="root">${seoBody}</div>`);
   }
+
 
   return html;
 }
