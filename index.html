@@ -6,6 +6,34 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
+    <script>
+      // Redirection canonique des anciennes adresses vers www.kmgbibliotheque.com
+      // (équivalent 301 côté client : remplace l'entrée d'historique + canonical <link>)
+      (function () {
+        try {
+          var CANONICAL = "www.kmgbibliotheque.com";
+          var LEGACY = ["www-kmgbibliotheque-com.lovable.app", "kmgbibliotheque.com"];
+          var h = window.location.hostname;
+          // Ne jamais rediriger : dev local, previews Lovable, app native (Capacitor)
+          if (
+            h === CANONICAL ||
+            h === "localhost" ||
+            h === "127.0.0.1" ||
+            h === "" ||
+            window.location.protocol === "capacitor:" ||
+            window.location.protocol === "file:" ||
+            /(-)?preview--|\.lovableproject\.com$/.test(h)
+          ) {
+            return;
+          }
+          if (LEGACY.indexOf(h) !== -1) {
+            window.location.replace(
+              "https://" + CANONICAL + window.location.pathname + window.location.search + window.location.hash
+            );
+          }
+        } catch (e) {}
+      })();
+    </script>
     <title>KMG Bibliothèque Numérique</title>
     <meta name="description" content="KMG Bibliothèque Numérique : consultez gratuitement des livres, mémoires, TFC et articles académiques en ligne." />
     <meta name="author" content="KMG Multi Services" />
