@@ -36,16 +36,6 @@
     <priority>0.4</priority>
   </url>
   <url>
-    <loc>https://www.kmgbibliotheque.com/article/reconnaissance-des-produits-agricoles-perisses-et-non-perimes-en-republique-demo-2ea092</loc>
-    <lastmod>2026-07-29</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/1783629217979.webp</image:loc>
-      <image:title>Reconnaissance des Produits Agricoles Périssés et Non Périmés en République Démocratique du Congo à l’Aide de la Vision par Ordinateur</image:title>
-    </image:image>
-  </url>
-  <url>
     <loc>https://www.kmgbibliotheque.com/livre/le-francais-sans-difficultes-5f05bd</loc>
     <lastmod>2026-06-12</lastmod>
     <changefreq>monthly</changefreq>
@@ -53,6 +43,16 @@
     <image:image>
       <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/1773393649020.webp</image:loc>
       <image:title>Le français sans difficultés</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://www.kmgbibliotheque.com/article/reconnaissance-des-produits-agricoles-perisses-et-non-perimes-en-republique-demo-2ea092</loc>
+    <lastmod>2026-07-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/1783629217979.webp</image:loc>
+      <image:title>Reconnaissance des Produits Agricoles Périssés et Non Périmés en République Démocratique du Congo à l’Aide de la Vision par Ordinateur</image:title>
     </image:image>
   </url>
   <url>
@@ -177,7 +177,7 @@
   </url>
   <url>
     <loc>https://www.kmgbibliotheque.com/livre/lafrique-en-200-proverbes-61cc84</loc>
-    <lastmod>2026-07-25</lastmod>
+    <lastmod>2026-07-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -217,12 +217,22 @@
   </url>
   <url>
     <loc>https://www.kmgbibliotheque.com/livre/la-seduction-du-diable-reflexions-sur-la-question-du-mal-89fb7f</loc>
-    <lastmod>2026-07-27</lastmod>
+    <lastmod>2026-07-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
       <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/1773776457029.webp</image:loc>
       <image:title>La Séduction du Diable – Réflexions sur la question du mal  </image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://www.kmgbibliotheque.com/livre/la-voix-qui-releve-5e3b9b</loc>
+    <lastmod>2026-07-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/1771088448775.webp</image:loc>
+      <image:title>La voix qui relève</image:title>
     </image:image>
   </url>
   <url>
@@ -233,26 +243,6 @@
     <image:image>
       <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/1773394591010.webp</image:loc>
       <image:title>Le secret du lieu secret</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://www.kmgbibliotheque.com/livre/la-voix-qui-releve-5e3b9b</loc>
-    <lastmod>2026-06-22</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/1771088448775.webp</image:loc>
-      <image:title>La voix qui relève</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://www.kmgbibliotheque.com/livre/angeologie-la-doctrine-sur-les-anges-dd197f</loc>
-    <lastmod>2026-07-25</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/compressed_dd197f8c-008a-4fd5-ae9c-a6215f8bd034.webp</image:loc>
-      <image:title>Angéologie : La doctrine sur les anges</image:title>
     </image:image>
   </url>
   <url>
@@ -273,6 +263,16 @@
     <image:image>
       <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/1773390906336.webp</image:loc>
       <image:title>Comment parler à n&apos;importe qui dans toutes les situations</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://www.kmgbibliotheque.com/livre/angeologie-la-doctrine-sur-les-anges-dd197f</loc>
+    <lastmod>2026-07-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/compressed_dd197f8c-008a-4fd5-ae9c-a6215f8bd034.webp</image:loc>
+      <image:title>Angéologie : La doctrine sur les anges</image:title>
     </image:image>
   </url>
   <url>
@@ -367,7 +367,7 @@
   </url>
   <url>
     <loc>https://www.kmgbibliotheque.com/livre/etude-biblique-apocalypse-et-la-fin-des-temps-aea2fa</loc>
-    <lastmod>2026-06-11</lastmod>
+    <lastmod>2026-07-29</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -426,16 +426,6 @@
     </image:image>
   </url>
   <url>
-    <loc>https://www.kmgbibliotheque.com/livre/lapocalypse-de-jean-lapocalypse-neotestamentaire-8f6f5e</loc>
-    <lastmod>2026-07-28</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/compressed_8f6f5e1b-be63-4ee9-b184-512af9a37efe.webp</image:loc>
-      <image:title>L’Apocalypse de Jean : L’Apocalypse néotestamentaire</image:title>
-    </image:image>
-  </url>
-  <url>
     <loc>https://www.kmgbibliotheque.com/livre/lexique-de-la-cuisine-et-des-metiers-de-la-restauration-dec9d5</loc>
     <lastmod>2026-06-16</lastmod>
     <changefreq>monthly</changefreq>
@@ -467,12 +457,32 @@
   </url>
   <url>
     <loc>https://www.kmgbibliotheque.com/livre/ce-que-jaurais-aime-savoir-avant-de-me-marier-7281ec</loc>
-    <lastmod>2026-07-19</lastmod>
+    <lastmod>2026-07-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
       <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/1773777376386.webp</image:loc>
       <image:title>Ce que j’aurais aimé savoir avant de me marier  </image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://www.kmgbibliotheque.com/livre/lapocalypse-de-jean-lapocalypse-neotestamentaire-8f6f5e</loc>
+    <lastmod>2026-07-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/compressed_8f6f5e1b-be63-4ee9-b184-512af9a37efe.webp</image:loc>
+      <image:title>L’Apocalypse de Jean : L’Apocalypse néotestamentaire</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://www.kmgbibliotheque.com/livre/tresors-de-la-medecine-traditionnelle-africaine-et-de-sa-pharmacopee-c56164</loc>
+    <lastmod>2026-07-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/1773776158998.webp</image:loc>
+      <image:title>Trésors de la médecine traditionnelle africaine et de sa pharmacopée  </image:title>
     </image:image>
   </url>
   <url>
@@ -493,16 +503,6 @@
     <image:image>
       <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/compressed_7cd4e790-d751-4555-9407-6b669f15a72f.webp</image:loc>
       <image:title>Mes premiers pas dans la foi chrétienne</image:title>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://www.kmgbibliotheque.com/livre/tresors-de-la-medecine-traditionnelle-africaine-et-de-sa-pharmacopee-c56164</loc>
-    <lastmod>2026-07-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/1773776158998.webp</image:loc>
-      <image:title>Trésors de la médecine traditionnelle africaine et de sa pharmacopée  </image:title>
     </image:image>
   </url>
   <url>
@@ -557,7 +557,7 @@
   </url>
   <url>
     <loc>https://www.kmgbibliotheque.com/livre/deontologie-des-magistrats-et-des-autres-professions-juridiques-9235b5</loc>
-    <lastmod>2026-07-24</lastmod>
+    <lastmod>2026-07-29</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -596,16 +596,6 @@
     </image:image>
   </url>
   <url>
-    <loc>https://www.kmgbibliotheque.com/livre/engageons-nous-au-service-dun-congo-libre-a720b9</loc>
-    <lastmod>2026-07-29</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/1781023264322.webp</image:loc>
-      <image:title>Engageons-nous au service d’un Congo libre</image:title>
-    </image:image>
-  </url>
-  <url>
     <loc>https://www.kmgbibliotheque.com/memoire/recrutement-outil-efficace-de-gestion-dune-entreprise-cas-de-la-kamoto-copper-co-007956</loc>
     <lastmod>2026-07-05</lastmod>
     <changefreq>monthly</changefreq>
@@ -626,6 +616,16 @@
     </image:image>
   </url>
   <url>
+    <loc>https://www.kmgbibliotheque.com/livre/engageons-nous-au-service-dun-congo-libre-a720b9</loc>
+    <lastmod>2026-07-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/1781023264322.webp</image:loc>
+      <image:title>Engageons-nous au service d’un Congo libre</image:title>
+    </image:image>
+  </url>
+  <url>
     <loc>https://www.kmgbibliotheque.com/livre/code-de-procedure-penale-annote-09bb51</loc>
     <lastmod>2026-06-22</lastmod>
     <changefreq>monthly</changefreq>
@@ -637,7 +637,7 @@
   </url>
   <url>
     <loc>https://www.kmgbibliotheque.com/livre/la-prophetie-biblique-la-guerre-entre-les-deux-posterites-22fcaf</loc>
-    <lastmod>2026-07-28</lastmod>
+    <lastmod>2026-07-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -706,16 +706,6 @@
     </image:image>
   </url>
   <url>
-    <loc>https://www.kmgbibliotheque.com/livre/thomas-sankara-lespoir-assassine-ebab54</loc>
-    <lastmod>2026-07-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/1773774773612.webp</image:loc>
-      <image:title>Thomas Sankara, l’espoir assassiné  </image:title>
-    </image:image>
-  </url>
-  <url>
     <loc>https://www.kmgbibliotheque.com/livre/la-cybersecurite-de-zero-fefd02</loc>
     <lastmod>2026-06-13</lastmod>
     <changefreq>monthly</changefreq>
@@ -723,6 +713,16 @@
     <image:image>
       <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/1773393029318.webp</image:loc>
       <image:title>La cybersécurité de zéro</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://www.kmgbibliotheque.com/livre/thomas-sankara-lespoir-assassine-ebab54</loc>
+    <lastmod>2026-07-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/1773774773612.webp</image:loc>
+      <image:title>Thomas Sankara, l’espoir assassiné  </image:title>
     </image:image>
   </url>
   <url>
@@ -767,7 +767,7 @@
   </url>
   <url>
     <loc>https://www.kmgbibliotheque.com/memoire/la-recrudescence-de-la-criminalite-par-les-enfants-de-la-rue-dans-la-ville-de-li-21263d</loc>
-    <lastmod>2026-07-06</lastmod>
+    <lastmod>2026-07-29</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -796,16 +796,6 @@
     </image:image>
   </url>
   <url>
-    <loc>https://www.kmgbibliotheque.com/livre/parler-kilega-aujourdhui-honte-ou-fierte-un-defi-pour-lavenir-des-balega-dcab22</loc>
-    <lastmod>2026-07-27</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/1781440397497.webp</image:loc>
-      <image:title>Parler Kilega aujourd’hui : honte ou fierté – Un défi pour l’avenir des Balega</image:title>
-    </image:image>
-  </url>
-  <url>
     <loc>https://www.kmgbibliotheque.com/memoire/determinants-de-linvestissement-dans-le-secteur-dhabillement-a-lubumbashi-b57434</loc>
     <lastmod>2026-07-03</lastmod>
     <changefreq>monthly</changefreq>
@@ -816,8 +806,18 @@
     </image:image>
   </url>
   <url>
+    <loc>https://www.kmgbibliotheque.com/livre/parler-kilega-aujourdhui-honte-ou-fierte-un-defi-pour-lavenir-des-balega-dcab22</loc>
+    <lastmod>2026-07-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://vlqjdszawxtwutuzvskt.supabase.co/storage/v1/object/public/publications/covers/1781440397497.webp</image:loc>
+      <image:title>Parler Kilega aujourd’hui : honte ou fierté – Un défi pour l’avenir des Balega</image:title>
+    </image:image>
+  </url>
+  <url>
     <loc>https://www.kmgbibliotheque.com/livre/le-chemin-parcouru-b5434c</loc>
-    <lastmod>2026-07-20</lastmod>
+    <lastmod>2026-07-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -847,7 +847,7 @@
   </url>
   <url>
     <loc>https://www.kmgbibliotheque.com/livre/jai-plante-jeune-jai-recolte-jeune-la-revolution-silencieuse-dun-jeune-qui-a-ref-db8701</loc>
-    <lastmod>2026-07-28</lastmod>
+    <lastmod>2026-07-29</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -856,12 +856,12 @@
     </image:image>
   </url>
   <url>
-    <loc>https://www.kmgbibliotheque.com/auteur/kutuka-fumumeya-xavier-kandolo-herman-menakuntima-rabbi-kisasa-patrick</loc>
+    <loc>https://www.kmgbibliotheque.com/auteur/pierre-laurendeau</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://www.kmgbibliotheque.com/auteur/pierre-laurendeau</loc>
+    <loc>https://www.kmgbibliotheque.com/auteur/kutuka-fumumeya-xavier-kandolo-herman-menakuntima-rabbi-kisasa-patrick</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -931,17 +931,12 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://www.kmgbibliotheque.com/auteur/marcelo-tunasi</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
     <loc>https://www.kmgbibliotheque.com/auteur/kot-munon-grace</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://www.kmgbibliotheque.com/auteur/roland-kleger</loc>
+    <loc>https://www.kmgbibliotheque.com/auteur/marcelo-tunasi</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -952,6 +947,11 @@
   </url>
   <url>
     <loc>https://www.kmgbibliotheque.com/auteur/leil-lowndes</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.kmgbibliotheque.com/auteur/roland-kleger</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -1041,17 +1041,17 @@
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://www.kmgbibliotheque.com/auteur/annie-balet</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://www.kmgbibliotheque.com/auteur/napoleon-hill</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.kmgbibliotheque.com/auteur/ecole-biblique-du-chretien-ebc</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://www.kmgbibliotheque.com/auteur/annie-balet</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -1091,12 +1091,12 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://www.kmgbibliotheque.com/auteur/mavinga-mbungu-justin</loc>
+    <loc>https://www.kmgbibliotheque.com/auteur/markus-miller</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://www.kmgbibliotheque.com/auteur/markus-miller</loc>
+    <loc>https://www.kmgbibliotheque.com/auteur/mavinga-mbungu-justin</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -1136,12 +1136,12 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://www.kmgbibliotheque.com/auteur/valere-d-some</loc>
+    <loc>https://www.kmgbibliotheque.com/auteur/romain-oury</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://www.kmgbibliotheque.com/auteur/romain-oury</loc>
+    <loc>https://www.kmgbibliotheque.com/auteur/valere-d-some</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -1176,12 +1176,12 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://www.kmgbibliotheque.com/auteur/jacques-lutala-katambwe-docteur-en-sciences-politiques-et-administratives-enseig</loc>
+    <loc>https://www.kmgbibliotheque.com/auteur/kanku-mputu-carlaine</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://www.kmgbibliotheque.com/auteur/kanku-mputu-carlaine</loc>
+    <loc>https://www.kmgbibliotheque.com/auteur/jacques-lutala-katambwe-docteur-en-sciences-politiques-et-administratives-enseig</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
