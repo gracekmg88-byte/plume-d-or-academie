@@ -2,8 +2,8 @@
 // No redeploy needed when a new book is published.
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 
-const BASE_URL = "https://www.kmgbibliotheque.com";
-const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "https://vlqjdszawxtwutuzvskt.supabase.co";
+const BASE_URL = (Deno.env.get("SITE_URL") ?? "https://www.kmgbibliotheque.com").replace(/\/+$/, "");
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_ANON = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
 
 function slugify(input: string): string {

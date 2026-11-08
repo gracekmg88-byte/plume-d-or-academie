@@ -7,10 +7,7 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "fs";
 import { resolve, dirname } from "path";
 
-const BASE_URL = "https://www.kmgbibliotheque.com";
-const SUPABASE_URL = "https://vlqjdszawxtwutuzvskt.supabase.co";
-const SUPABASE_ANON =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZscWpkc3phd3h0d3V0dXp2c2t0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg1MDM4NjksImV4cCI6MjA4NDA3OTg2OX0.zbFWoYJbXZgdM9lfpOV3-YxZayClpw_Vp8i-cFC_77A";
+import { SITE_URL as BASE_URL, SUPABASE_URL, SUPABASE_ANON, HAS_SUPABASE } from "./build-env";
 
 // Garde-fou : ne jamais dépasser les limites de publication de la plateforme.
 const MAX_PRERENDER_PAGES = Number(process.env.MAX_PRERENDER_PAGES || 5000);
@@ -85,6 +82,7 @@ interface PubRow {
 }
 
 async function fetchPublications(): Promise<PubRow[]> {
+  if (!HAS_SUPABASE) return [];
   try {
     const res = await fetch(
       `${SUPABASE_URL}/rest/v1/publications?select=id,title,author,description,summary,category,cover_image_url,publication_number,created_at,updated_at&is_published=eq.true`,

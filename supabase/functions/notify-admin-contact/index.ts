@@ -62,7 +62,7 @@ const handler = async (req: Request): Promise<Response> => {
     const safeMessage = escapeHtml(record.message);
 
     const emailResponse = await resend.emails.send({
-      from: "KMG Bibliothèque <noreply@resend.dev>",
+      from: Deno.env.get("EMAIL_FROM") ?? "KMG Bibliothèque <noreply@resend.dev>",
       to: [ADMIN_EMAIL],
       reply_to: record.email,
       subject: `📩 Nouveau message: ${record.subject}`,

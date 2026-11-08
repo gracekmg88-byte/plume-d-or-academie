@@ -102,12 +102,25 @@ export default function Publication() {
     if (!rawId) return;
     let cancelled = false;
     (async () => {
+      const code = rawId.toUpperCase();
       const { data } = await supabase
         .from("publications")
         .select("id")
-        .eq("publication_number", rawId.toUpperCase())
+        .eq("publication_number", code)
         .maybeSingle();
-      if (!cancelled) setResolvedUuid(data?.id ?? null);
+      let resolved = data?.id ?? null;
+      // Repli pour les QR codes des certificats déjà délivrés : le numéro peut n'exister
+      // que dans la table certificates (numéro de publication ou de certificat).
+      if (!resolved && /^[A-Z0-9-]{3,40}$/.test(code)) {
+        const { data: cert } = await supabase
+          .from("certificates")
+          .select("publication_id")
+          .or(`publication_number.eq.${code},certificate_number.eq.${code}`)
+          .limit(1)
+          .maybeSingle();
+        resolved = cert?.publication_id ?? null;
+      }
+      if (!cancelled) setResolvedUuid(resolved);
     })();
     return () => { cancelled = true; };
   }, [rawId, isUuid, slugSuffix, initialPublicationId]);

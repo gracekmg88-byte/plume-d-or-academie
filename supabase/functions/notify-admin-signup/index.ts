@@ -60,7 +60,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.log(`Sending notification for new user: ${userEmail}`);
 
     const emailResponse = await resend.emails.send({
-      from: "KMG Bibliothèque <noreply@resend.dev>",
+      from: Deno.env.get("EMAIL_FROM") ?? "KMG Bibliothèque <noreply@resend.dev>",
       to: [ADMIN_EMAIL],
       subject: "🎉 Nouveau membre inscrit sur KMG Bibliothèque Académie",
       html: `

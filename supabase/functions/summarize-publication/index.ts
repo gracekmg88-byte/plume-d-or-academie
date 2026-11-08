@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { getAuthUser, unauthorized } from "../_shared/auth.ts";
+import { generateText, GeminiError } from "../_shared/gemini.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -17,9 +18,6 @@ serve(async (req) => {
     const { title, author, category, description } = await req.json();
     if (!title) throw new Error("Titre requis");
 
-
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY non configuré");
 
     const categoryLabels: Record<string, string> = {
       livre: "Livre",
@@ -43,47 +41,19 @@ Instructions :
 - Ne mentionne jamais que tu es une IA ou que tu n'as pas lu le document.
 - Sois informatif et donne envie de lire la publication.`;
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
-        messages: [
-          { role: "system", content: "Tu es un assistant académique spécialisé dans la rédaction de résumés de publications universitaires et littéraires pour la bibliothèque KMG KMG Bibliothèque." },
-          { role: "user", content: prompt },
-        ],
-      }),
-    });
-
-    if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Limite de requêtes atteinte, réessayez plus tard." }), {
-          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "Crédits insuffisants." }), {
-          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      const t = await response.text();
-      console.error("AI error:", response.status, t);
-      throw new Error("Erreur du service IA");
-    }
-
-    const result = await response.json();
-    const summary = result.choices?.[0]?.message?.content || "";
+    const summary = await generateText(
+      "Tu es un assistant académique spécialisé dans la rédaction de résumés de publications universitaires et littéraires pour la bibliothèque KMG KMG Bibliothèque.",
+      prompt,
+    );
 
     return new Response(JSON.stringify({ summary }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
     console.error("summarize error:", e);
+    const status = e instanceof GeminiError && (e.status === 429 || e.status === 402) ? e.status : 500;
     return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Erreur inconnue" }), {
-      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 });

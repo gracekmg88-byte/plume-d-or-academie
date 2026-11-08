@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { generateImage, GeminiError } from "../_shared/gemini.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -36,9 +37,6 @@ Deno.serve(async (req) => {
     const { title, author, category, style } = await req.json();
     if (!title || !author) throw new Error("Titre et auteur requis");
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
-
     const categoryLabels: Record<string, string> = {
       livre: "Book",
       memoire: "Academic Thesis",
@@ -64,53 +62,29 @@ The author name "${author}" should appear at the bottom in smaller text.
 Portrait/vertical format. Professional publishing quality.
 On a clean background with no extra text or watermarks.`;
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-3-pro-image-preview",
-        messages: [{ role: "user", content: prompt }],
-        modalities: ["image", "text"],
-      }),
-    });
-
-    if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Trop de requêtes, réessayez dans quelques instants." }), {
-          status: 429,
+    let image: { bytes: Uint8Array; mimeType: string };
+    try {
+      image = await generateImage(prompt);
+    } catch (e) {
+      if (e instanceof GeminiError && (e.status === 429 || e.status === 402)) {
+        const msg = e.status === 429
+          ? "Trop de requêtes, réessayez dans quelques instants."
+          : "Crédits AI épuisés. Veuillez recharger votre compte.";
+        return new Response(JSON.stringify({ error: msg }), {
+          status: e.status,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "Crédits AI épuisés. Veuillez recharger votre compte." }), {
-          status: 402,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      const errText = await response.text();
-      console.error("AI gateway error:", response.status, errText);
-      throw new Error("Erreur lors de la génération de l'image");
+      throw e;
     }
 
-    const data = await response.json();
-    const imageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
-
-    if (!imageUrl) {
-      throw new Error("Aucune image générée par l'IA");
-    }
-
-    // Convert base64 to file and upload to storage
-    const base64Data = imageUrl.replace(/^data:image\/\w+;base64,/, "");
-    const imageBytes = Uint8Array.from(atob(base64Data), (c) => c.charCodeAt(0));
-
-    const fileName = `covers/ai-${Date.now()}.png`;
+    // Upload to storage (same path scheme as before: covers/ai-<timestamp>.<ext>)
+    const ext = image.mimeType === "image/jpeg" ? "jpg" : image.mimeType === "image/webp" ? "webp" : "png";
+    const fileName = `covers/ai-${Date.now()}.${ext}`;
     const { error: uploadError } = await supabase.storage
       .from("publications")
-      .upload(fileName, imageBytes, {
-        contentType: "image/png",
+      .upload(fileName, image.bytes, {
+        contentType: image.mimeType,
         upsert: false,
       });
 

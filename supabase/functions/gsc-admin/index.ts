@@ -1,23 +1,28 @@
 // Google Search Console admin: status, submit, verify.
-// Admin-only. Uses the Lovable connector gateway for Google Search Console.
+// Admin-only. Appelle directement les API Google (Search Console + Site Verification)
+// avec un compte de service : secret GSC_SERVICE_ACCOUNT_JSON. Le compte de service doit être
+// ajouté comme propriétaire de la propriété dans Search Console.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { getGoogleAccessToken, readServiceAccount } from "../_shared/google.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const SITE_URL = "https://www.kmgbibliotheque.com/";
-const SITEMAP_URL = "https://vlqjdszawxtwutuzvskt.supabase.co/functions/v1/sitemap";
-const GATEWAY = "https://connector-gateway.lovable.dev/google_search_console";
+const SITE_ORIGIN = (Deno.env.get("SITE_URL") ?? "https://www.kmgbibliotheque.com").replace(/\/+$/, "");
+const SITE_URL = `${SITE_ORIGIN}/`;
+const SITEMAP_URL = Deno.env.get("SITEMAP_URL") ?? `${SITE_ORIGIN}/sitemap.xml`;
+const GATEWAY = "https://www.googleapis.com";
+const SCOPES = [
+  "https://www.googleapis.com/auth/webmasters",
+  "https://www.googleapis.com/auth/siteverification",
+];
 
-function gscHeaders() {
-  const lovableKey = Deno.env.get("LOVABLE_API_KEY");
-  const gscKey = Deno.env.get("GOOGLE_SEARCH_CONSOLE_API_KEY");
-  if (!lovableKey || !gscKey) throw new Error("Google Search Console connector not configured");
+async function gscHeaders() {
+  const token = await getGoogleAccessToken(readServiceAccount("GSC_SERVICE_ACCOUNT_JSON"), SCOPES);
   return {
-    Authorization: `Bearer ${lovableKey}`,
-    "X-Connection-Api-Key": gscKey,
+    Authorization: `Bearer ${token}`,
     "Content-Type": "application/json",
   };
 }
@@ -25,7 +30,7 @@ function gscHeaders() {
 async function getStatus() {
   const enc = (s: string) => encodeURIComponent(s);
   const url = `${GATEWAY}/webmasters/v3/sites/${enc(SITE_URL)}/sitemaps/${enc(SITEMAP_URL)}`;
-  const res = await fetch(url, { headers: gscHeaders() });
+  const res = await fetch(url, { headers: await gscHeaders() });
   const text = await res.text();
   let body: any = null;
   try { body = JSON.parse(text); } catch { body = { raw: text }; }
@@ -35,14 +40,14 @@ async function getStatus() {
 async function submitSitemap() {
   const enc = (s: string) => encodeURIComponent(s);
   const url = `${GATEWAY}/webmasters/v3/sites/${enc(SITE_URL)}/sitemaps/${enc(SITEMAP_URL)}`;
-  const res = await fetch(url, { method: "PUT", headers: gscHeaders() });
+  const res = await fetch(url, { method: "PUT", headers: await gscHeaders() });
   return { ok: res.ok, status: res.status };
 }
 
 async function getVerificationToken() {
   const res = await fetch(`${GATEWAY}/siteVerification/v1/token`, {
     method: "POST",
-    headers: gscHeaders(),
+    headers: await gscHeaders(),
     body: JSON.stringify({ site: { identifier: SITE_URL, type: "SITE" }, verificationMethod: "META" }),
   });
   const data = await res.json().catch(() => ({}));
@@ -52,7 +57,7 @@ async function getVerificationToken() {
 async function verifySite() {
   const res = await fetch(`${GATEWAY}/siteVerification/v1/webResource?verificationMethod=META`, {
     method: "POST",
-    headers: gscHeaders(),
+    headers: await gscHeaders(),
     body: JSON.stringify({ site: { identifier: SITE_URL, type: "SITE" } }),
   });
   const text = await res.text();
@@ -65,7 +70,7 @@ async function addSite() {
   const enc = (s: string) => encodeURIComponent(s);
   const res = await fetch(`${GATEWAY}/webmasters/v3/sites/${enc(SITE_URL)}`, {
     method: "PUT",
-    headers: gscHeaders(),
+    headers: await gscHeaders(),
   });
   return { ok: res.ok, status: res.status };
 }

@@ -14,5 +14,4 @@ User-agent: *
 Allow: /
 Disallow: /admin
 
-Sitemap: https://vlqjdszawxtwutuzvskt.supabase.co/functions/v1/sitemap
 Sitemap: https://www.kmgbibliotheque.com/sitemap.xml

@@ -7,7 +7,6 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/hooks/useAuth";
 import { z } from "zod";
 import { SEO } from "@/components/seo/SEO";
@@ -128,15 +127,15 @@ export default function Auth() {
     setError("");
     setGoogleLoading(true);
     try {
-      const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin,
+      // Connexion Google native Supabase (client OAuth Google propre au projet).
+      // Après le retour de Google, la session est lue dans l'URL et l'effet `user` redirige vers /profil.
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo: `${window.location.origin}/auth` },
       });
-      if (result.error) {
+      if (error) {
         setError("Erreur de connexion avec Google");
-        return;
       }
-      if (result.redirected) return;
-      navigate("/profil");
     } catch {
       setError("Erreur de connexion avec Google");
     } finally {

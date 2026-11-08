@@ -12,7 +12,8 @@
       (function () {
         try {
           var CANONICAL = "www.kmgbibliotheque.com";
-          var LEGACY = ["www-kmgbibliotheque-com.lovable.app", "kmgbibliotheque.com"];
+          // plume-d-or-academie.lovable.app : domaine des QR codes des certificats délivrés avant la migration
+          var LEGACY = ["www-kmgbibliotheque-com.lovable.app", "plume-d-or-academie.lovable.app", "kmgbibliotheque.com"];
           var h = window.location.hostname;
           // Ne jamais rediriger : dev local, previews Lovable, app native (Capacitor)
           if (

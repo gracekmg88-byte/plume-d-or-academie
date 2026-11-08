@@ -40,10 +40,15 @@ export function useCertificateByNumber(number?: string) {
     queryKey: ["certificate-by-number", number],
     enabled: !!number,
     queryFn: async () => {
+      // Compatibilité avec tous les certificats déjà délivrés : le QR code peut contenir
+      // un numéro de certificat (CERT-2026-001, KMG-MEM-2026-001) ou un numéro de publication.
+      const code = number!.trim().toUpperCase();
+      if (!/^[A-Z0-9-]{3,40}$/.test(code)) return null;
       const { data, error } = await supabase
         .from("certificates")
         .select("*")
-        .eq("certificate_number", number!)
+        .or(`certificate_number.eq.${code},publication_number.eq.${code}`)
+        .limit(1)
         .maybeSingle();
       if (error) throw error;
       return data as Certificate | null;
