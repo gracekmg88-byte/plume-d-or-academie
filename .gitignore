@@ -27,3 +27,7 @@ dist-ssr
 .env
 .env.*
 !.env.example
+
+# Fichiers locaux de la CLI Supabase
+supabase/.temp/
+supabase/.branches/

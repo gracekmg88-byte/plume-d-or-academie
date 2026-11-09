@@ -59,7 +59,14 @@ CREATE POLICY "Admins can delete publications bucket"
   USING (bucket_id = 'publications' AND public.has_role(auth.uid(), 'admin'));
 
 -- 5) realtime : restreindre l'accès aux topics
-ALTER TABLE realtime.messages ENABLE ROW LEVEL SECURITY;
+-- Portabilité (migration hors Lovable, 09/11/2026) : sur les projets Supabase récents,
+-- realtime.messages appartient à supabase_realtime_admin et a déjà la RLS activée.
+DO $$
+BEGIN
+  IF NOT (SELECT relrowsecurity FROM pg_class WHERE oid = 'realtime.messages'::regclass) THEN
+    ALTER TABLE realtime.messages ENABLE ROW LEVEL SECURITY;
+  END IF;
+END $$;
 
 DROP POLICY IF EXISTS "Users receive their own notifications via realtime" ON realtime.messages;
 DROP POLICY IF EXISTS "Authenticated users can subscribe to chat via realtime" ON realtime.messages;
