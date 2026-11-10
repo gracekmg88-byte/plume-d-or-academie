@@ -27,6 +27,13 @@
             return;
           }
           if (LEGACY.indexOf(h) !== -1) {
+            // Garde-fou anti-boucle : si l'hébergeur renvoie www vers ce domaine
+            // (domaine principal imposé côté Lovable), ne pas rediriger une 2e fois.
+            var FLAG = "kmg-canonical-redirect-at";
+            var last = 0;
+            try { last = Number(sessionStorage.getItem(FLAG)) || 0; } catch (e) {}
+            if (Date.now() - last < 30000) return;
+            try { sessionStorage.setItem(FLAG, String(Date.now())); } catch (e) { return; }
             window.location.replace(
               "https://" + CANONICAL + window.location.pathname + window.location.search + window.location.hash
             );
