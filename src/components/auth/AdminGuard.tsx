@@ -29,6 +29,10 @@ export function AdminGuard({ children }: AdminGuardProps) {
     preloadAdminRoutes();
   }, []);
 
+  // L'objet `user` change à chaque renouvellement de session : la vérification ne dépend que
+  // de l'identifiant, pour ne pas être relancée (et annulée) à chaque renouvellement.
+  const userId = user?.id ?? null;
+
   useEffect(() => {
     let cancelled = false;
 
@@ -38,11 +42,13 @@ export function AdminGuard({ children }: AdminGuardProps) {
       logAuthEvent("admin_route_denied", {
         metadata: { reason: "no_session", path: location.pathname },
       });
+      setVerifying(false);
       setServerVerified(false);
       return;
     }
 
     if (!isAdmin) {
+      setVerifying(false);
       logAuthEvent("admin_route_denied", {
         user_id: user.id,
         email: user.email ?? null,
@@ -55,6 +61,7 @@ export function AdminGuard({ children }: AdminGuardProps) {
 
     // Already verified this session — skip the server round-trip.
     if (serverVerifiedUsers.has(user.id)) {
+      setVerifying(false);
       setServerVerified(true);
       return;
     }
@@ -102,8 +109,11 @@ export function AdminGuard({ children }: AdminGuardProps) {
 
     return () => {
       cancelled = true;
+      // Une vérification annulée ne doit jamais laisser l'indicateur de chargement actif.
+      setVerifying(false);
     };
-  }, [authReady, adminChecking, user, isAdmin, location.pathname]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- `user` est suivi via `userId` (voir plus haut)
+  }, [authReady, adminChecking, userId, isAdmin, location.pathname]);
 
 
   if (!authReady || adminChecking || verifying || serverVerified === null) {
