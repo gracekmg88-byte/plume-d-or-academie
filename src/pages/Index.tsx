@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowRight, Book, BookOpen, Users, Award, WifiOff, RefreshCw, FolderDown } from "lucide-react";
+import { ArrowRight, Book, BookOpen, Users, Award, WifiOff, RefreshCw, FolderDown, GraduationCap, FileText, Newspaper } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { PublicationCard } from "@/components/publications/PublicationCard";
@@ -27,12 +27,27 @@ export default function Index() {
   const { layout: homepageLayout } = useHomepageLayout();
   usePublicationsRealtime(isOnline);
 
-  const recentCount = homepageLayout === "focus-catalogue" ? 12 : homepageLayout === "epure" ? 6 : 4;
+  // Chaque disposition suit exactement sa description dans l'admin (HOMEPAGE_LAYOUT_OPTIONS) :
+  // - complet : carrousel, stats, recommandations, 4 récentes, fonctionnalités, CTA
+  // - epure : carrousel, recommandations, 6 récentes (pas de fonctionnalités ni de CTA)
+  // - magazine : récentes en « une » (vedette + grille), avec carrousel, recommandations et CTA
+  // - focus-catalogue : 8 récentes mises en avant, sans carrousel
+  const recentCount = homepageLayout === "focus-catalogue" ? 8 : homepageLayout === "epure" ? 6 : 4;
   const recentPublications = publications?.slice(0, recentCount) || [];
+  const showStats = homepageLayout === "complet";
   const showFeatures = homepageLayout === "complet";
   const showCTA = homepageLayout === "complet" || homepageLayout === "magazine";
   const showCarousel = homepageLayout !== "focus-catalogue";
-  const showRecommendations = homepageLayout === "complet" || homepageLayout === "magazine";
+  const showRecommendations = homepageLayout !== "focus-catalogue";
+
+  // Statistiques réelles, calculées à partir des publications déjà chargées (aucune requête de plus).
+  const countBy = (category: string) => publications?.filter((p) => p.category === category).length ?? 0;
+  const stats = [
+    { icon: Book, label: t("stats.books"), value: countBy("livre") },
+    { icon: GraduationCap, label: t("stats.memoirs"), value: countBy("memoire") },
+    { icon: FileText, label: t("stats.tfc"), value: countBy("tfc") },
+    { icon: Newspaper, label: t("stats.articles"), value: countBy("article") },
+  ];
   const recentAsMagazine = homepageLayout === "magazine";
   const recentGridCols = homepageLayout === "focus-catalogue"
     ? "grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
@@ -127,6 +142,28 @@ export default function Index() {
 
       {/* Featured Carousel - top of homepage */}
       {isOnline && showCarousel && <FeaturedCarousel />}
+
+      {/* Stats - disposition « Complet » uniquement */}
+      {isOnline && showStats && !isLoading && (publications?.length ?? 0) > 0 && (
+        <section className="py-12 bg-card border-y border-border">
+          <div className="container">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+              {stats.map((stat) => {
+                const Icon = stat.icon;
+                return (
+                  <div key={stat.label} className="text-center space-y-2">
+                    <Icon className="h-8 w-8 mx-auto text-primary" />
+                    <div className="font-serif text-3xl md:text-4xl font-bold text-foreground">
+                      {stat.value.toLocaleString("fr-FR")}
+                    </div>
+                    <div className="text-sm text-muted-foreground">{stat.label}</div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Continue Reading - only for logged-in users & online */}
       {isOnline && user && <ContinueReadingSection />}
@@ -235,7 +272,7 @@ export default function Index() {
                     variant="magazine-hero"
                   />
                   {recentPublications.length > 1 && (
-                    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
                       {recentPublications.slice(1).map((pub) => (
                         <PublicationCard
                           key={pub.id}

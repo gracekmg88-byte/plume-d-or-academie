@@ -1,5 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { optimisticSettingMutation } from "@/lib/site-settings";
+
+const LIBRARY_LAYOUT_QUERY_KEY = ["site-settings", "library_layout"] as const;
 
 export type LibraryLayout = "grid" | "compact" | "list" | "magazine";
 
@@ -21,7 +24,7 @@ export function useLibraryLayout() {
   const queryClient = useQueryClient();
 
   const { data: layout = "grid" as LibraryLayout, isLoading } = useQuery({
-    queryKey: ["site-settings", "library_layout"],
+    queryKey: LIBRARY_LAYOUT_QUERY_KEY,
     queryFn: async (): Promise<LibraryLayout> => {
       const { data, error } = await supabase
         .from("site_settings")
@@ -31,38 +34,22 @@ export function useLibraryLayout() {
       if (error) throw error;
       return isLayout(data?.value) ? (data!.value as LibraryLayout) : "grid";
     },
-    staleTime: 60_000,
+    // Même politique que la page d'accueil : un changement fait dans l'admin apparaît
+    // à la prochaine ouverture de la bibliothèque ou au retour dans l'appli.
+    staleTime: 10_000,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: true,
   });
 
-  const setLayout = useMutation({
-    mutationFn: async (next: LibraryLayout) => {
-      // Try update first; if no row exists, insert it.
-      const { data: existing } = await supabase
-        .from("site_settings")
-        .select("id")
-        .eq("key", "library_layout")
-        .maybeSingle();
-
-      if (existing) {
-        const { error } = await supabase
-          .from("site_settings")
-          .update({ value: next })
-          .eq("key", "library_layout");
-        if (error) throw error;
-      } else {
-        const { error } = await supabase.from("site_settings").insert({
-          key: "library_layout",
-          value: next,
-          label: "Disposition de la bibliothèque",
-          category: "general",
-        });
-        if (error) throw error;
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["site-settings", "library_layout"] });
-    },
-  });
+  // Sélection immédiate, enregistrement vérifié (15 s max), retour à l'ancienne valeur en cas d'échec.
+  const setLayout = useMutation(
+    optimisticSettingMutation<LibraryLayout>(
+      queryClient,
+      LIBRARY_LAYOUT_QUERY_KEY,
+      "library_layout",
+      "Disposition de la bibliothèque",
+    ),
+  );
 
   return { layout: layout as LibraryLayout, isLoading, setLayout };
 }

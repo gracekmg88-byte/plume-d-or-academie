@@ -1,5 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { optimisticSettingMutation } from "@/lib/site-settings";
+
+const HOMEPAGE_LAYOUT_QUERY_KEY = ["site-settings", "homepage_layout"] as const;
 
 export type HomepageLayout = "complet" | "epure" | "magazine" | "focus-catalogue";
 
@@ -11,7 +14,7 @@ export const HOMEPAGE_LAYOUT_OPTIONS: {
   { value: "complet", label: "Complet", description: "Carrousel, stats, recommandations, récentes, fonctionnalités et CTA (défaut)" },
   { value: "epure", label: "Épuré", description: "Carrousel + recommandations + récentes uniquement. Pas de fonctionnalités ni CTA." },
   { value: "magazine", label: "Magazine", description: "Récentes affichées avec une publication en vedette puis grille." },
-  { value: "focus-catalogue", label: "Focus catalogue", description: "Met l'accent sur les publications récentes (8 au lieu de 4)." },
+  { value: "focus-catalogue", label: "Focus catalogue", description: "Met l'accent sur les publications récentes (8 au lieu de 4), sans carrousel." },
 ];
 
 const isLayout = (v: string | undefined | null): v is HomepageLayout =>
@@ -21,7 +24,7 @@ export function useHomepageLayout() {
   const queryClient = useQueryClient();
 
   const { data: layout = "complet" as HomepageLayout, isLoading } = useQuery({
-    queryKey: ["site-settings", "homepage_layout"],
+    queryKey: HOMEPAGE_LAYOUT_QUERY_KEY,
     queryFn: async (): Promise<HomepageLayout> => {
       const { data, error } = await supabase
         .from("site_settings")
@@ -29,41 +32,22 @@ export function useHomepageLayout() {
         .eq("key", "homepage_layout")
         .maybeSingle();
       if (error) throw error;
-      return isLayout(data?.value as any) ? ((data!.value as any) as HomepageLayout) : "complet";
+      return isLayout(data?.value) ? (data!.value as HomepageLayout) : "complet";
     },
     staleTime: 10_000,
     refetchOnMount: "always",
     refetchOnWindowFocus: true,
   });
 
-  const setLayout = useMutation({
-    mutationFn: async (next: HomepageLayout) => {
-      const { data: existing } = await supabase
-        .from("site_settings")
-        .select("id")
-        .eq("key", "homepage_layout")
-        .maybeSingle();
-
-      if (existing) {
-        const { error } = await supabase
-          .from("site_settings")
-          .update({ value: next })
-          .eq("key", "homepage_layout");
-        if (error) throw error;
-      } else {
-        const { error } = await supabase.from("site_settings").insert({
-          key: "homepage_layout",
-          value: next,
-          label: "Disposition de la page d'accueil",
-          category: "general",
-        });
-        if (error) throw error;
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["site-settings", "homepage_layout"] });
-    },
-  });
+  // Sélection immédiate, enregistrement vérifié (15 s max), retour à l'ancienne valeur en cas d'échec.
+  const setLayout = useMutation(
+    optimisticSettingMutation<HomepageLayout>(
+      queryClient,
+      HOMEPAGE_LAYOUT_QUERY_KEY,
+      "homepage_layout",
+      "Disposition de la page d'accueil",
+    ),
+  );
 
   return { layout: layout as HomepageLayout, isLoading, setLayout };
 }
