@@ -1,5 +1,11 @@
 import { createClient } from '@supabase/supabase-js';
+import { Capacitor } from '@capacitor/core';
 import type { Database } from './types';
+
+// Appli Android (Capacitor) : flux PKCE. Le retour OAuth arrive par le schéma de l'appli
+// avec un code à usage unique, échangé contre la session (voir src/lib/native-auth.ts).
+// Site web : flux implicite inchangé (les liens e-mail restent utilisables sur un autre appareil).
+const IS_NATIVE = Capacitor.isNativePlatform();
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
@@ -17,6 +23,8 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     storage: typeof window !== 'undefined' ? window.localStorage : undefined,
     persistSession: true,
     autoRefreshToken: true,
-    detectSessionInUrl: true,
+    // Dans l'appli, la session n'arrive jamais dans l'URL de la WebView : c'est native-auth.ts qui l'échange.
+    detectSessionInUrl: !IS_NATIVE,
+    flowType: IS_NATIVE ? 'pkce' : 'implicit',
   }
 });

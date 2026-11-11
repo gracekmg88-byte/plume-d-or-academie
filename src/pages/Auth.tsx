@@ -10,6 +10,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { z } from "zod";
 import { SEO } from "@/components/seo/SEO";
+import {
+  NATIVE_AUTH_ERROR_EVENT,
+  authLinkBaseUrl,
+  isNativeApp,
+  signInWithGoogleNative,
+} from "@/lib/native-auth";
 
 const loginSchema = z.object({
   email: z.string().trim().email("Adresse email invalide"),
@@ -46,6 +52,16 @@ export default function Auth() {
       navigate("/profil");
     }
   }, [user, navigate]);
+
+  // Appli Android : erreur éventuelle au retour de la connexion Google (voir native-auth.ts).
+  useEffect(() => {
+    const onNativeAuthError = () => {
+      setGoogleLoading(false);
+      setError("Erreur de connexion avec Google");
+    };
+    window.addEventListener(NATIVE_AUTH_ERROR_EVENT, onNativeAuthError);
+    return () => window.removeEventListener(NATIVE_AUTH_ERROR_EVENT, onNativeAuthError);
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,7 +109,7 @@ export default function Auth() {
         email: validated.email,
         password: validated.password,
         options: {
-          emailRedirectTo: `${window.location.origin}/`,
+          emailRedirectTo: `${authLinkBaseUrl()}/`,
           data: {
             full_name: validated.fullName,
           },
@@ -127,7 +143,12 @@ export default function Auth() {
     setError("");
     setGoogleLoading(true);
     try {
-      // Connexion Google native Supabase (client OAuth Google propre au projet).
+      // Appli Android : onglet sécurisé + retour par le schéma de l'appli (native-auth.ts).
+      if (isNativeApp()) {
+        await signInWithGoogleNative();
+        return;
+      }
+      // Site web : connexion Google native Supabase (client OAuth Google propre au projet).
       // Après le retour de Google, la session est lue dans l'URL et l'effet `user` redirige vers /profil.
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
@@ -243,7 +264,7 @@ export default function Auth() {
                       setResetLoading(true);
                       try {
                         const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-                          redirectTo: `${window.location.origin}/reset-password`,
+                          redirectTo: `${authLinkBaseUrl()}/reset-password`,
                         });
                         if (error) throw error;
                         setSuccess("Un email de réinitialisation a été envoyé à votre adresse.");

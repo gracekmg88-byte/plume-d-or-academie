@@ -2,6 +2,7 @@ import { createRoot } from "react-dom/client";
 import { HelmetProvider } from "react-helmet-async";
 import App from "./App.tsx";
 import "./index.css";
+import { initNativeAuth } from "./lib/native-auth";
 
 const CACHE_RESET_RELOAD_FLAG = "plume-cache-reset-reload-done";
 const APP_RUNTIME_VERSION = "2026-05-28-02";
@@ -120,6 +121,9 @@ const cleanupLegacyRuntime = async () => {
 };
 
 void cleanupLegacyRuntime();
+
+// Appli Android : réception du retour de la connexion Google (sans effet sur le site web).
+initNativeAuth();
 
 createRoot(document.getElementById("root")!).render(
   <HelmetProvider>
