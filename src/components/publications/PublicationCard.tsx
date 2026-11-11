@@ -276,11 +276,11 @@ export function PublicationCard({
               {config.label}
             </Badge>
           </div>
-          <CardContent className="p-2.5 min-w-0">
-            <h3 className="font-serif text-sm font-semibold leading-tight break-words group-hover:text-primary transition-colors">
+          <CardContent className="p-2 sm:p-2.5 min-w-0">
+            <h3 className="font-serif text-xs sm:text-sm font-semibold leading-tight break-words line-clamp-3 sm:line-clamp-none group-hover:text-primary transition-colors">
               {title}
             </h3>
-            <p className="mt-0.5 text-xs text-muted-foreground break-words">{author}</p>
+            <p className="mt-0.5 text-[11px] sm:text-xs text-muted-foreground break-words line-clamp-1 sm:line-clamp-none">{author}</p>
           </CardContent>
         </Card>
       </Link>
