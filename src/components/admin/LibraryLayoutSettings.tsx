@@ -61,7 +61,8 @@ export function LibraryLayoutSettings() {
   const { layout, isLoading, setLayout } = useLibraryLayout();
 
   const handlePick = async (next: LibraryLayout) => {
-    if (next === layout) return;
+    // Tant que le réglage enregistré n'est pas arrivé, la valeur affichée n'est qu'un défaut : ne rien comparer.
+    if (isLoading || next === layout) return;
     try {
       await setLayout.mutateAsync(next);
       toast.success("Disposition de la bibliothèque mise à jour");
@@ -90,15 +91,16 @@ export function LibraryLayoutSettings() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {LIBRARY_LAYOUT_OPTIONS.map((opt) => {
           const Icon = ICONS[opt.value];
-          const active = layout === opt.value;
+          const active = !isLoading && layout === opt.value;
           return (
             <button
               key={opt.value}
               type="button"
               onClick={() => handlePick(opt.value)}
-              disabled={setLayout.isPending}
+              disabled={isLoading || setLayout.isPending}
               className={cn(
-                "text-left rounded-lg border p-3 transition-all hover:shadow-elegant",
+                "text-left rounded-lg border p-3 transition-all hover:shadow-elegant disabled:cursor-wait",
+                isLoading && "opacity-60",
                 active
                   ? "border-primary ring-2 ring-primary/40 bg-primary/5"
                   : "border-border bg-background"
