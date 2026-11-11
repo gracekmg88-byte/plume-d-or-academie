@@ -15,7 +15,9 @@ const ANIMATED_ROUTES = new Set<string>([
 
 export function PageTransition({ children }: PageTransitionProps) {
   const location = useLocation();
-  const routeKey = `${location.pathname}${location.search}`;
+  // Seul le chemin compte : un changement de paramètres (?q=, ?page=…) ne doit pas reconstruire
+  // la page, sinon le champ de recherche perd le focus à chaque lettre (clavier qui se ferme).
+  const routeKey = location.pathname;
   const animated = ANIMATED_ROUTES.has(location.pathname);
   // Start directly in "enter" so the animation plays immediately on mount,
   // in sync with the page's background/images — no preparing delay.
