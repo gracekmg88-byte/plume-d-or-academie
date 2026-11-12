@@ -721,7 +721,8 @@ export default function Publication() {
               <div className="mt-8" id="document-viewer">
                 <h2 className="font-serif text-xl font-semibold text-foreground mb-4">{t("pub.document")}</h2>
                 <div className="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-4">
-                  <div>
+                  {/* min-w-0 : une page zoomée défile dans le lecteur au lieu d'élargir la colonne. */}
+                  <div className="min-w-0">
                     <ProtectedPdfViewer
                       fileUrl={pdfUrl}
                       title={displayPub.title}

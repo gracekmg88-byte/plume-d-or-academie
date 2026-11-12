@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useMemo, useRef } from "react";
+import { useState, useCallback, useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
 import "react-pdf/dist/esm/Page/TextLayer.css";
@@ -23,6 +23,19 @@ const PAGE_PREF_PREFIX = "pdfViewer:page:";
 const ZOOM_PREF_PREFIX = "pdfViewer:zoom:";
 const SCROLL_PREF_PREFIX = "pdfViewer:scroll:";
 
+// Zoom : 100 % = page ajustée à la largeur ; on peut agrandir jusqu'à 400 %.
+const MAX_ZOOM = 4;
+// Pendant le pincement, on tolère une légère réduction sous 100 % (effet élastique), corrigée au relâchement.
+const PINCH_UNDERSHOOT = 0.85;
+// Taille maximale d'un canvas : au-delà, certains téléphones Android affichent une page blanche.
+const MAX_CANVAS_PIXELS = 12_000_000;
+const DOUBLE_TAP_MS = 320;
+
+type Layer = { id: number; scale: number };
+type View = { dx: number; dy: number; r: number };
+type Gesture = { d0: number; m0: { x: number; y: number }; base: View; L: number; T: number };
+const IDENTITY: View = { dx: 0, dy: 0, r: 1 };
+
 export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }: ProtectedPdfViewerProps) {
   const prefKey = useMemo(() => `${FULLSCREEN_PREF_PREFIX}${fileUrl}`, [fileUrl]);
   const autoDisabledKey = useMemo(() => `${FULLSCREEN_AUTO_DISABLED_PREFIX}${fileUrl}`, [fileUrl]);
@@ -35,7 +48,7 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
     try {
       const raw = localStorage.getItem(zoomKey);
       const n = raw ? parseFloat(raw) : NaN;
-      if (!Number.isNaN(n) && n >= 0.3 && n <= 3) return n;
+      if (!Number.isNaN(n) && n >= 0.3 && n <= 10) return n;
     } catch { /* ignore */ }
     return null;
   }, [zoomKey]);
@@ -53,9 +66,15 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
 
   const [numPages, setNumPages] = useState<number>(0);
   const [currentPage, setCurrentPage] = useState(initialResolvedPage);
-  const [scale, setScale] = useState(initialStoredZoom ?? 1);
+  // Rendu « double tampon » : la page affichée (front) reste visible pendant que la même page est
+  // redessinée nette à la nouvelle échelle dans un calque caché ; on bascule quand il est prêt.
+  const [layers, setLayers] = useState<Layer[]>(() => [{ id: 0, scale: initialStoredZoom ?? 1 }]);
+  const [frontId, setFrontId] = useState(0);
+  const front = layers.find((l) => l.id === frontId) ?? layers[0];
+  const scale = front.scale;
   const [userZoomed, setUserZoomed] = useState(initialStoredZoom !== null);
   const [fitScale, setFitScale] = useState<number | null>(null);
+  const [nativeSize, setNativeSize] = useState<{ w: number; h: number } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -67,6 +86,22 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
   const containerRef = useRef<HTMLDivElement | null>(null);
   const scrollAreaRef = useRef<HTMLDivElement | null>(null);
   const pageNativeWidthRef = useRef<number | null>(null);
+  // Zoom tactile : état courant du geste, sans re-rendu React à chaque mouvement de doigt.
+  const frontElRef = useRef<HTMLDivElement | null>(null);
+  const zoomLabelRef = useRef<HTMLSpanElement | null>(null);
+  const viewRef = useRef<View>(IDENTITY);
+  const gestureRef = useRef<Gesture | null>(null);
+  const pendingReadyRef = useRef<number | null>(null);
+  const anchorRef = useRef<{ left: number; top: number } | null>(null);
+  const layerSeqRef = useRef(0);
+  const frontIdRef = useRef(frontId);
+  frontIdRef.current = frontId;
+  const scaleRef = useRef(scale);
+  scaleRef.current = scale;
+  const fitRef = useRef(fitScale);
+  fitRef.current = fitScale;
+  const userZoomedRef = useRef(userZoomed);
+  userZoomedRef.current = userZoomed;
   // Pending scroll position to restore after the page renders (read once on mount)
   const pendingScrollRef = useRef<{ top: number; left: number } | null>((() => {
     try {
@@ -107,6 +142,250 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
     [],
   );
 
+  // À fort zoom, réduit la densité de pixels pour que le canvas reste sous la limite des téléphones.
+  const dprForScale = useCallback((s: number) => {
+    if (!nativeSize) return canvasDpr;
+    const area = nativeSize.w * s * nativeSize.h * s;
+    if (area <= 0) return canvasDpr;
+    return Math.max(1, Math.min(canvasDpr, Math.sqrt(MAX_CANVAS_PIXELS / area)));
+  }, [canvasDpr, nativeSize]);
+
+  const minScale = useCallback(() => fitRef.current ?? 0.3, []);
+  const maxScale = useCallback(() => (fitRef.current ?? 1) * MAX_ZOOM, []);
+  const formatZoom = useCallback((s: number) => `${Math.round((s / (fitRef.current || s)) * 100)}%`, []);
+
+  // Applique le zoom visuel en cours (transformation GPU) à la page affichée.
+  const applyView = useCallback((v: View) => {
+    viewRef.current = v;
+    const el = frontElRef.current;
+    if (el) {
+      const idle = v.r === 1 && v.dx === 0 && v.dy === 0;
+      el.style.transform = idle ? "" : `translate3d(${v.dx}px, ${v.dy}px, 0) scale(${v.r})`;
+      if (idle) el.style.willChange = "";
+    }
+    if (zoomLabelRef.current) zoomLabelRef.current.textContent = formatZoom(scaleRef.current * v.r);
+  }, [formatZoom]);
+
+  // Changement d'échelle direct (ajustement à la largeur, rotation…) : abandonne tout zoom en cours.
+  const setScale = useCallback((update: number | ((s: number) => number)) => {
+    const current = scaleRef.current;
+    const s = typeof update === "function" ? update(current) : update;
+    if (Math.abs(s - current) < 1e-3) return; // rien à changer : ne pas interrompre un zoom en cours
+    pendingReadyRef.current = null;
+    applyView(IDENTITY);
+    setLayers((ls) => {
+      const f = ls.find((l) => l.id === frontIdRef.current) ?? ls[0];
+      return [{ ...f, scale: s }];
+    });
+  }, [applyView]);
+
+  // Calcule la vue pour un geste : le point d0/m0 du début reste sous les doigts (zoom autour du pincement).
+  const viewFor = useCallback((g: Gesture, q: number, m: { x: number; y: number }): View => {
+    const s0 = scaleRef.current;
+    const lo = (minScale() * PINCH_UNDERSHOOT) / s0;
+    const hi = maxScale() / s0;
+    const r = Math.min(hi, Math.max(lo, g.base.r * q));
+    const k = r / g.base.r;
+    return {
+      r,
+      dx: m.x - g.L + k * (g.L + g.base.dx - g.m0.x),
+      dy: m.y - g.T + k * (g.T + g.base.dy - g.m0.y),
+    };
+  }, [minScale, maxScale]);
+
+  const beginGesture = useCallback((m: { x: number; y: number }, d0 = 1): Gesture | null => {
+    const el = frontElRef.current;
+    if (!el) return null;
+    const base = { ...viewRef.current };
+    const rect = el.getBoundingClientRect();
+    el.style.transition = "";
+    el.style.willChange = "transform";
+    return { d0: d0 || 1, m0: m, base, L: rect.left - base.dx, T: rect.top - base.dy };
+  }, []);
+
+  // Fin de geste : redessine la page nette à la nouvelle échelle (dans un calque caché).
+  const commitView = useCallback(() => {
+    pendingReadyRef.current = null;
+    const v = viewRef.current;
+    const s0 = scaleRef.current;
+    let target = Math.min(maxScale(), Math.max(minScale(), s0 * v.r));
+    const fit = fitRef.current;
+    const atFit = fit ? Math.abs(target - fit) / fit < 0.03 : false;
+    if (fit && atFit) target = fit;
+    if (Math.abs(target - s0) < 1e-3) {
+      // Aucun changement d'échelle : un éventuel déplacement à deux doigts devient un défilement.
+      const area = scrollAreaRef.current;
+      if (area && (v.dx || v.dy)) {
+        area.scrollLeft -= v.dx;
+        area.scrollTop -= v.dy;
+      }
+      applyView(IDENTITY);
+      setLayers((ls) => ls.filter((l) => l.id === frontIdRef.current));
+      return;
+    }
+    setUserZoomed(!atFit);
+    userZoomedRef.current = !atFit;
+    const id = ++layerSeqRef.current;
+    setLayers((ls) => {
+      const f = ls.find((l) => l.id === frontIdRef.current) ?? ls[0];
+      return [f, { id, scale: target }];
+    });
+  }, [applyView, minScale, maxScale]);
+
+  // Le calque caché est prêt : il remplace la page affichée, à la même position à l'écran.
+  const promoteLayer = useCallback((id: number) => {
+    const el = frontElRef.current;
+    const rect = el?.getBoundingClientRect();
+    anchorRef.current = rect ? { left: rect.left, top: rect.top } : null;
+    viewRef.current = IDENTITY;
+    setFrontId(id);
+    setLayers((ls) => ls.filter((l) => l.id === id));
+  }, []);
+
+  const onLayerRendered = useCallback((id: number) => {
+    if (id === frontIdRef.current) return;
+    if (gestureRef.current) {
+      pendingReadyRef.current = id; // ne pas basculer au milieu d'un geste
+      return;
+    }
+    promoteLayer(id);
+  }, [promoteLayer]);
+
+  useLayoutEffect(() => {
+    const el = frontElRef.current;
+    const area = scrollAreaRef.current;
+    if (el) {
+      el.style.transform = "";
+      el.style.transition = "";
+      el.style.willChange = "";
+    }
+    const anchor = anchorRef.current;
+    anchorRef.current = null;
+    if (el && area && anchor) {
+      const rect = el.getBoundingClientRect();
+      area.scrollLeft += rect.left - anchor.left;
+      area.scrollTop += rect.top - anchor.top;
+    }
+    if (zoomLabelRef.current) zoomLabelRef.current.textContent = formatZoom(scaleRef.current);
+  }, [frontId, scale, fitScale, formatZoom]);
+
+  // Zoom animé vers une échelle donnée, autour d'un point de l'écran (double-tapotement, boutons).
+  const animateZoomTo = useCallback((target: number, x: number, y: number) => {
+    const el = frontElRef.current;
+    const g = beginGesture({ x, y });
+    if (!el || !g) return;
+    const q = target / (scaleRef.current * g.base.r);
+    el.style.transition = "transform 180ms ease-out";
+    applyView(viewFor(g, q, { x, y }));
+    window.setTimeout(() => {
+      el.style.transition = "";
+      commitView();
+    }, 190);
+  }, [applyView, beginGesture, commitView, viewFor]);
+
+  const viewCenter = useCallback(() => {
+    const rect = scrollAreaRef.current?.getBoundingClientRect();
+    return rect ? { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 } : { x: 0, y: 0 };
+  }, []);
+
+  // Gestes tactiles : pincement à deux doigts, double-tapotement ; le glissement à un doigt reste natif.
+  useEffect(() => {
+    const area = scrollAreaRef.current;
+    if (!area) return;
+    const dist = (a: Touch, b: Touch) => Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+    const mid = (a: Touch, b: Touch) => ({ x: (a.clientX + b.clientX) / 2, y: (a.clientY + b.clientY) / 2 });
+    let tap: { x: number; y: number; t: number; moved: boolean } | null = null;
+    let lastTap: { x: number; y: number; t: number } | null = null;
+
+    const startPinch = (e: TouchEvent) => {
+      const [a, b] = [e.touches[0], e.touches[1]];
+      gestureRef.current = beginGesture(mid(a, b), dist(a, b));
+    };
+    const onStart = (e: TouchEvent) => {
+      if (e.touches.length >= 2) {
+        if (e.cancelable) e.preventDefault();
+        tap = null;
+        lastTap = null;
+        startPinch(e);
+      } else if (e.touches.length === 1) {
+        const t = e.touches[0];
+        tap = { x: t.clientX, y: t.clientY, t: performance.now(), moved: false };
+      }
+    };
+    const onMove = (e: TouchEvent) => {
+      const g = gestureRef.current;
+      if (g && e.touches.length >= 2) {
+        if (e.cancelable) e.preventDefault();
+        const [a, b] = [e.touches[0], e.touches[1]];
+        applyView(viewFor(g, dist(a, b) / g.d0, mid(a, b)));
+        return;
+      }
+      if (tap && e.touches.length === 1) {
+        const t = e.touches[0];
+        if (Math.hypot(t.clientX - tap.x, t.clientY - tap.y) > 10) tap.moved = true;
+      }
+    };
+    const onEnd = (e: TouchEvent) => {
+      if (gestureRef.current) {
+        if (e.touches.length >= 2) { startPinch(e); return; }
+        gestureRef.current = null;
+        tap = null;
+        commitView();
+        return;
+      }
+      if (tap && !tap.moved && e.touches.length === 0 && performance.now() - tap.t < 300) {
+        const now = performance.now();
+        if (lastTap && now - lastTap.t < DOUBLE_TAP_MS && Math.hypot(tap.x - lastTap.x, tap.y - lastTap.y) < 40) {
+          if (e.cancelable) e.preventDefault();
+          lastTap = null;
+          const s = scaleRef.current * viewRef.current.r;
+          const fit = fitRef.current ?? s;
+          animateZoomTo(s / fit < 1.5 ? fit * 2 : fit, tap.x, tap.y);
+        } else {
+          lastTap = { x: tap.x, y: tap.y, t: now };
+        }
+      }
+      tap = null;
+    };
+
+    // Ordinateur : pincement du pavé tactile (ou Ctrl + molette) autour du pointeur.
+    let wheelGesture: { g: Gesture; q: number } | null = null;
+    let wheelTimer: ReturnType<typeof setTimeout> | null = null;
+    const onWheel = (e: WheelEvent) => {
+      if (!e.ctrlKey) return;
+      e.preventDefault();
+      const m = { x: e.clientX, y: e.clientY };
+      if (!wheelGesture) {
+        const g = beginGesture(m);
+        if (!g) return;
+        wheelGesture = { g, q: 1 };
+        gestureRef.current = g;
+      }
+      wheelGesture.q *= Math.exp(-e.deltaY * 0.01);
+      applyView(viewFor(wheelGesture.g, wheelGesture.q, m));
+      if (wheelTimer) clearTimeout(wheelTimer);
+      wheelTimer = setTimeout(() => {
+        wheelGesture = null;
+        gestureRef.current = null;
+        commitView();
+      }, 200);
+    };
+
+    area.addEventListener("touchstart", onStart, { passive: false });
+    area.addEventListener("touchmove", onMove, { passive: false });
+    area.addEventListener("touchend", onEnd, { passive: false });
+    area.addEventListener("touchcancel", onEnd, { passive: false });
+    area.addEventListener("wheel", onWheel, { passive: false });
+    return () => {
+      area.removeEventListener("touchstart", onStart);
+      area.removeEventListener("touchmove", onMove);
+      area.removeEventListener("touchend", onEnd);
+      area.removeEventListener("touchcancel", onEnd);
+      area.removeEventListener("wheel", onWheel);
+      if (wheelTimer) clearTimeout(wheelTimer);
+    };
+  }, [animateZoomTo, applyView, beginGesture, commitView, viewFor]);
+
   // Compute a "fit-to-width" scale based on the visible container and the page's
   // native width. Re-runs on resize, fullscreen toggle, and orientation changes.
   const recomputeFitScale = useCallback(() => {
@@ -117,9 +396,14 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
     const available = Math.max(0, el.clientWidth - 16);
     if (available <= 0) return;
     const next = Math.max(0.3, Math.min(2.5, available / native));
+    // Pendant un zoom, une barre de défilement qui apparaît change à peine la largeur : on ignore ce
+    // micro-écart pour ne pas recalculer (et interrompre) le zoom.
+    if (fitRef.current && Math.abs(next - fitRef.current) / fitRef.current < 0.02 && userZoomedRef.current) return;
     setFitScale(next);
-    setScale((prev) => (userZoomed ? prev : next));
-  }, [userZoomed]);
+    fitRef.current = next;
+    // 100 % = ajusté à la largeur ; un zoom enregistré reste entre 100 % et 400 %.
+    setScale((prev) => (userZoomedRef.current ? Math.min(next * MAX_ZOOM, Math.max(next, prev)) : next));
+  }, [setScale]);
 
   useEffect(() => {
     const onResize = () => recomputeFitScale();
@@ -197,6 +481,19 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
       setCurrentPage(initialPage);
     }
   }, [initialPage]);
+
+  // Changement de page : abandonne un redessin en attente de l'ancienne page et repart du haut
+  // de la nouvelle page (le niveau de zoom est conservé).
+  const shownPageRef = useRef(currentPage);
+  useEffect(() => {
+    pendingReadyRef.current = null;
+    setLayers((ls) => (ls.length > 1 ? ls.filter((l) => l.id === frontIdRef.current) : ls));
+    applyView(IDENTITY);
+    if (shownPageRef.current !== currentPage) {
+      shownPageRef.current = currentPage;
+      scrollAreaRef.current?.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    }
+  }, [currentPage, applyView]);
 
   const toggleAutoFullscreen = useCallback(() => {
     setAutoFullscreenDisabled((prev) => {
@@ -280,9 +577,13 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
 
   const goToPrev = () => setCurrentPage((p) => { const next = Math.max(1, p - 1); onPageChange?.(next); return next; });
   const goToNext = () => setCurrentPage((p) => { const next = Math.min(numPages, p + 1); onPageChange?.(next); return next; });
-  const zoomIn = () => { setUserZoomed(true); setScale((s) => Math.min(3, +(s + 0.25).toFixed(2))); };
-  const zoomOut = () => { setUserZoomed(true); setScale((s) => Math.max(0.3, +(s - 0.25).toFixed(2))); };
-  const resetZoom = () => { setUserZoomed(false); if (fitScale) setScale(fitScale); };
+  const zoomIn = () => { const c = viewCenter(); animateZoomTo(Math.min(maxScale(), scale * 1.25), c.x, c.y); };
+  const zoomOut = () => { const c = viewCenter(); animateZoomTo(Math.max(minScale(), scale / 1.25), c.x, c.y); };
+  const resetZoom = () => {
+    if (!fitScale) return;
+    const c = viewCenter();
+    animateZoomTo(fitScale, c.x, c.y);
+  };
 
   const toggleFullscreen = async () => {
     try {
@@ -319,11 +620,14 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
     );
   }
 
+  const atMin = fitScale !== null && scale <= fitScale + 1e-3;
+  const atMax = fitScale !== null && scale >= fitScale * MAX_ZOOM - 1e-3;
+
   return (
     <div
       ref={containerRef}
       className={cn(
-        "rounded-xl overflow-hidden border border-border bg-muted relative select-none",
+        "rounded-xl overflow-hidden border border-border bg-muted relative select-none min-w-0 max-w-full",
         isFullscreen && "fixed inset-0 z-[100] rounded-none border-0",
       )}
       style={{
@@ -350,18 +654,19 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
           </Button>
         </div>
         <div className="flex items-center gap-1.5">
-          <Button variant="ghost" size="icon" onClick={zoomOut} disabled={scale <= 0.3} className="h-8 w-8">
+          {/* Boutons secondaires : sur téléphone, on zoome en pinçant ou en tapotant deux fois. */}
+          <Button variant="ghost" size="icon" onClick={zoomOut} disabled={atMin} className="hidden md:inline-flex h-8 w-8" aria-label="Réduire">
             <ZoomOut className="h-4 w-4" />
           </Button>
           <button
             type="button"
             onClick={resetZoom}
             className="text-xs text-muted-foreground min-w-[44px] text-center hover:text-foreground transition-colors"
-            title="Ajuster à la largeur"
+            title="Ajuster à la largeur (pincez ou tapotez deux fois pour zoomer)"
           >
-            {Math.round(scale * 100)}%
+            <span ref={zoomLabelRef} />
           </button>
-          <Button variant="ghost" size="icon" onClick={zoomIn} disabled={scale >= 3} className="h-8 w-8">
+          <Button variant="ghost" size="icon" onClick={zoomIn} disabled={atMax} className="hidden md:inline-flex h-8 w-8" aria-label="Agrandir">
             <ZoomIn className="h-4 w-4" />
           </Button>
           <Button
@@ -415,10 +720,14 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
       <div
         ref={scrollAreaRef}
         className={cn(
-          "overflow-auto flex justify-center items-start py-4 px-2 bg-muted/50",
+          // Pas de justify-center : centrée par mx-auto quand elle est plus étroite, la page zoomée
+          // reste entièrement accessible en défilant (sinon sa partie gauche serait hors d'atteinte).
+          "overflow-auto flex items-start py-4 px-2 bg-muted/50",
           isFullscreen ? "h-[calc(100dvh-48px)]" : "max-h-[75vh] min-h-[50vh]",
         )}
+        // Le glissement à un doigt reste natif (fluide) ; le pincement est géré par le lecteur.
         style={{ WebkitOverflowScrolling: "touch", touchAction: "pan-x pan-y" }}
+        data-pdf-scroll-area=""
       >
         {loading && (
           <div className="absolute inset-0 z-10 bg-background/85" aria-hidden="true">
@@ -433,26 +742,50 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
           onLoadSuccess={onDocumentLoadSuccess}
           onLoadError={onDocumentLoadError}
           loading={null}
-          className="select-none mx-auto"
+          className="select-none mx-auto relative"
         >
-          <Page
-            key={`page-${currentPage}`}
-            pageNumber={currentPage}
-            scale={scale}
-            renderTextLayer={false}
-            renderAnnotationLayer={false}
-            devicePixelRatio={canvasDpr}
-            loading={null}
-            className="shadow-lg mx-auto"
-            onLoadSuccess={(page) => {
-              // page.originalWidth / page.view[2] is the PDF's native point width.
-              const w = (page as any).originalWidth ?? page.view?.[2];
-              if (w && pageNativeWidthRef.current !== w) {
-                pageNativeWidthRef.current = w;
-                recomputeFitScale();
-              }
-            }}
-          />
+          {layers.map((layer) => {
+            const isFront = layer.id === front.id;
+            const page = (
+              <Page
+                key={`page-${currentPage}`}
+                pageNumber={currentPage}
+                scale={layer.scale}
+                renderTextLayer={false}
+                renderAnnotationLayer={false}
+                devicePixelRatio={dprForScale(layer.scale)}
+                loading={null}
+                className="shadow-lg mx-auto"
+                onRenderSuccess={() => onLayerRendered(layer.id)}
+                onLoadSuccess={(p) => {
+                  if (!isFront) return;
+                  // page.originalWidth / page.view[2] is the PDF's native point width.
+                  const dims = p as unknown as { originalWidth?: number; originalHeight?: number };
+                  const w = dims.originalWidth ?? p.view?.[2];
+                  const h = dims.originalHeight ?? p.view?.[3];
+                  if (w && h && (nativeSize?.w !== w || nativeSize?.h !== h)) setNativeSize({ w, h });
+                  if (w && pageNativeWidthRef.current !== w) {
+                    pageNativeWidthRef.current = w;
+                    recomputeFitScale();
+                  }
+                }}
+              />
+            );
+            return isFront ? (
+              <div key={layer.id} ref={frontElRef} style={{ transformOrigin: "0 0" }} data-pdf-page-layer="front">
+                {page}
+              </div>
+            ) : (
+              // Calque de redessin : dessiné hors champ, sans agrandir la zone de défilement.
+              <div
+                key={layer.id}
+                aria-hidden="true"
+                style={{ position: "absolute", left: 0, top: 0, width: 0, height: 0, overflow: "hidden", visibility: "hidden" }}
+              >
+                {page}
+              </div>
+            );
+          })}
         </Document>
         )}
       </div>
