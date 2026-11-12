@@ -37,6 +37,10 @@ export function usePublications(category?: string) {
       if (error) throw error;
       return data ?? [];
     },
+    // Une coupure passagère (base momentanément occupée, réseau instable) ne doit pas
+    // afficher une bibliothèque vide : on réessaie 3 fois en patientant 1 s, 2 s puis 4 s.
+    retry: 3,
+    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 8000),
   });
 }
 

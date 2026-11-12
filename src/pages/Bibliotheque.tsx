@@ -440,12 +440,10 @@ export default function Bibliotheque() {
                     <BookOpen className="mt-1 h-10 w-10 text-muted-foreground/50" />
                     <div>
                       <h2 className="font-serif text-2xl font-semibold text-foreground mb-2">
-                        {t("library.noResults")}
+                        {t("library.loadError")}
                       </h2>
                       <p className="text-muted-foreground max-w-2xl">
-                        {search
-                          ? t("library.noResultsSearch", { search })
-                          : t("library.noResultsCategory")}
+                        {t("library.loadErrorDesc")}
                       </p>
                     </div>
                   </div>
