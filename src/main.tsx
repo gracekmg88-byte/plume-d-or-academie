@@ -3,6 +3,7 @@ import { HelmetProvider } from "react-helmet-async";
 import App from "./App.tsx";
 import "./index.css";
 import { initNativeAuth } from "./lib/native-auth";
+import { hideAppSplashWhenReady } from "./lib/app-splash";
 
 const CACHE_RESET_RELOAD_FLAG = "plume-cache-reset-reload-done";
 const APP_RUNTIME_VERSION = "2026-05-28-02";
@@ -135,3 +136,6 @@ createRoot(document.getElementById("root")!).render(
     <App />
   </HelmetProvider>
 );
+
+// Retire l'écran de démarrage (logo) dès que la page est affichée.
+hideAppSplashWhenReady();
