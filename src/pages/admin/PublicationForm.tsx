@@ -150,7 +150,20 @@ export default function PublicationForm() {
       let fileUrl = existingPublication?.file_url || null;
 
       if (aiCoverUrl) {
+        // Couverture créée par l'IA : image brute (PNG, souvent 1 à 3 Mo). On la compresse comme une
+        // couverture envoyée (800 × 1200 au plus) et on l'enregistre avec la bonne durée de cache.
+        // En cas d'échec, on garde l'image de l'IA telle quelle.
         coverImageUrl = aiCoverUrl;
+        try {
+          const res = await fetch(aiCoverUrl, { credentials: "omit" });
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const raw = await res.blob();
+          const original = new File([raw], "couverture-ia.png", { type: raw.type || "image/png" });
+          const compressed = await compressImage(original, { maxWidth: 800, maxHeight: 1200, quality: 0.8 });
+          if (compressed.size < raw.size) coverImageUrl = await uploadFile(compressed, "covers");
+        } catch (err) {
+          console.warn("AI cover compression failed, keeping original:", err);
+        }
       } else if (coverFile) {
         let toUpload: File = coverFile;
         try {

@@ -31,19 +31,28 @@ export async function compressImage(
       }
       ctx.drawImage(img, 0, 0, width, height);
 
-      // Try WebP first, fallback to JPEG
-      const mimeType = "image/webp";
+      // WebP d'abord. Certains navigateurs (Safari, anciens téléphones) ne savent pas produire du WebP
+      // et renvoient alors un PNG non compressé (≈ 2,8 Mo pour 800 × 1200) : dans ce cas on refait la
+      // compression en JPEG. Le nom et le type du fichier suivent toujours le format réellement obtenu.
+      const finish = (blob: Blob) => {
+        const ext = blob.type === "image/webp" ? "webp" : blob.type === "image/png" ? "png" : "jpg";
+        const name = file.name.replace(/\.[^.]+$/, "") + `.${ext}`;
+        resolve(new File([blob], name, { type: blob.type || "image/jpeg" }));
+      };
       canvas.toBlob(
-        (blob) => {
-          if (!blob) {
-            reject(new Error("Compression failed"));
-            return;
-          }
-          const ext = mimeType === "image/webp" ? "webp" : "jpg";
-          const name = file.name.replace(/\.[^.]+$/, `.${ext}`);
-          resolve(new File([blob], name, { type: mimeType }));
+        (webp) => {
+          if (webp && webp.type === "image/webp") { finish(webp); return; }
+          canvas.toBlob(
+            (jpeg) => {
+              if (jpeg) { finish(jpeg); return; }
+              if (webp) { finish(webp); return; }
+              reject(new Error("Compression failed"));
+            },
+            "image/jpeg",
+            quality,
+          );
         },
-        mimeType,
+        "image/webp",
         quality
       );
     };
