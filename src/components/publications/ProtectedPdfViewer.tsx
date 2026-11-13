@@ -30,6 +30,11 @@ const PINCH_UNDERSHOOT = 0.85;
 // Taille maximale d'un canvas : au-delà, certains téléphones Android affichent une page blanche.
 const MAX_CANVAS_PIXELS = 12_000_000;
 const DOUBLE_TAP_MS = 320;
+// Glissement horizontal pour tourner les pages.
+const SWIPE_MIN_PX = 60;
+const SWIPE_OUT_MS = 180;
+const SWIPE_IN_MS = 240;
+const SWIPE_BACK_MS = 200;
 
 type Layer = { id: number; scale: number };
 type View = { dx: number; dy: number; r: number };
@@ -102,6 +107,16 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
   fitRef.current = fitScale;
   const userZoomedRef = useRef(userZoomed);
   userZoomedRef.current = userZoomed;
+  // Glissement pour tourner les pages : enveloppe déplacée sous le doigt (indépendante du zoom).
+  const swipeElRef = useRef<HTMLDivElement | null>(null);
+  const swipeBusyRef = useRef(false);
+  const slideInRef = useRef<{ dir: number; timer: ReturnType<typeof setTimeout> } | null>(null);
+  const numPagesRef = useRef(numPages);
+  numPagesRef.current = numPages;
+  const currentPageRef = useRef(currentPage);
+  currentPageRef.current = currentPage;
+  const onPageChangeRef = useRef(onPageChange);
+  onPageChangeRef.current = onPageChange;
   // Pending scroll position to restore after the page renders (read once on mount)
   const pendingScrollRef = useRef<{ top: number; left: number } | null>((() => {
     try {
@@ -283,6 +298,29 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
     }, 190);
   }, [applyView, beginGesture, commitView, viewFor]);
 
+  const setSwipeStyle = useCallback((x: number, opacity: number, transition: string) => {
+    const el = swipeElRef.current;
+    if (!el) return;
+    el.style.transition = transition;
+    el.style.transform = x === 0 ? "" : `translate3d(${x}px, 0, 0)`;
+    el.style.opacity = opacity === 1 ? "" : String(opacity);
+  }, []);
+
+  // Nouvelle page dessinée après un glissement : elle entre par le côté opposé au geste.
+  const finishSlideIn = useCallback(() => {
+    const pending = slideInRef.current;
+    if (!pending) return;
+    slideInRef.current = null;
+    clearTimeout(pending.timer);
+    const el = swipeElRef.current;
+    if (el) {
+      setSwipeStyle(-pending.dir * Math.min(120, el.clientWidth * 0.3), 0, "none");
+      void el.offsetWidth; // applique la position de départ avant l'animation
+      setSwipeStyle(0, 1, `transform ${SWIPE_IN_MS}ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity ${SWIPE_IN_MS}ms ease-out`);
+    }
+    window.setTimeout(() => { swipeBusyRef.current = false; }, SWIPE_IN_MS);
+  }, [setSwipeStyle]);
+
   const viewCenter = useCallback(() => {
     const rect = scrollAreaRef.current?.getBoundingClientRect();
     return rect ? { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 } : { x: 0, y: 0 };
@@ -385,6 +423,101 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
       if (wheelTimer) clearTimeout(wheelTimer);
     };
   }, [animateZoomTo, applyView, beginGesture, commitView, viewFor]);
+
+  // Tourner les pages d'un glissement horizontal à un doigt (comme une liseuse). Écouteurs séparés :
+  // le zoom à deux doigts et le double-tapotement ci-dessus ne sont pas modifiés. Dès qu'un deuxième
+  // doigt touche l'écran, le glissement est abandonné et le zoom garde la main.
+  useEffect(() => {
+    const area = scrollAreaRef.current;
+    if (!area) return;
+    type Swipe = {
+      x0: number; y0: number; t0: number;
+      lock: "h" | "v" | null;
+      // Page agrandie : on ne tourne la page que si le document est déjà au bord dans le sens du geste.
+      edgeNext: boolean; edgePrev: boolean;
+      dx: number; blocked: boolean;
+    };
+    let s: Swipe | null = null;
+    let outTimer: ReturnType<typeof setTimeout> | null = null;
+
+    const springBack = () => setSwipeStyle(0, 1, `transform ${SWIPE_BACK_MS}ms ease-out, opacity ${SWIPE_BACK_MS}ms ease-out`);
+    const cancel = () => {
+      if (s?.lock === "h") springBack();
+      s = null;
+    };
+
+    const onStart = (e: TouchEvent) => {
+      if (e.touches.length !== 1 || gestureRef.current || swipeBusyRef.current) { cancel(); return; }
+      const t = e.touches[0];
+      const maxLeft = area.scrollWidth - area.clientWidth;
+      const overflow = maxLeft > 2;
+      s = {
+        x0: t.clientX, y0: t.clientY, t0: performance.now(), lock: null,
+        edgeNext: !overflow || area.scrollLeft >= maxLeft - 2,
+        edgePrev: !overflow || area.scrollLeft <= 2,
+        dx: 0, blocked: false,
+      };
+    };
+    const onMove = (e: TouchEvent) => {
+      if (!s) return;
+      if (e.touches.length !== 1 || gestureRef.current) { cancel(); return; }
+      const t = e.touches[0];
+      const dx = t.clientX - s.x0;
+      const dy = t.clientY - s.y0;
+      if (s.lock === null) {
+        if (Math.hypot(dx, dy) < 10) return;
+        const horizontal = Math.abs(dx) > Math.abs(dy) * 1.2;
+        const allowed = dx < 0 ? s.edgeNext : s.edgePrev;
+        s.lock = horizontal && allowed ? "h" : "v";
+      }
+      if (s.lock !== "h") return;
+      if (e.cancelable) e.preventDefault();
+      const page = currentPageRef.current;
+      s.blocked = (dx < 0 && page >= numPagesRef.current) || (dx > 0 && page <= 1);
+      s.dx = dx;
+      // En première / dernière page : la page résiste sous le doigt puis revient.
+      setSwipeStyle(s.blocked ? dx * 0.25 : dx, 1, "none");
+    };
+    const onEnd = (e: TouchEvent) => {
+      if (!s) return;
+      const cur = s;
+      s = null;
+      if (cur.lock !== "h") return;
+      if (e.touches.length > 0) { springBack(); return; }
+      const dt = Math.max(1, performance.now() - cur.t0);
+      const dist = Math.abs(cur.dx);
+      const commit = !cur.blocked && (dist > SWIPE_MIN_PX || (dist > 25 && dist / dt > 0.4));
+      if (!commit) { springBack(); return; }
+      // Validé : la page sort du côté du geste, la suivante entre par l'autre côté une fois dessinée.
+      const dir = cur.dx < 0 ? -1 : 1;
+      swipeBusyRef.current = true;
+      setSwipeStyle(dir * area.clientWidth, 0, `transform ${SWIPE_OUT_MS}ms ease-in, opacity ${SWIPE_OUT_MS}ms ease-in`);
+      outTimer = setTimeout(() => {
+        outTimer = null;
+        slideInRef.current = { dir, timer: setTimeout(finishSlideIn, 900) };
+        setCurrentPage((p) => {
+          const next = dir < 0 ? Math.min(numPagesRef.current, p + 1) : Math.max(1, p - 1);
+          onPageChangeRef.current?.(next);
+          return next;
+        });
+      }, SWIPE_OUT_MS);
+    };
+
+    area.addEventListener("touchstart", onStart, { passive: true });
+    area.addEventListener("touchmove", onMove, { passive: false });
+    area.addEventListener("touchend", onEnd, { passive: true });
+    area.addEventListener("touchcancel", onEnd, { passive: true });
+    return () => {
+      area.removeEventListener("touchstart", onStart);
+      area.removeEventListener("touchmove", onMove);
+      area.removeEventListener("touchend", onEnd);
+      area.removeEventListener("touchcancel", onEnd);
+      if (outTimer) clearTimeout(outTimer);
+      if (slideInRef.current) clearTimeout(slideInRef.current.timer);
+      slideInRef.current = null;
+      swipeBusyRef.current = false;
+    };
+  }, [finishSlideIn, setSwipeStyle]);
 
   // Compute a "fit-to-width" scale based on the visible container and the page's
   // native width. Re-runs on resize, fullscreen toggle, and orientation changes.
@@ -735,6 +868,8 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
           </div>
         )}
         {resolvedUrl && (
+        // Enveloppe déplacée pendant le glissement pour tourner les pages (sans effet sur le zoom).
+        <div ref={swipeElRef} className="mx-auto" style={{ willChange: "transform" }} data-pdf-swipe="">
         <Document
           key={resolvedUrl}
           file={documentSource}
@@ -756,7 +891,10 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
                 devicePixelRatio={dprForScale(layer.scale)}
                 loading={null}
                 className="shadow-lg mx-auto"
-                onRenderSuccess={() => onLayerRendered(layer.id)}
+                onRenderSuccess={() => {
+                  onLayerRendered(layer.id);
+                  if (isFront) finishSlideIn();
+                }}
                 onLoadSuccess={(p) => {
                   if (!isFront) return;
                   // page.originalWidth / page.view[2] is the PDF's native point width.
@@ -787,6 +925,7 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
             );
           })}
         </Document>
+        </div>
         )}
       </div>
 
