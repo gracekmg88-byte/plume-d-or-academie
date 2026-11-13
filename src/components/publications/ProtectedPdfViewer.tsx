@@ -117,6 +117,7 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
   currentPageRef.current = currentPage;
   const onPageChangeRef = useRef(onPageChange);
   onPageChangeRef.current = onPageChange;
+  const heightLockTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   // Pending scroll position to restore after the page renders (read once on mount)
   const pendingScrollRef = useRef<{ top: number; left: number } | null>((() => {
     try {
@@ -298,13 +299,44 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
     }, 190);
   }, [applyView, beginGesture, commitView, viewFor]);
 
-  const setSwipeStyle = useCallback((x: number, opacity: number, transition: string) => {
+  const overflowTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const setSwipeStyle = useCallback((x: number, opacity: number, transition: string, settleMs = 0) => {
     const el = swipeElRef.current;
     if (!el) return;
     el.style.transition = transition;
     el.style.transform = x === 0 ? "" : `translate3d(${x}px, 0, 0)`;
     el.style.opacity = opacity === 1 ? "" : String(opacity);
+    // Page non agrandie : la page déplacée ne doit pas faire apparaître une barre de défilement
+    // horizontale (le lecteur grandirait de quelques pixels). Rétablie une fois la page revenue en place.
+    const area = scrollAreaRef.current;
+    if (!area) return;
+    if (overflowTimerRef.current) { clearTimeout(overflowTimerRef.current); overflowTimerRef.current = null; }
+    const zoomed = fitRef.current !== null && scaleRef.current * viewRef.current.r > fitRef.current * 1.01;
+    if (x !== 0 || opacity !== 1) {
+      if (!zoomed) area.style.overflowX = "hidden";
+    } else if (settleMs > 0) {
+      overflowTimerRef.current = setTimeout(() => { area.style.overflowX = ""; overflowTimerRef.current = null; }, settleMs);
+    } else {
+      area.style.overflowX = "";
+    }
   }, []);
+
+  // Changement de page : l'ancienne page disparaît avant que la nouvelle soit dessinée. Hors plein
+  // écran, le lecteur rapetisserait un instant et tout le texte en dessous sauterait ; on garde donc
+  // sa hauteur jusqu'au dessin de la nouvelle page (2 s au plus).
+  const releaseHeightLock = useCallback(() => {
+    if (heightLockTimerRef.current) { clearTimeout(heightLockTimerRef.current); heightLockTimerRef.current = null; }
+    const el = swipeElRef.current;
+    if (el) el.style.minHeight = "";
+  }, []);
+  const lockHeight = useCallback(() => {
+    const el = swipeElRef.current;
+    if (!el) return;
+    el.style.minHeight = `${el.offsetHeight}px`;
+    if (heightLockTimerRef.current) clearTimeout(heightLockTimerRef.current);
+    heightLockTimerRef.current = setTimeout(releaseHeightLock, 2000);
+  }, [releaseHeightLock]);
+  useEffect(() => releaseHeightLock, [releaseHeightLock]);
 
   // Nouvelle page dessinée après un glissement : elle entre par le côté opposé au geste.
   const finishSlideIn = useCallback(() => {
@@ -316,7 +348,7 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
     if (el) {
       setSwipeStyle(-pending.dir * Math.min(120, el.clientWidth * 0.3), 0, "none");
       void el.offsetWidth; // applique la position de départ avant l'animation
-      setSwipeStyle(0, 1, `transform ${SWIPE_IN_MS}ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity ${SWIPE_IN_MS}ms ease-out`);
+      setSwipeStyle(0, 1, `transform ${SWIPE_IN_MS}ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity ${SWIPE_IN_MS}ms ease-out`, SWIPE_IN_MS + 30);
     }
     window.setTimeout(() => { swipeBusyRef.current = false; }, SWIPE_IN_MS);
   }, [setSwipeStyle]);
@@ -440,7 +472,7 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
     let s: Swipe | null = null;
     let outTimer: ReturnType<typeof setTimeout> | null = null;
 
-    const springBack = () => setSwipeStyle(0, 1, `transform ${SWIPE_BACK_MS}ms ease-out, opacity ${SWIPE_BACK_MS}ms ease-out`);
+    const springBack = () => setSwipeStyle(0, 1, `transform ${SWIPE_BACK_MS}ms ease-out, opacity ${SWIPE_BACK_MS}ms ease-out`, SWIPE_BACK_MS + 30);
     const cancel = () => {
       if (s?.lock === "h") springBack();
       s = null;
@@ -495,6 +527,7 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
       outTimer = setTimeout(() => {
         outTimer = null;
         slideInRef.current = { dir, timer: setTimeout(finishSlideIn, 900) };
+        lockHeight();
         setCurrentPage((p) => {
           const next = dir < 0 ? Math.min(numPagesRef.current, p + 1) : Math.max(1, p - 1);
           onPageChangeRef.current?.(next);
@@ -517,7 +550,7 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
       slideInRef.current = null;
       swipeBusyRef.current = false;
     };
-  }, [finishSlideIn, setSwipeStyle]);
+  }, [finishSlideIn, lockHeight, setSwipeStyle]);
 
   // Compute a "fit-to-width" scale based on the visible container and the page's
   // native width. Re-runs on resize, fullscreen toggle, and orientation changes.
@@ -708,8 +741,14 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
     setLoading(false);
   }, []);
 
-  const goToPrev = () => setCurrentPage((p) => { const next = Math.max(1, p - 1); onPageChange?.(next); return next; });
-  const goToNext = () => setCurrentPage((p) => { const next = Math.min(numPages, p + 1); onPageChange?.(next); return next; });
+  const goToPrev = () => {
+    if (currentPage > 1) lockHeight();
+    setCurrentPage((p) => { const next = Math.max(1, p - 1); onPageChange?.(next); return next; });
+  };
+  const goToNext = () => {
+    if (currentPage < numPages) lockHeight();
+    setCurrentPage((p) => { const next = Math.min(numPages, p + 1); onPageChange?.(next); return next; });
+  };
   const zoomIn = () => { const c = viewCenter(); animateZoomTo(Math.min(maxScale(), scale * 1.25), c.x, c.y); };
   const zoomOut = () => { const c = viewCenter(); animateZoomTo(Math.max(minScale(), scale / 1.25), c.x, c.y); };
   const resetZoom = () => {
@@ -893,7 +932,7 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
                 className="shadow-lg mx-auto"
                 onRenderSuccess={() => {
                   onLayerRendered(layer.id);
-                  if (isFront) finishSlideIn();
+                  if (isFront) { releaseHeightLock(); finishSlideIn(); }
                 }}
                 onLoadSuccess={(p) => {
                   if (!isFront) return;
