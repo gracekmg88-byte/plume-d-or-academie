@@ -9,6 +9,7 @@ import { readCachedPdf, storePdfInCache } from "@/lib/pdf-cache";
 // Moteur PDF servi par le site (et non plus par unpkg.com) : voir src/lib/pdf-engine.ts.
 import { PDF_CMAP_URL, PDF_STANDARD_FONTS_URL } from "@/lib/pdf-engine";
 import { useBlockScreenCapture } from "@/lib/screen-protection";
+import { openPdfRangeSource, type PdfRangeSource } from "@/lib/pdf-range";
 
 interface ProtectedPdfViewerProps {
   fileUrl: string;
@@ -32,6 +33,8 @@ const MAX_CANVAS_PIXELS = 12_000_000;
 const DOUBLE_TAP_MS = 320;
 // Glissement horizontal pour tourner les pages.
 const SWIPE_MIN_PX = 60;
+// Au-delà, pas de copie complète du PDF sur l'appareil (données mobiles).
+const MAX_OFFLINE_COPY_BYTES = 25 * 1024 * 1024;
 const SWIPE_OUT_MS = 180;
 const SWIPE_IN_MS = 240;
 const SWIPE_BACK_MS = 200;
@@ -136,36 +139,55 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
   const resolvedUrl = fileUrl;
   const [sourceAttempt, setSourceAttempt] = useState(0);
   const [documentSource, setDocumentSource] = useState<
-    { url: string; withCredentials: boolean } | { data: Uint8Array } | null
+    { url: string; withCredentials: boolean } | { data: Uint8Array } | PdfRangeSource | null
   >(null);
   const fromNetworkRef = useRef(false);
+  const remoteSizeRef = useRef<number | null>(null);
   useEffect(() => {
-    let settled = false;
+    let cancelled = false;
+    let opened: PdfRangeSource | null = null;
+    const setup = new AbortController();
     setDocumentSource(null);
-    const loadFromNetwork = () => {
-      if (settled) return;
-      settled = true;
+    (async () => {
+      // 1. Copie gardée sur l'appareil (quelques millisecondes ; au-delà de 400 ms on n'attend pas).
+      const cached = await Promise.race([
+        readCachedPdf(fileUrl),
+        new Promise<null>((r) => window.setTimeout(() => r(null), 400)),
+      ]);
+      if (cancelled) return;
+      if (cached) {
+        fromNetworkRef.current = false;
+        setDocumentSource({ data: cached });
+        return;
+      }
+      // 2. En ligne, par morceaux : seule la page affichée est téléchargée (voir pdf-range.ts).
       fromNetworkRef.current = true;
+      opened = await openPdfRangeSource(fileUrl, () => {
+        if (cancelled) return;
+        setError(true);
+        setLoading(false);
+      }, setup.signal);
+      if (cancelled) { opened?.range.abort(); return; }
+      if (opened) {
+        remoteSizeRef.current = opened.length;
+        setDocumentSource(opened);
+        return;
+      }
+      // 3. Secours : chargement classique (comme avant).
+      remoteSizeRef.current = null;
       setDocumentSource({ url: fileUrl, withCredentials: false });
-    };
-    // La lecture locale prend quelques millisecondes ; au-delà de 400 ms on n'attend pas.
-    const fallback = window.setTimeout(loadFromNetwork, 400);
-    readCachedPdf(fileUrl).then((data) => {
-      if (settled) return;
-      if (!data) { window.clearTimeout(fallback); loadFromNetwork(); return; }
-      settled = true;
-      window.clearTimeout(fallback);
-      fromNetworkRef.current = false;
-      setDocumentSource({ data });
-    });
-    return () => { settled = true; window.clearTimeout(fallback); };
+    })();
+    return () => { cancelled = true; setup.abort(); opened?.range.abort(); };
   }, [fileUrl, sourceAttempt]);
 
   // Une fois la première page affichée, garde une copie du PDF pour les prochaines ouvertures
-  // (téléchargement en arrière-plan, après coup, pour ne pas ralentir l'affichage).
+  // (téléchargement en arrière-plan, après coup, pour ne pas ralentir l'affichage). Pas pour les
+  // très gros fichiers (> 25 Mo) : trop coûteux en données mobiles ; seules les pages lues restent
+  // alors dans le cache du navigateur.
   const copyScheduledRef = useRef(false);
   const scheduleOfflineCopy = useCallback(() => {
     if (copyScheduledRef.current || !fromNetworkRef.current) return;
+    if (remoteSizeRef.current !== null && remoteSizeRef.current > MAX_OFFLINE_COPY_BYTES) return;
     copyScheduledRef.current = true;
     window.setTimeout(() => { void storePdfInCache(fileUrl); }, 2000);
   }, [fileUrl]);
@@ -177,6 +199,7 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
     cMapPacked: true,
     standardFontDataUrl: PDF_STANDARD_FONTS_URL,
     disableAutoFetch: true,   // don't prefetch the entire PDF up front
+    rangeChunkSize: 262_144,  // morceaux de 256 Ko : environ une page scannée par demande
     disableStream: false,     // allow chunked streaming as the user navigates
     isEvalSupported: false,
   }), []);
@@ -558,11 +581,10 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
         outTimer = null;
         slideInRef.current = { dir, timer: setTimeout(finishSlideIn, 900) };
         lockHeight();
-        setCurrentPage((p) => {
-          const next = dir < 0 ? Math.min(numPagesRef.current, p + 1) : Math.max(1, p - 1);
-          onPageChangeRef.current?.(next);
-          return next;
-        });
+        const p = currentPageRef.current;
+        const next = dir < 0 ? Math.min(numPagesRef.current, p + 1) : Math.max(1, p - 1);
+        setCurrentPage(next);
+        onPageChangeRef.current?.(next);
       }, SWIPE_OUT_MS);
     };
 
@@ -773,11 +795,15 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
 
   const goToPrev = () => {
     if (currentPage > 1) lockHeight();
-    setCurrentPage((p) => { const next = Math.max(1, p - 1); onPageChange?.(next); return next; });
+    const next = Math.max(1, currentPageRef.current - 1);
+    setCurrentPage(next);
+    onPageChange?.(next);
   };
   const goToNext = () => {
     if (currentPage < numPages) lockHeight();
-    setCurrentPage((p) => { const next = Math.min(numPages, p + 1); onPageChange?.(next); return next; });
+    const next = Math.min(numPages, currentPageRef.current + 1);
+    setCurrentPage(next);
+    onPageChange?.(next);
   };
   const zoomIn = () => { const c = viewCenter(); animateZoomTo(Math.min(maxScale(), scale * 1.25), c.x, c.y); };
   const zoomOut = () => { const c = viewCenter(); animateZoomTo(Math.max(minScale(), scale / 1.25), c.x, c.y); };
