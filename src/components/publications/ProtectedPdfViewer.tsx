@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { readCachedPdf, storePdfInCache } from "@/lib/pdf-cache";
 // Moteur PDF servi par le site (et non plus par unpkg.com) : voir src/lib/pdf-engine.ts.
 import { PDF_CMAP_URL, PDF_STANDARD_FONTS_URL } from "@/lib/pdf-engine";
+import { useBlockScreenCapture } from "@/lib/screen-protection";
 
 interface ProtectedPdfViewerProps {
   fileUrl: string;
@@ -41,6 +42,8 @@ type Gesture = { d0: number; m0: { x: number; y: number }; base: View; L: number
 const IDENTITY: View = { dx: 0, dy: 0, r: 1 };
 
 export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }: ProtectedPdfViewerProps) {
+  // Appli Android : captures d'écran bloquées tant que le lecteur est affiché.
+  useBlockScreenCapture();
   const prefKey = useMemo(() => `${FULLSCREEN_PREF_PREFIX}${fileUrl}`, [fileUrl]);
   const autoDisabledKey = useMemo(() => `${FULLSCREEN_AUTO_DISABLED_PREFIX}${fileUrl}`, [fileUrl]);
   const pageKey = useMemo(() => `${PAGE_PREF_PREFIX}${fileUrl}`, [fileUrl]);
