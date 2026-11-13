@@ -46,7 +46,7 @@ export default function Bibliotheque() {
   
   
 
-  const { data: publications, isLoading, isError, refetch } = usePublications(category === "all" ? undefined : category);
+  const { data: publications, isLoading, isError, refetch, isShowingCachedList } = usePublications(category === "all" ? undefined : category);
 
   // Offline cached publications
   const [offlinePubs, setOfflinePubs] = useState<OfflinePublication[]>([]);
@@ -278,6 +278,16 @@ export default function Bibliotheque() {
         /* Publications Grid */
         <section className="py-12 md:py-16 bg-background">
           <div className="container">
+            {isOnline && isShowingCachedList && (
+              <div className="mb-6 flex items-center gap-3 rounded-lg border border-border bg-card px-4 py-3 text-sm text-muted-foreground" role="status">
+                <WifiOff className="h-4 w-4 shrink-0" />
+                <span className="flex-1">{t("library.cachedList")}</span>
+                <Button onClick={() => void refetch()} variant="ghost" size="sm" className="shrink-0">
+                  <RefreshCw className="h-4 w-4" />
+                  {t("library.retry")}
+                </Button>
+              </div>
+            )}
             {actualLoading ? (
               <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
                 {[...Array(8)].map((_, i) => (

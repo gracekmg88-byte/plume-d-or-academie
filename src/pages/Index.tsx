@@ -21,7 +21,7 @@ import heroImage from "@/assets/hero-library.webp";
 export default function Index() {
   const isOnline = useOnlineStatus();
   const navigate = useNavigate();
-  const { data: publications, isLoading, isError, refetch } = usePublications();
+  const { data: publications, isLoading, isError, refetch, isShowingCachedList } = usePublications();
   const { t } = useLanguage();
   const { user } = useAuth();
   const { layout: homepageLayout } = useHomepageLayout();
@@ -247,6 +247,16 @@ export default function Index() {
                 </Button>
               </Link>
             </div>
+            {isShowingCachedList && (
+              <div className="mb-6 flex items-center gap-3 rounded-lg border border-border bg-card px-4 py-3 text-sm text-muted-foreground" role="status">
+                <WifiOff className="h-4 w-4 shrink-0" />
+                <span className="flex-1">{t("library.cachedList")}</span>
+                <Button onClick={() => void refetch()} variant="ghost" size="sm" className="shrink-0">
+                  <RefreshCw className="h-4 w-4" />
+                  {t("library.retry")}
+                </Button>
+              </div>
+            )}
             {isLoading ? (
               <div className={`grid ${recentGridCols} gap-3 sm:gap-6`}>
                 {[...Array(skeletonCount)].map((_, i) => (
@@ -307,9 +317,10 @@ export default function Index() {
             ) : isError ? (
               <div className="rounded-lg border border-border bg-card p-6 text-center max-w-xl mx-auto">
                 <BookOpen className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
-                <p className="text-foreground mb-3">{t("library.noResults")}</p>
+                <p className="font-medium text-foreground mb-1">{t("library.loadError")}</p>
+                <p className="text-sm text-muted-foreground mb-4">{t("library.loadErrorDesc")}</p>
                 <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                  <Button onClick={() => refetch()} variant="outline">
+                  <Button onClick={() => void refetch()} variant="outline">
                     <RefreshCw className="h-4 w-4" />
                     {t("library.retry")}
                   </Button>
