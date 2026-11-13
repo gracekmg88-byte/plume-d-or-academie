@@ -26,6 +26,11 @@ async function generate(model: string, body: Record<string, unknown>): Promise<P
   if (!res.ok) {
     const detail = await res.text();
     console.error("Gemini error:", res.status, detail);
+    // Formule gratuite de Google sans droit à ce modèle (« limit: 0 ») : ce n'est pas une limite
+    // passagère, il faut activer la facturation du compte Google (Google AI Studio).
+    if (res.status === 429 && /limit:\s*0|free_tier/i.test(detail)) {
+      throw new GeminiError("La création d'images par IA nécessite d'activer la facturation du compte Google (Google AI Studio).", 402);
+    }
     if (res.status === 429) throw new GeminiError("Limite de requêtes atteinte, réessayez plus tard.", 429);
     if (res.status === 403 || /billing|quota/i.test(detail)) throw new GeminiError("Crédits ou quota IA insuffisants.", 402);
     throw new GeminiError("Erreur du service IA", 502);

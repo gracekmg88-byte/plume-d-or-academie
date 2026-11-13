@@ -69,8 +69,10 @@ On a clean background with no extra text or watermarks.`;
       if (e instanceof GeminiError && (e.status === 429 || e.status === 402)) {
         const msg = e.status === 429
           ? "Trop de requêtes, réessayez dans quelques instants."
-          : "Crédits AI épuisés. Veuillez recharger votre compte.";
-        return new Response(JSON.stringify({ error: msg }), {
+          : e.message;
+        // code lu par l'admin pour basculer sur le générateur de couvertures sans IA
+        const code = e.status === 429 ? "rate_limited" : "billing_required";
+        return new Response(JSON.stringify({ error: msg, code }), {
           status: e.status,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
