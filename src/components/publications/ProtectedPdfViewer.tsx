@@ -1,14 +1,13 @@
 import { useState, useCallback, useEffect, useLayoutEffect, useMemo, useRef } from "react";
-import { Document, Page, pdfjs } from "react-pdf";
+import { Document, Page } from "react-pdf";
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
 import "react-pdf/dist/esm/Page/TextLayer.css";
 import { Lock, ZoomIn, ZoomOut, ChevronLeft, ChevronRight, AlertCircle, RefreshCw, Maximize2, Minimize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { getCachedPdfBlobUrl } from "@/lib/pdf-cache";
-
-// Configure pdf.js worker
-pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+import { readCachedPdf, storePdfInCache } from "@/lib/pdf-cache";
+// Moteur PDF servi par le site (et non plus par unpkg.com) : voir src/lib/pdf-engine.ts.
+import { PDF_CMAP_URL, PDF_STANDARD_FONTS_URL } from "@/lib/pdf-engine";
 
 interface ProtectedPdfViewerProps {
   fileUrl: string;
@@ -128,24 +127,52 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
     } catch { /* ignore */ }
     return null;
   })());
-  // Always render with the direct URL to avoid a remount/reload when a cached blob is found.
-  // Warm the HTTP/Cache Storage cache in the background so subsequent opens are faster, but
-  // never swap the URL after the first paint — that causes the visible "double load".
+  // Source du document, choisie une seule fois avant le premier affichage (jamais échangée ensuite,
+  // pour éviter un double chargement) : la copie gardée sur l'appareil si elle existe (ouverture
+  // quasi instantanée, et lecture hors connexion), sinon le fichier en ligne, lu par morceaux.
   const resolvedUrl = fileUrl;
-
+  const [sourceAttempt, setSourceAttempt] = useState(0);
+  const [documentSource, setDocumentSource] = useState<
+    { url: string; withCredentials: boolean } | { data: Uint8Array } | null
+  >(null);
+  const fromNetworkRef = useRef(false);
   useEffect(() => {
-    if (typeof caches === "undefined") return;
-    getCachedPdfBlobUrl(fileUrl).catch(() => {});
-  }, [fileUrl]);
+    let settled = false;
+    setDocumentSource(null);
+    const loadFromNetwork = () => {
+      if (settled) return;
+      settled = true;
+      fromNetworkRef.current = true;
+      setDocumentSource({ url: fileUrl, withCredentials: false });
+    };
+    // La lecture locale prend quelques millisecondes ; au-delà de 400 ms on n'attend pas.
+    const fallback = window.setTimeout(loadFromNetwork, 400);
+    readCachedPdf(fileUrl).then((data) => {
+      if (settled) return;
+      if (!data) { window.clearTimeout(fallback); loadFromNetwork(); return; }
+      settled = true;
+      window.clearTimeout(fallback);
+      fromNetworkRef.current = false;
+      setDocumentSource({ data });
+    });
+    return () => { settled = true; window.clearTimeout(fallback); };
+  }, [fileUrl, sourceAttempt]);
 
-  const documentSource = useMemo(() => ({ url: resolvedUrl, withCredentials: false }), [resolvedUrl]);
+  // Une fois la première page affichée, garde une copie du PDF pour les prochaines ouvertures
+  // (téléchargement en arrière-plan, après coup, pour ne pas ralentir l'affichage).
+  const copyScheduledRef = useRef(false);
+  const scheduleOfflineCopy = useCallback(() => {
+    if (copyScheduledRef.current || !fromNetworkRef.current) return;
+    copyScheduledRef.current = true;
+    window.setTimeout(() => { void storePdfInCache(fileUrl); }, 2000);
+  }, [fileUrl]);
 
   // pdf.js options: enable range/stream so pages render before the full file is downloaded,
   // and ship cMap + standard fonts from the CDN to avoid missing-glyph warnings/retries.
   const pdfOptions = useMemo(() => ({
-    cMapUrl: `https://unpkg.com/pdfjs-dist@${pdfjs.version}/cmaps/`,
+    cMapUrl: PDF_CMAP_URL,
     cMapPacked: true,
-    standardFontDataUrl: `https://unpkg.com/pdfjs-dist@${pdfjs.version}/standard_fonts/`,
+    standardFontDataUrl: PDF_STANDARD_FONTS_URL,
     disableAutoFetch: true,   // don't prefetch the entire PDF up front
     disableStream: false,     // allow chunked streaming as the user navigates
     isEvalSupported: false,
@@ -776,6 +803,8 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
   const retry = () => {
     setError(false);
     setLoading(true);
+    // Un contenu déjà transmis au moteur PDF n'est plus réutilisable : on relit la source.
+    setSourceAttempt((n) => n + 1);
   };
 
   if (error) {
@@ -906,7 +935,7 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
             <div className="h-full w-full animate-pulse bg-muted/60" />
           </div>
         )}
-        {resolvedUrl && (
+        {documentSource && (
         // Enveloppe déplacée pendant le glissement pour tourner les pages (sans effet sur le zoom).
         <div ref={swipeElRef} className="mx-auto" style={{ willChange: "transform" }} data-pdf-swipe="">
         <Document
@@ -932,7 +961,7 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
                 className="shadow-lg mx-auto"
                 onRenderSuccess={() => {
                   onLayerRendered(layer.id);
-                  if (isFront) { releaseHeightLock(); finishSlideIn(); }
+                  if (isFront) { releaseHeightLock(); finishSlideIn(); scheduleOfflineCopy(); }
                 }}
                 onLoadSuccess={(p) => {
                   if (!isFront) return;

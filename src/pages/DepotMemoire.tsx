@@ -152,7 +152,8 @@ export default function DepotMemoire() {
     }
 
     const fileName = `submissions/${user.id}/covers/${Date.now()}-${optimizedFile.name}`;
-    const { error } = await supabase.storage.from("publications").upload(fileName, optimizedFile);
+    // Nom unique (horodatage) : le navigateur peut garder la couverture 1 an.
+    const { error } = await supabase.storage.from("publications").upload(fileName, optimizedFile, { cacheControl: "31536000" });
 
     if (error) {
       toast.error("Erreur lors du téléversement de la couverture.");

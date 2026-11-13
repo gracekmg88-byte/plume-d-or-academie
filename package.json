@@ -11,8 +11,8 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "predev": "npx tsx scripts/generate-sitemap.ts",
-    "prebuild": "npx tsx scripts/generate-sitemap.ts",
+    "predev": "npx tsx scripts/generate-sitemap.ts && node scripts/copy-pdfjs-assets.mjs",
+    "prebuild": "npx tsx scripts/generate-sitemap.ts && node scripts/copy-pdfjs-assets.mjs",
     "postbuild": "npx tsx scripts/prerender.ts"
   },
   "dependencies": {

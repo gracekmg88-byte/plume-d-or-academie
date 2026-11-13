@@ -36,3 +36,6 @@ supabase/.branches/
 *.env
 client_secret_*.json
 *service-account*.json
+
+# Fichiers du moteur PDF copiés depuis node_modules au build (scripts/copy-pdfjs-assets.mjs)
+public/pdfjs/

@@ -1,0 +1,8 @@
+# Cloudflare Pages : durée de cache dans le navigateur.
+# Fichiers du build dont le nom contient une empreinte (changent de nom à chaque version) : 1 an.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Tables de caractères et polices du moteur PDF : 30 jours.
+/pdfjs/*
+  Cache-Control: public, max-age=2592000

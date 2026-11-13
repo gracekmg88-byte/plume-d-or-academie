@@ -30,6 +30,7 @@ import { Breadcrumb } from "@/components/publications/Breadcrumb";
 import { SimilarBooks } from "@/components/publications/SimilarBooks";
 import { buildPublicationPath, buildAuthorPath, parseSlugSuffix, categoryPath } from "@/lib/slug";
 import { ensureNavigationReady, prefetchRoute } from "@/lib/route-preload";
+import { preloadPdfEngine } from "@/lib/pdf-engine";
 
 type Category = "livre" | "memoire" | "tfc" | "article";
 
@@ -68,6 +69,9 @@ export default function Publication() {
   const [resolvedUuid, setResolvedUuid] = useState<string | null | undefined>(
     isUuid ? rawId : initialPublicationId,
   );
+
+  // Commence à télécharger le moteur du lecteur PDF dès l'arrivée sur la fiche du livre.
+  useEffect(() => { preloadPdfEngine(); }, []);
 
   useEffect(() => {
     if (isUuid) {

@@ -83,7 +83,8 @@ export default function PublicationForm() {
     
     const { error } = await supabase.storage
       .from("publications")
-      .upload(fileName, file);
+      // Nom unique (horodatage) : le fichier ne change jamais, le navigateur peut le garder 1 an.
+      .upload(fileName, file, { cacheControl: "31536000" });
 
     if (error) throw error;
 

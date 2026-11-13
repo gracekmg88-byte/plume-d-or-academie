@@ -116,7 +116,8 @@ export default function AdminSettings() {
 
           const { error: uploadError } = await supabase.storage
             .from("publications")
-            .upload(fileName, compressedFile, { upsert: true, contentType: compressedFile.type });
+            // Même nom à chaque recompression : cache d'un jour seulement.
+            .upload(fileName, compressedFile, { upsert: true, contentType: compressedFile.type, cacheControl: "86400" });
 
           if (uploadError) { skipped++; continue; }
 

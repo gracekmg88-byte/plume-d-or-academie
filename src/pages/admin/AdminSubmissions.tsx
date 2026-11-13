@@ -94,6 +94,8 @@ export default function AdminSubmissions() {
       .upload(destPath, downloaded, {
         contentType: downloaded.type || "application/pdf",
         upsert: false,
+        // Nom unique (horodatage) : le navigateur peut garder le fichier 1 an.
+        cacheControl: "31536000",
       });
     if (uploadErr) throw uploadErr;
 

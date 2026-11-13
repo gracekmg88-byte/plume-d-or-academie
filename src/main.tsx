@@ -32,13 +32,18 @@ const forceFreshReloadOnce = (flag: string) => {
   window.location.replace(normalizedCurrentUrl());
 };
 
+// Caches créés par l'application elle-même (à garder) : les PDF déjà lus restent sur l'appareil
+// d'une visite à l'autre. Avant, ils étaient effacés à chaque démarrage, ce qui provoquait en plus
+// un rechargement complet de la page. Seuls les anciens caches (service worker hérité) sont supprimés.
+const APP_OWNED_CACHES = new Set(["pdf-binary-cache-v1"]);
+
 const clearBrowserCaches = async () => {
   if (!("caches" in window)) return false;
 
-  const cacheNames = await caches.keys();
-  if (!cacheNames.length) return false;
+  const legacy = (await caches.keys()).filter((cacheName) => !APP_OWNED_CACHES.has(cacheName));
+  if (!legacy.length) return false;
 
-  await Promise.all(cacheNames.map((cacheName) => caches.delete(cacheName)));
+  await Promise.all(legacy.map((cacheName) => caches.delete(cacheName)));
   return true;
 };
 
