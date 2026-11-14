@@ -124,6 +124,49 @@ function releaseRouteVisualsAfterPaint(delay = 180) {
   });
 }
 
+// Remonte tout en haut de la page, de toutes les façons que les navigateurs comprennent.
+// Safari (iPhone) ignore parfois window.scrollTo : pendant un défilement par inertie, ou quand
+// html/body ont un overflow (overflow-x: hidden) et que c'est body qui défile réellement.
+function forceScrollTop() {
+  try {
+    window.scrollTo(0, 0);
+  } catch {
+    // très vieux navigateurs : on continue avec les autres méthodes
+  }
+  document.documentElement.scrollTop = 0;
+  if (document.body) document.body.scrollTop = 0;
+}
+
+// Arrivée sur une nouvelle page : en haut tout de suite, puis de nouveau après l'affichage
+// (couverture, texte) pour Safari, sauf si la personne a commencé à faire défiler elle-même.
+// Renvoie une fonction d'annulation.
+function scrollTopAndKeep(): () => void {
+  forceScrollTop();
+  let userMoved = false;
+  const onUserInput = () => { userMoved = true; };
+  const inputEvents = ["touchstart", "wheel", "keydown", "mousedown"] as const;
+  inputEvents.forEach((e) => window.addEventListener(e, onUserInput, { passive: true, capture: true }));
+  const timers: number[] = [];
+  let raf1 = 0;
+  let raf2 = 0;
+  const again = () => {
+    if (!userMoved && (window.scrollY > 0 || document.body.scrollTop > 0)) forceScrollTop();
+  };
+  raf1 = window.requestAnimationFrame(() => {
+    again();
+    raf2 = window.requestAnimationFrame(again);
+  });
+  [80, 250, 600].forEach((ms) => timers.push(window.setTimeout(again, ms)));
+  const stop = () => {
+    window.cancelAnimationFrame(raf1);
+    window.cancelAnimationFrame(raf2);
+    timers.forEach((t) => window.clearTimeout(t));
+    inputEvents.forEach((e) => window.removeEventListener(e, onUserInput, { capture: true }));
+  };
+  timers.push(window.setTimeout(stop, 700));
+  return stop;
+}
+
 function ScrollManager({ location }: { location: ReturnType<typeof useLocation> }) {
   const { pathname, search, key } = location;
   const routeId = `${pathname}${search}`;
@@ -276,7 +319,7 @@ function ScrollManager({ location }: { location: ReturnType<typeof useLocation> 
         releaseRouteVisualsAfterPaint();
       }
     } else if (prev.pathname !== pathname || prev.search !== search) {
-      window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
+      cancelRestoreRef.current = scrollTopAndKeep();
       lastScrollYRef.current = 0;
       releaseRouteVisualsAfterPaint();
     }
