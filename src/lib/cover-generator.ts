@@ -240,12 +240,16 @@ export async function generateLocalCover(opts: {
   const cat = CATEGORY[opts.category ?? ""] ?? CATEGORY.livre;
   const style = (["classique", "minimaliste", "colore", "futuriste"].includes(opts.style ?? "") ? opts.style : "classique") as CoverStyle;
   // Les polices du site doivent être chargées avant de dessiner, sinon le navigateur prend une police de secours.
+  // 3 s au plus : sur un réseau lent, on dessine avec la police de secours plutôt que d'attendre.
   try {
-    await Promise.all([
-      document.fonts.load(`700 40px "Roboto Slab"`),
-      document.fonts.load(`800 40px "Roboto Slab"`),
-      document.fonts.load(`700 40px Roboto`),
-      document.fonts.load(`400 40px Roboto`),
+    await Promise.race([
+      Promise.all([
+        document.fonts.load(`700 40px "Roboto Slab"`),
+        document.fonts.load(`800 40px "Roboto Slab"`),
+        document.fonts.load(`700 40px Roboto`),
+        document.fonts.load(`400 40px Roboto`),
+      ]),
+      new Promise((r) => setTimeout(r, 3000)),
     ]);
   } catch { /* police de secours */ }
 

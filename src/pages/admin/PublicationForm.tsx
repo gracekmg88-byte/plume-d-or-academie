@@ -112,50 +112,26 @@ export default function PublicationForm() {
 
     setIsGeneratingCover(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error("Non authentifié");
-
-      const response = await supabase.functions.invoke("generate-cover", {
-        body: {
-          title: formData.title,
-          author: formData.author,
-          category: formData.category,
-          style: coverStyle,
-        },
-      });
-
-      // Message et code renvoyés par la fonction en cas de refus (ex. facturation Google non activée).
-      let failure: { error?: string; code?: string } | null = null;
-      if (response.error) {
-        const ctxResponse = (response.error as { context?: Response }).context;
-        try { failure = ctxResponse ? await ctxResponse.json() : null; } catch { failure = null; }
-        failure = failure ?? { error: response.error.message };
-      } else if (response.data?.error) {
-        failure = response.data;
-      }
-
-      if (!failure && response.data?.coverUrl) {
-        setCoverPreview(response.data.coverUrl);
-        setAiCoverUrl(response.data.coverUrl);
-        setCoverFile(null);
-        toast.success("Couverture générée avec succès !");
-        return;
-      }
-
-      // IA indisponible : couverture créée sans IA, gratuitement, dans le navigateur (même style choisi).
-      console.warn("AI cover unavailable, using local generator:", failure);
-      const { generateLocalCover } = await import("@/lib/cover-generator");
-      const file = await generateLocalCover({
+      // IA d'abord, sinon couverture créée sans IA ; chaque étape a une durée maximale (cover-request.ts).
+      const { requestCover } = await import("@/lib/cover-request");
+      const result = await requestCover(supabase, {
         title: formData.title,
         author: formData.author,
         category: formData.category,
         style: coverStyle,
       });
-      setCoverFile(file);
-      setCoverPreview(URL.createObjectURL(file));
+      if (result.kind === "ai") {
+        setCoverPreview(result.url);
+        setAiCoverUrl(result.url);
+        setCoverFile(null);
+        toast.success("Couverture générée avec succès !");
+        return;
+      }
+      setCoverFile(result.file);
+      setCoverPreview(URL.createObjectURL(result.file));
       setAiCoverUrl(null);
       toast.success("Couverture créée (sans IA)", {
-        description: failure?.code === "billing_required"
+        description: result.reason === "billing_required"
           ? "La création d'images par IA nécessite d'activer la facturation du compte Google (Google AI Studio)."
           : "L'IA n'est pas disponible pour le moment.",
       });
