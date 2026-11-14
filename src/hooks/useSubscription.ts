@@ -81,18 +81,18 @@ export function useAdminUsers() {
       userId: string;
       subscriptionType: SubscriptionType;
     }) => {
-      const { error } = await supabase
-        .from("user_profiles")
-        .update({
-          subscription_type: subscriptionType,
-          subscription_updated_at: new Date().toISOString(),
-        })
-        .eq("user_id", userId);
+      // Le statut Premium n'est plus modifiable directement (protégé par la base) :
+      // attribution sans date de fin / retrait via les fonctions sécurisées réservées à l'admin.
+      const { error } =
+        subscriptionType === "premium"
+          ? await supabase.rpc("admin_grant_premium", { _user_id: userId, _days: null, _note: "Admin → Utilisateurs" })
+          : await supabase.rpc("admin_revoke_premium", { _user_id: userId, _note: "Admin → Utilisateurs" });
 
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-subscriptions"] });
     },
   });
 

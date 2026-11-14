@@ -65,6 +65,7 @@ const VerifyCertificate = lazy(() => import("./pages/VerifyCertificate"));
 const VerifyHome = lazy(() => import("./pages/VerifyHome"));
 const AdminCertificates = lazy(() => import("./pages/admin/AdminCertificates"));
 const AdminAuthors = lazy(() => import("./pages/admin/AdminAuthors"));
+const AdminPremium = lazy(() => import("./pages/admin/AdminPremium"));
 const AdminSeo = lazy(() => import("./pages/admin/AdminSeo"));
 const Auteur = lazy(() => import("./pages/Auteur"));
 const AdminAuthLogs = lazy(() => import("./pages/admin/AdminAuthLogs"));
@@ -457,6 +458,7 @@ function AnimatedRoutes() {
           <Route path="/confidentialite" element={<Confidentialite />} />
           <Route path="/admin/certificates" element={<AdminGuard><AdminCertificates /></AdminGuard>} />
           <Route path="/admin/authors" element={<AdminGuard><AdminAuthors /></AdminGuard>} />
+          <Route path="/admin/premium" element={<AdminGuard><AdminPremium /></AdminGuard>} />
           <Route path="/admin/seo" element={<AdminGuard><AdminSeo /></AdminGuard>} />
           <Route path="/admin/auth-logs" element={<AdminGuard><AdminAuthLogs /></AdminGuard>} />
           <Route path="*" element={<NotFound />} />

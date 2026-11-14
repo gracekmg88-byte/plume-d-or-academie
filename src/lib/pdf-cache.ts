@@ -5,6 +5,20 @@
 const CACHE_NAME = "pdf-binary-cache-v1";
 const MAX_BYTES = 80 * 1024 * 1024; // ~80MB cap to stay polite on mobile
 
+/**
+ * Clé stable d'un PDF : les liens temporaires des livres Premium (…/object/sign/…?token=…)
+ * changent à chaque ouverture ; on les identifie par leur chemin, sans le jeton.
+ */
+export function stablePdfKey(url: string): string {
+  try {
+    const u = new URL(url);
+    if (u.pathname.includes("/storage/v1/object/sign/")) return `${u.origin}${u.pathname}`;
+  } catch {
+    /* adresse relative ou locale : inchangée */
+  }
+  return url;
+}
+
 async function openCache(): Promise<Cache | null> {
   if (typeof caches === "undefined") return null;
   try {
@@ -20,7 +34,7 @@ export async function getCachedPdfBlobUrl(url: string): Promise<string> {
   if (!cache) return url;
 
   try {
-    const cached = await cache.match(url);
+    const cached = await cache.match(stablePdfKey(url));
     if (cached) {
       const blob = await cached.blob();
       return URL.createObjectURL(blob);
@@ -32,7 +46,7 @@ export async function getCachedPdfBlobUrl(url: string): Promise<string> {
     const clone = res.clone();
     // Best-effort eviction before storing
     await ensureCapacity(cache, MAX_BYTES);
-    try { await cache.put(url, clone); } catch { /* quota: ignore */ }
+    try { await cache.put(stablePdfKey(url), clone); } catch { /* quota: ignore */ }
     const blob = await res.blob();
     return URL.createObjectURL(blob);
   } catch {
@@ -48,7 +62,7 @@ export async function readCachedPdf(url: string): Promise<Uint8Array | null> {
   const cache = await openCache();
   if (!cache) return null;
   try {
-    const cached = await cache.match(url);
+    const cached = await cache.match(stablePdfKey(url));
     if (!cached) return null;
     return new Uint8Array(await cached.arrayBuffer());
   } catch {
@@ -64,11 +78,11 @@ export async function storePdfInCache(url: string): Promise<void> {
   const cache = await openCache();
   if (!cache) return;
   try {
-    if (await cache.match(url)) return;
+    if (await cache.match(stablePdfKey(url))) return;
     const res = await fetch(url, { credentials: "omit" });
     if (!res.ok) return;
     await ensureCapacity(cache, MAX_BYTES);
-    await cache.put(url, res);
+    await cache.put(stablePdfKey(url), res);
   } catch {
     /* quota ou réseau : sans gravité */
   }

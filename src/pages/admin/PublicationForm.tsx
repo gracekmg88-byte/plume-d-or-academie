@@ -190,6 +190,14 @@ export default function PublicationForm() {
 
       if (isEditing) {
         await updatePublication.mutateAsync({ id, ...publicationData });
+        // Livre réservé aux abonnés : le nouveau PDF (envoyé dans l'espace public) est aussitôt
+        // déplacé dans le stockage privé, comme l'ancien.
+        if (pdfFile && (existingPublication as { access_level?: string } | undefined)?.access_level === "premium") {
+          const { error: moveError } = await supabase.functions.invoke("set-publication-access", {
+            body: { publication_id: id, access_level: "premium" },
+          });
+          if (moveError) toast.error("Le nouveau PDF n'a pas pu être protégé : relancez « Livres Premium » dans Admin → Premium.");
+        }
         toast.success("Publication mise à jour");
       } else {
         await createPublication.mutateAsync(publicationData);

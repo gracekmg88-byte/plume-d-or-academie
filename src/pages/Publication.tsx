@@ -27,6 +27,7 @@ import { format } from "date-fns";
 import { fr, enUS } from "date-fns/locale";
 import { SEO } from "@/components/seo/SEO";
 import { publicationSeo, type SeoPublication } from "@/seo/pageSeo";
+import { useReadingUrl, ReadingAccessError } from "@/hooks/usePremium";
 import { Breadcrumb } from "@/components/publications/Breadcrumb";
 import { SimilarBooks } from "@/components/publications/SimilarBooks";
 import { buildPublicationPath, buildAuthorPath, parseSlugSuffix, categoryPath } from "@/lib/slug";
@@ -231,6 +232,11 @@ export default function Publication() {
   }, [routeKey, isOnline]);
 
   const hasFullAccess = hidePremiumUI || isPremium;
+  // Adresse du PDF : publique (livre gratuit) ou lien temporaire délivré par le serveur après
+  // vérification de l'abonnement (livre Premium).
+  const readingUrlQuery = useReadingUrl(publication as { id: string; access_level?: string | null; file_url: string | null } | undefined, isOnline);
+  const readingUrl = readingUrlQuery.data ?? null;
+  const readingDenied = readingUrlQuery.error instanceof ReadingAccessError ? readingUrlQuery.error : null;
   const dateLocale = language === "fr" ? fr : enUS;
 
   // Load offline data if not online
@@ -248,10 +254,10 @@ export default function Publication() {
 
   // Auto-save publication for offline when viewed online
   useEffect(() => {
-    if (publication && isOnline) {
-      savePublicationOffline(publication).then(() => setIsCached(true));
+    if (publication && isOnline && readingUrl) {
+      savePublicationOffline({ ...publication, file_url: readingUrl }).then(() => setIsCached(true));
     }
-  }, [publication, isOnline]);
+  }, [publication, isOnline, readingUrl]);
 
   // Prevent copy, right-click and keyboard shortcuts
   const preventCopy = useCallback((e: Event) => {
@@ -418,7 +424,7 @@ export default function Publication() {
   // For offline, use local PDF URI if available
   const pdfUrl = !isOnline && offlineData?.local_pdf_uri
     ? offlineData.local_pdf_uri
-    : displayPub.file_url;
+    : readingUrl ?? ((displayPub as { access_level?: string | null }).access_level !== "premium" ? displayPub.file_url : null);
 
   const pubCategory = displayPub.category as Category | undefined;
   const pubType: "book" | "article" =
@@ -509,9 +515,9 @@ export default function Publication() {
 
               {/* Download Button */}
               <div className="mt-6 space-y-3">
-                {displayPub.file_url && hasFullAccess && isOnline && allowDownloads && (displayPub as any).allow_download !== false && (
+                {readingUrl && hasFullAccess && isOnline && allowDownloads && (displayPub as any).allow_download !== false && (
                   <a
-                    href={displayPub.file_url}
+                    href={readingUrl}
                     download
                     onClick={() => {
                       incrementDownloads.mutate(displayPub.id);
@@ -568,9 +574,9 @@ export default function Publication() {
                 </div>
 
                 <div className="mt-4 space-y-3">
-                  {displayPub.file_url && hasFullAccess && isOnline && allowDownloads && (displayPub as any).allow_download !== false && (
+                  {readingUrl && hasFullAccess && isOnline && allowDownloads && (displayPub as any).allow_download !== false && (
                     <a
-                      href={displayPub.file_url}
+                      href={readingUrl}
                       download
                       onClick={() => {
                         incrementDownloads.mutate(displayPub.id);
@@ -646,6 +652,21 @@ export default function Publication() {
               existingSummary={(displayPub as any).summary || null}
               isAdmin={false}
             />
+
+            {/* Lecture refusée par le serveur (livre réservé aux abonnés) */}
+            {!pdfUrl && readingDenied && (
+              <div className="mt-8 rounded-xl border border-amber-500/40 bg-amber-500/5 p-6 text-center" id="document-viewer">
+                <Lock className="h-8 w-8 mx-auto text-amber-600 mb-3" />
+                <p className="font-semibold text-foreground mb-1">{readingDenied.message}</p>
+                <div className="mt-4 flex flex-wrap justify-center gap-2">
+                  {readingDenied.code === "login_required" ? (
+                    <Button asChild><Link to="/auth">Se connecter</Link></Button>
+                  ) : (
+                    <Button asChild><Link to="/abonnement">Voir les formules Premium</Link></Button>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* PDF Viewer + Annotations */}
             {pdfUrl && (

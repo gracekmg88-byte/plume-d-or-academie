@@ -5,7 +5,7 @@ import "react-pdf/dist/esm/Page/TextLayer.css";
 import { Lock, ZoomIn, ZoomOut, ChevronLeft, ChevronRight, AlertCircle, RefreshCw, Maximize2, Minimize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { readCachedPdf, storePdfInCache } from "@/lib/pdf-cache";
+import { readCachedPdf, storePdfInCache, stablePdfKey } from "@/lib/pdf-cache";
 // Moteur PDF servi par le site (et non plus par unpkg.com) : voir src/lib/pdf-engine.ts.
 import { PDF_CMAP_URL, PDF_STANDARD_FONTS_URL } from "@/lib/pdf-engine";
 import { useBlockScreenCapture } from "@/lib/screen-protection";
@@ -47,11 +47,11 @@ const IDENTITY: View = { dx: 0, dy: 0, r: 1 };
 export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }: ProtectedPdfViewerProps) {
   // Appli Android : captures d'écran bloquées tant que le lecteur est affiché.
   useBlockScreenCapture();
-  const prefKey = useMemo(() => `${FULLSCREEN_PREF_PREFIX}${fileUrl}`, [fileUrl]);
-  const autoDisabledKey = useMemo(() => `${FULLSCREEN_AUTO_DISABLED_PREFIX}${fileUrl}`, [fileUrl]);
-  const pageKey = useMemo(() => `${PAGE_PREF_PREFIX}${fileUrl}`, [fileUrl]);
-  const zoomKey = useMemo(() => `${ZOOM_PREF_PREFIX}${fileUrl}`, [fileUrl]);
-  const scrollKey = useMemo(() => `${SCROLL_PREF_PREFIX}${fileUrl}`, [fileUrl]);
+  const prefKey = useMemo(() => `${FULLSCREEN_PREF_PREFIX}${stablePdfKey(fileUrl)}`, [fileUrl]);
+  const autoDisabledKey = useMemo(() => `${FULLSCREEN_AUTO_DISABLED_PREFIX}${stablePdfKey(fileUrl)}`, [fileUrl]);
+  const pageKey = useMemo(() => `${PAGE_PREF_PREFIX}${stablePdfKey(fileUrl)}`, [fileUrl]);
+  const zoomKey = useMemo(() => `${ZOOM_PREF_PREFIX}${stablePdfKey(fileUrl)}`, [fileUrl]);
+  const scrollKey = useMemo(() => `${SCROLL_PREF_PREFIX}${stablePdfKey(fileUrl)}`, [fileUrl]);
 
   // Read locally-saved zoom (per document)
   const initialStoredZoom = useMemo(() => {
@@ -90,7 +90,7 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [needsFullscreenGesture, setNeedsFullscreenGesture] = useState(false);
   const [autoFullscreenDisabled, setAutoFullscreenDisabled] = useState<boolean>(() => {
-    try { return localStorage.getItem(`${FULLSCREEN_AUTO_DISABLED_PREFIX}${fileUrl}`) === "1"; }
+    try { return localStorage.getItem(`${FULLSCREEN_AUTO_DISABLED_PREFIX}${stablePdfKey(fileUrl)}`) === "1"; }
     catch { return false; }
   });
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -126,7 +126,7 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
   // Pending scroll position to restore after the page renders (read once on mount)
   const pendingScrollRef = useRef<{ top: number; left: number } | null>((() => {
     try {
-      const raw = localStorage.getItem(`${SCROLL_PREF_PREFIX}${fileUrl}`);
+      const raw = localStorage.getItem(`${SCROLL_PREF_PREFIX}${stablePdfKey(fileUrl)}`);
       if (!raw) return null;
       const [t, l] = raw.split("|").map((x) => parseInt(x, 10));
       if (Number.isFinite(t) && Number.isFinite(l)) return { top: t, left: l };

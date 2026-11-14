@@ -32,3 +32,9 @@ verify_jwt = false
 [functions.verify-admin]
 verify_jwt = false
 
+
+[functions.get-reading-url]
+verify_jwt = false
+
+[functions.set-publication-access]
+verify_jwt = false

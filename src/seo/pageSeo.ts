@@ -16,7 +16,7 @@ export const DEFAULT_IMAGE = `${SITE_URL}/og-image.png`;
 
 /** Colonnes lues pour le référencement (requête publique, publications publiées uniquement). */
 export const PUBLICATION_SEO_COLUMNS =
-  "id,title,author,description,summary,category,cover_image_url,publication_number,created_at,updated_at";
+  "id,title,author,description,summary,category,cover_image_url,publication_number,created_at,updated_at,access_level";
 
 export interface SeoPublication {
   id: string;
@@ -29,6 +29,8 @@ export interface SeoPublication {
   publication_number?: string | null;
   created_at?: string | null;
   updated_at?: string | null;
+  /** free (défaut) ou premium (réservé aux abonnés). */
+  access_level?: string | null;
 }
 
 /** Profil d'auteur (table `authors`), facultatif : biographie et photo saisies dans l'admin. */
@@ -118,7 +120,8 @@ export function publicationSeo(p: SeoPublication): SeoPage {
   const title = clean(p.title);
   const author = clean(p.author);
   const desc = clean(p.description) || clean(p.summary);
-  const free = isFreeToRead();
+  // Livre réservé aux abonnés : jamais annoncé comme gratuit.
+  const free = isFreeToRead() && p.access_level !== "premium";
 
   // Titre unique : « Titre | Auteur | KMG Bibliothèque »
   // (si l'auteur est KMG Bibliothèque elle-même, la catégorie évite de répéter le nom du site)

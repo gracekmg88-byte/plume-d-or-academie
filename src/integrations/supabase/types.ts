@@ -442,6 +442,7 @@ export type Database = {
       }
       publications: {
         Row: {
+          access_level: string
           allow_download: boolean
           author: string
           category: Database["public"]["Enums"]["content_category"]
@@ -454,6 +455,7 @@ export type Database = {
           id: string
           is_featured: boolean
           is_published: boolean
+          premium_file_path: string | null
           publication_number: string | null
           summary: string | null
           title: string
@@ -461,6 +463,8 @@ export type Database = {
           views_count: number
         }
         Insert: {
+          access_level?: string
+          premium_file_path?: string | null
           allow_download?: boolean
           author: string
           category: Database["public"]["Enums"]["content_category"]
@@ -480,6 +484,8 @@ export type Database = {
           views_count?: number
         }
         Update: {
+          access_level?: string
+          premium_file_path?: string | null
           allow_download?: boolean
           author?: string
           category?: Database["public"]["Enums"]["content_category"]
@@ -497,6 +503,219 @@ export type Database = {
           title?: string
           updated_at?: string
           views_count?: number
+        }
+        Relationships: []
+      }
+      payment_events: {
+        Row: {
+          event_id: string
+          event_type: string | null
+          id: string
+          payload: Json | null
+          payment_provider: string
+          processed_at: string | null
+          processing_error: string | null
+          received_at: string
+          signature_valid: boolean | null
+        }
+        Insert: {
+          event_id: string
+          event_type?: string | null
+          id?: string
+          payload?: Json | null
+          payment_provider: string
+          processed_at?: string | null
+          processing_error?: string | null
+          received_at?: string
+          signature_valid?: boolean | null
+        }
+        Update: {
+          event_id?: string
+          event_type?: string | null
+          id?: string
+          payload?: Json | null
+          payment_provider?: string
+          processed_at?: string | null
+          processing_error?: string | null
+          received_at?: string
+          signature_valid?: boolean | null
+        }
+        Relationships: []
+      }
+      payments: {
+        Row: {
+          amount: number | null
+          confirmed_at: string | null
+          created_at: string
+          currency: string | null
+          failure_reason: string | null
+          id: string
+          payment_provider: string
+          plan_id: string | null
+          provider_data: Json | null
+          provider_reference: string
+          status: string
+          subscription_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number | null
+          confirmed_at?: string | null
+          created_at?: string
+          currency?: string | null
+          failure_reason?: string | null
+          id?: string
+          payment_provider: string
+          plan_id?: string | null
+          provider_data?: Json | null
+          provider_reference: string
+          status?: string
+          subscription_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number | null
+          confirmed_at?: string | null
+          created_at?: string
+          currency?: string | null
+          failure_reason?: string | null
+          id?: string
+          payment_provider?: string
+          plan_id?: string | null
+          provider_data?: Json | null
+          provider_reference?: string
+          status?: string
+          subscription_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      subscription_plans: {
+        Row: {
+          code: string
+          created_at: string
+          currency: string
+          description: string | null
+          duration_days: number
+          google_play_base_plan_id: string | null
+          google_play_product_id: string | null
+          id: string
+          is_active: boolean
+          name: string
+          price_amount: number | null
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          currency?: string
+          description?: string | null
+          duration_days: number
+          google_play_base_plan_id?: string | null
+          google_play_product_id?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          price_amount?: number | null
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          currency?: string
+          description?: string | null
+          duration_days?: number
+          google_play_base_plan_id?: string | null
+          google_play_product_id?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          price_amount?: number | null
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      subscription_reminders: {
+        Row: {
+          channels: string[]
+          error: string | null
+          expires_at: string
+          id: string
+          kind: string
+          notification_id: string | null
+          sent_at: string
+          user_id: string
+        }
+        Insert: {
+          channels?: string[]
+          error?: string | null
+          expires_at: string
+          id?: string
+          kind: string
+          notification_id?: string | null
+          sent_at?: string
+          user_id: string
+        }
+        Update: {
+          channels?: string[]
+          error?: string | null
+          expires_at?: string
+          id?: string
+          kind?: string
+          notification_id?: string | null
+          sent_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      subscriptions: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          expires_at: string | null
+          id: string
+          note: string | null
+          payment_provider: string
+          plan_id: string | null
+          provider_reference: string | null
+          started_at: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          note?: string | null
+          payment_provider: string
+          plan_id?: string | null
+          provider_reference?: string | null
+          started_at: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          note?: string | null
+          payment_provider?: string
+          plan_id?: string | null
+          provider_reference?: string | null
+          started_at?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -678,6 +897,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_grant_premium: {
+        Args: { _days?: number | null; _note?: string | null; _user_id: string }
+        Returns: Database["public"]["Tables"]["subscriptions"]["Row"]
+      }
+      admin_revoke_premium: {
+        Args: { _note?: string | null; _user_id: string }
+        Returns: number
+      }
+      premium_expires_at: { Args: { _user_id: string }; Returns: string | null }
+      user_has_premium: { Args: { _user_id: string }; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
