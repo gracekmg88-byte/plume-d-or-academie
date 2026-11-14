@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "include": [
+    "/*"
+  ],
+  "exclude": [
+    "/assets/*",
+    "/pdfjs/*",
+    "/.well-known/*",
+    "/favicon.ico",
+    "/robots.txt",
+    "/sw.js",
+    "/service-worker.js",
+    "/app-icon.png",
+    "/kmg-logo-256.webp",
+    "/og-image.png",
+    "/pwa-192x192.png",
+    "/pwa-512x512.png",
+    "/splash-screen.png",
+    "/placeholder.svg",
+    "/llms.txt",
+    "/google3e108a851d2ace72.html"
+  ]
+}

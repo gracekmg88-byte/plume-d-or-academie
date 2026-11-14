@@ -15,11 +15,13 @@ import { resolve, dirname } from "path";
 
 import { SUPABASE_URL, SUPABASE_ANON, HAS_SUPABASE } from "./build-env";
 import {
+  AUTHOR_PROFILE_COLUMNS,
   PUBLICATION_SEO_COLUMNS,
   authorSeo,
   groupByAuthor,
   publicationSeo,
   renderSeoHtml,
+  type SeoAuthorProfile,
   type SeoPublication,
 } from "../src/seo/pageSeo";
 
@@ -53,6 +55,23 @@ function writePage(path: string, html: string) {
   writeFileSync(out, html);
 }
 
+/** Profils auteurs (biographie, photo) — facultatifs : table absente ou erreur → liste vide. */
+async function fetchAuthorProfiles(): Promise<SeoAuthorProfile[]> {
+  if (!HAS_SUPABASE) return [];
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/authors?select=${AUTHOR_PROFILE_COLUMNS}&limit=10000`, {
+      headers: { apikey: SUPABASE_ANON, Authorization: `Bearer ${SUPABASE_ANON}` },
+    });
+    if (!res.ok) {
+      console.warn(`[prerender] profils auteurs indisponibles : ${res.status}`);
+      return [];
+    }
+    return await res.json();
+  } catch {
+    return [];
+  }
+}
+
 (async () => {
   if (!existsSync(TEMPLATE_PATH)) {
     console.warn("[prerender] dist/index.html introuvable — étape ignorée.");
@@ -73,10 +92,11 @@ function writePage(path: string, html: string) {
     count++;
   }
 
+  const profiles = new Map((await fetchAuthorProfiles()).map((p) => [p.slug, p]));
   const authors = groupByAuthor(pubs);
-  for (const { name, pubs: list } of authors.values()) {
+  for (const [slug, { name, pubs: list }] of authors.entries()) {
     if (count >= MAX_PRERENDER_PAGES) break;
-    const page = authorSeo(name, list);
+    const page = authorSeo(name, list, profiles.get(slug));
     writePage(page.path, renderSeoHtml(template, page));
     count++;
   }

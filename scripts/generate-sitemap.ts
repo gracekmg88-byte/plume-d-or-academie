@@ -8,7 +8,7 @@ import { writeFileSync } from "fs";
 import { resolve } from "path";
 
 import { SUPABASE_URL, SUPABASE_ANON, HAS_SUPABASE } from "./build-env";
-import { PUBLICATION_SEO_COLUMNS, buildSitemapXml, type SeoPublication } from "../src/seo/pageSeo";
+import { AUTHOR_PROFILE_COLUMNS, PUBLICATION_SEO_COLUMNS, buildSitemapXml, type SeoAuthorProfile, type SeoPublication } from "../src/seo/pageSeo";
 
 async function fetchPublications(): Promise<SeoPublication[]> {
   if (!HAS_SUPABASE) return [];
@@ -28,9 +28,26 @@ async function fetchPublications(): Promise<SeoPublication[]> {
   }
 }
 
+/** Profils auteurs (biographie, photo) — facultatifs : table absente ou erreur → liste vide. */
+async function fetchAuthorProfiles(): Promise<SeoAuthorProfile[]> {
+  if (!HAS_SUPABASE) return [];
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/authors?select=${AUTHOR_PROFILE_COLUMNS}&limit=10000`, {
+      headers: { apikey: SUPABASE_ANON, Authorization: `Bearer ${SUPABASE_ANON}` },
+    });
+    if (!res.ok) {
+      console.warn(`[sitemap] profils auteurs indisponibles : ${res.status}`);
+      return [];
+    }
+    return await res.json();
+  } catch {
+    return [];
+  }
+}
+
 (async () => {
   const pubs = await fetchPublications();
-  const { xml, counts } = buildSitemapXml(pubs);
+  const { xml, counts } = buildSitemapXml(pubs, pubs.length ? await fetchAuthorProfiles() : []);
   writeFileSync(resolve("public/sitemap.xml"), xml);
   const total = counts.static + counts.publications + counts.authors;
   console.log(

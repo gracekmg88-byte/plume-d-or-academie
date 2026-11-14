@@ -23,6 +23,7 @@ export const loadChatPage = () => import("@/pages/Chat");
 
 export const loadNotFoundPage = () => import("@/pages/NotFound");
 export const loadAdminCertificatesPage = () => import("@/pages/admin/AdminCertificates");
+export const loadAdminAuthorsPage = () => import("@/pages/admin/AdminAuthors");
 export const loadAdminSeoPage = () => import("@/pages/admin/AdminSeo");
 export const loadAdminAuthLogsPage = () => import("@/pages/admin/AdminAuthLogs");
 export const loadAuteurPage = () => import("@/pages/Auteur");
@@ -97,6 +98,7 @@ const PREFIX_LOADERS: Array<[string, () => Promise<unknown>]> = [
   ["/admin/devices", loadAdminDevicesPage],
   ["/admin/submissions", loadAdminSubmissionsPage],
   ["/admin/certificates", loadAdminCertificatesPage],
+  ["/admin/authors", loadAdminAuthorsPage],
   ["/admin/seo", loadAdminSeoPage],
   ["/admin/auth-logs", loadAdminAuthLogsPage],
   ["/admin", loadAdminLoginPage],

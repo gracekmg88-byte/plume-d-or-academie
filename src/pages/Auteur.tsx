@@ -8,11 +8,13 @@ import { authorSeo, type SeoPublication } from "@/seo/pageSeo";
 import { Breadcrumb } from "@/components/publications/Breadcrumb";
 import { PublicationCard } from "@/components/publications/PublicationCard";
 import { useAuthorPublications } from "@/hooks/useAuthorPublications";
+import { useAuthorProfile } from "@/hooks/useAuthorProfiles";
 
 
 export default function Auteur() {
   const { slug } = useParams<{ slug: string }>();
   const { data, isLoading } = useAuthorPublications(slug);
+  const { data: profile } = useAuthorProfile(slug);
 
   const authorName = useMemo(() => {
     if (data && data.length > 0) return data[0].author;
@@ -25,7 +27,7 @@ export default function Auteur() {
 
   // Balises de référencement : même module que les pages prérendues et les Pages Functions
   // (src/seo/pageSeo.ts). Aucune donnée inventée : nom + liste réelle des publications.
-  const seoPage = data && data.length > 0 ? authorSeo(authorName, data as SeoPublication[]) : null;
+  const seoPage = data && data.length > 0 ? authorSeo(authorName, data as SeoPublication[], profile) : null;
 
   return (
     <Layout>
@@ -56,10 +58,20 @@ export default function Auteur() {
         </Link>
 
         <header className="mb-10">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center">
-              <User className="h-7 w-7 text-primary" />
-            </div>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-4">
+            {profile?.photo_url ? (
+              <img
+                src={profile.photo_url}
+                alt={`Photo de ${authorName}`}
+                width={112}
+                height={112}
+                className="h-24 w-24 sm:h-28 sm:w-28 rounded-full object-cover border-2 border-primary/30 shadow-sm shrink-0"
+              />
+            ) : (
+              <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                <User className="h-7 w-7 text-primary" />
+              </div>
+            )}
             <div>
               <h1 className="font-serif text-3xl md:text-4xl font-bold text-foreground">
                 {authorName}
@@ -69,11 +81,26 @@ export default function Auteur() {
               </p>
             </div>
           </div>
-          <p className="text-muted-foreground max-w-3xl leading-relaxed">
-            Retrouvez toutes les publications de <strong>{authorName}</strong> sur KMG Bibliothèque :
-            livres, mémoires, travaux de fin de cycle et articles académiques. Une sélection
-            d'œuvres pour soutenir la recherche, l'enseignement et le partage du savoir.
-          </p>
+          {profile?.biography ? (
+            <section aria-labelledby="biographie" className="max-w-3xl">
+              <h2 id="biographie" className="font-serif text-xl font-semibold text-foreground mb-2">Biographie</h2>
+              {profile.biography
+                .split(/\r?\n\s*\r?\n/)
+                .map((para) => para.trim())
+                .filter(Boolean)
+                .map((para, i) => (
+                  <p key={i} className="text-muted-foreground leading-relaxed mb-3 whitespace-pre-line">
+                    {para}
+                  </p>
+                ))}
+            </section>
+          ) : (
+            <p className="text-muted-foreground max-w-3xl leading-relaxed">
+              Retrouvez toutes les publications de <strong>{authorName}</strong> sur KMG Bibliothèque :
+              livres, mémoires, travaux de fin de cycle et articles académiques. Une sélection
+              d'œuvres pour soutenir la recherche, l'enseignement et le partage du savoir.
+            </p>
+          )}
         </header>
 
         {isLoading ? (

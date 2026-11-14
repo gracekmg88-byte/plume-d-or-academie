@@ -121,6 +121,39 @@ export type Database = {
         }
         Relationships: []
       }
+      authors: {
+        Row: {
+          biography: string | null
+          created_at: string
+          id: string
+          name: string
+          photo_url: string | null
+          slug: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          biography?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          photo_url?: string | null
+          slug: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          biography?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          photo_url?: string | null
+          slug?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       certificates: {
         Row: {
           certificate_number: string

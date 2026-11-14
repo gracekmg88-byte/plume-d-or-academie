@@ -240,6 +240,19 @@ export default function AdminDashboard() {
               </div>
             </div>
           </Link>
+          <Link to="/admin/authors" className="block">
+            <div className="bg-card rounded-xl border border-border p-6 hover:shadow-elegant transition-all">
+              <div className="flex items-center gap-4">
+                <div className="h-12 w-12 rounded-lg bg-violet-500/10 flex items-center justify-center">
+                  <Users className="h-6 w-6 text-violet-600" />
+                </div>
+                <div>
+                  <div className="font-semibold text-foreground">Auteurs</div>
+                  <div className="text-sm text-muted-foreground">Biographies & photos</div>
+                </div>
+              </div>
+            </div>
+          </Link>
           <Link to="/admin/seo" className="block">
             <div className="bg-card rounded-xl border border-border p-6 hover:shadow-elegant transition-all">
               <div className="flex items-center gap-4">

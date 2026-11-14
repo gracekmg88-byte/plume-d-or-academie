@@ -10,12 +10,14 @@
 // on rend la main à Cloudflare (`next()`), qui sert la page prérendue ou l'application.
 import { parseSlugSuffix, slugify } from "../lib/slug";
 import {
+  AUTHOR_PROFILE_COLUMNS,
   PUBLICATION_SEO_COLUMNS,
   authorSeo,
   buildSitemapXml,
   notFoundSeo,
   publicationSeo,
   renderSeoHtml,
+  type SeoAuthorProfile,
   type SeoPublication,
 } from "./pageSeo";
 
@@ -37,6 +39,16 @@ const SITEMAP_TTL = 3600; // 1 h
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 class UpstreamError extends Error {}
+
+/** Profils auteurs (table `authors`) : facultatifs, une erreur ne doit jamais casser la page. */
+async function authorProfiles(sb: Sb, query: string): Promise<SeoAuthorProfile[]> {
+  try {
+    return await sb<SeoAuthorProfile>("authors", `select=${AUTHOR_PROFILE_COLUMNS}&${query}`);
+  } catch (e) {
+    console.warn("[seo] profils auteurs indisponibles", e);
+    return [];
+  }
+}
 
 function supabase(env: EdgeEnv) {
   const url = (env.VITE_SUPABASE_URL || "").replace(/\/+$/, "");
@@ -192,8 +204,11 @@ export async function onAuthorRequest(ctx: EdgeContext): Promise<Response> {
         `select=${PUBLICATION_SEO_COLUMNS}&is_published=eq.true&order=created_at.desc&limit=5000`,
       );
       const mine = pubs.filter((p) => p.author && slugify(p.author.replace(/\s+/g, " ").trim()) === slug);
-      if (!mine.length) return htmlResponse(renderSeoHtml(tpl, notFoundSeo(url.pathname)), 404);
-      const page = authorSeo(mine[0].author!.replace(/\s+/g, " ").trim(), mine);
+      if (!mine.length || !/^[a-z0-9-]{1,80}$/.test(slug)) {
+        return htmlResponse(renderSeoHtml(tpl, notFoundSeo(url.pathname)), 404);
+      }
+      const [profile] = await authorProfiles(sb, `slug=eq.${slug}&limit=1`);
+      const page = authorSeo(mine[0].author!.replace(/\s+/g, " ").trim(), mine, profile);
       if (url.pathname !== page.path) {
         return new Response(null, { status: 301, headers: { Location: page.path + url.search, "Cache-Control": "no-cache" } });
       }
@@ -218,7 +233,8 @@ export async function onSitemapRequest(ctx: EdgeContext): Promise<Response> {
         `select=${PUBLICATION_SEO_COLUMNS}&is_published=eq.true&order=created_at.desc&limit=45000`,
       );
       if (!pubs.length) throw new UpstreamError("aucune publication");
-      const { xml } = buildSitemapXml(pubs);
+      const profiles = await authorProfiles(sb, "limit=10000");
+      const { xml } = buildSitemapXml(pubs, profiles);
       return new Response(xml, {
         status: 200,
         headers: { "Content-Type": "application/xml; charset=utf-8", "Cache-Control": "no-cache", "X-KMG-Render": "edge" },
@@ -226,6 +242,52 @@ export async function onSitemapRequest(ctx: EdgeContext): Promise<Response> {
     });
   } catch (e) {
     console.error("[seo] sitemap", e);
+    return ctx.next();
+  }
+}
+
+// ─── Toutes les autres adresses : vraie réponse 404 pour les pages inexistantes ─────────────
+// Sans cela, Cloudflare renvoie l'application (code 200) pour n'importe quelle adresse, et Google
+// voit des « soft 404 ». Les routes de l'application listées ici (src/App.tsx) passent telles quelles ;
+// les fichiers (adresse avec extension : .js, .png, .xml…) ne sont jamais touchés.
+// Si une route est ajoutée dans src/App.tsx, l'ajouter ici (sinon elle s'affiche quand même,
+// mais avec le code 404 et « noindex » pour les robots).
+const APP_ROUTES = new Set([
+  "/",
+  "/bibliotheque",
+  "/diagnostic-catalogue",
+  "/a-propos",
+  "/contact",
+  "/auth",
+  "/reset-password",
+  "/profil",
+  "/abonnement",
+  "/depot-memoire",
+  "/chat",
+  // « /installer » n'est pas listée : l'application y affiche la page introuvable → 404.
+  "/verification",
+  "/confidentialite",
+  "/admin",
+]);
+const APP_PREFIXES = ["/admin/", "/verify/"];
+
+export function isKnownAppPath(pathname: string): boolean {
+  const p = pathname.length > 1 ? pathname.replace(/\/+$/, "") : pathname;
+  return APP_ROUTES.has(p) || APP_PREFIXES.some((prefix) => p.startsWith(prefix) && p.length > prefix.length);
+}
+
+export async function onCatchAllRequest(ctx: EdgeContext): Promise<Response> {
+  const { request } = ctx;
+  if (request.method !== "GET" && request.method !== "HEAD") return ctx.next();
+  const url = new URL(request.url);
+  const last = url.pathname.split("/").pop() || "";
+  if (last.includes(".") || isKnownAppPath(url.pathname)) return ctx.next();
+  try {
+    const tpl = await template(ctx);
+    const res = htmlResponse(renderSeoHtml(tpl, notFoundSeo(url.pathname)), 404);
+    return request.method === "HEAD" ? new Response(null, res) : res;
+  } catch (e) {
+    console.error("[seo] 404", e);
     return ctx.next();
   }
 }

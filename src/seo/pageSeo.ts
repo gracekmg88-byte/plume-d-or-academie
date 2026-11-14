@@ -31,6 +31,15 @@ export interface SeoPublication {
   updated_at?: string | null;
 }
 
+/** Profil d'auteur (table `authors`), facultatif : biographie et photo saisies dans l'admin. */
+export interface SeoAuthorProfile {
+  slug: string;
+  name?: string | null;
+  biography: string | null;
+  photo_url: string | null;
+}
+export const AUTHOR_PROFILE_COLUMNS = "slug,name,biography,photo_url,updated_at";
+
 export interface SeoPage {
   path: string;
   title: string;
@@ -216,16 +225,18 @@ export function groupByAuthor(pubs: SeoPublication[]): Map<string, { name: strin
   return map;
 }
 
-export function authorSeo(name: string, pubs: SeoPublication[]): SeoPage {
+export function authorSeo(name: string, pubs: SeoPublication[], profile?: SeoAuthorProfile | null): SeoPage {
   const path = buildAuthorPath(name);
   const url = absoluteUrl(path);
   const n = pubs.length;
   const titles = pubs.map((p) => `« ${clean(p.title)} »`);
-  const description = clamp(
-    `${name} sur ${SITE_NAME} : ${n} publication${n > 1 ? "s" : ""} — ${titles.join(", ")}.`,
-    160,
-  );
+  const bio = clean(profile?.biography);
+  const photo = profile?.photo_url || null;
+  const description = bio
+    ? clamp(`${name} : ${bio}`, 160)
+    : clamp(`${name} sur ${SITE_NAME} : ${n} publication${n > 1 ? "s" : ""} — ${titles.join(", ")}.`, 160);
   const first = pubs.find((p) => p.cover_image_url);
+  const bioParagraphs = (profile?.biography || "").split(/\r?\n\s*\r?\n/).map(clean).filter(Boolean);
 
   const jsonLd: Record<string, unknown>[] = [
     {
@@ -233,12 +244,14 @@ export function authorSeo(name: string, pubs: SeoPublication[]): SeoPage {
       "@type": "ProfilePage",
       url,
       name: `${name} — ${SITE_NAME}`,
-      mainEntity: {
+      mainEntity: compact({
         "@type": "Person",
         "@id": `${url}#auteur`,
         name,
         url,
-      },
+        description: bio ? clamp(bio, 5000) : undefined,
+        image: photo || undefined,
+      }),
     },
     {
       "@context": "https://schema.org",
@@ -267,6 +280,9 @@ export function authorSeo(name: string, pubs: SeoPublication[]): SeoPage {
     `<main class="seo-prerender">`,
     `<nav aria-label="Fil d'Ariane"><a href="/">Accueil</a> › <a href="/bibliotheque">Bibliothèque</a> › <span>${esc(name)}</span></nav>`,
     `<h1>${esc(name)}</h1>`,
+    photo ? `<img src="${esc(photo)}" alt="${esc(`Photo de ${name}`)}" width="240" height="240" />` : "",
+    bioParagraphs.length ? `<h2>Biographie</h2>${bioParagraphs.map((t) => `<p>${esc(t)}</p>`).join("")}` : "",
+    `<h2>Publications</h2>`,
     `<p>${n} publication${n > 1 ? "s" : ""} de ${esc(name)} sur ${SITE_NAME}.</p>`,
     `<ul>`,
     ...pubs.map((p) => {
@@ -277,14 +293,14 @@ export function authorSeo(name: string, pubs: SeoPublication[]): SeoPage {
     }),
     `</ul>`,
     `</main>`,
-  ].join("");
+  ].filter(Boolean).join("");
 
   return {
     path,
     title: `${name} | Auteur | ${SITE_NAME}`,
     description,
-    image: first?.cover_image_url || DEFAULT_IMAGE,
-    imageAlt: first ? coverAlt(first) : SITE_NAME,
+    image: photo || first?.cover_image_url || DEFAULT_IMAGE,
+    imageAlt: photo ? `Photo de ${name}` : first ? coverAlt(first) : SITE_NAME,
     ogType: "profile",
     extraMeta: [],
     jsonLd,
@@ -373,7 +389,10 @@ function day(d?: string | null) {
   return Number.isNaN(t.getTime()) ? undefined : t.toISOString().slice(0, 10);
 }
 
-export function buildSitemapXml(pubs: SeoPublication[]): { xml: string; counts: { static: number; publications: number; authors: number } } {
+export function buildSitemapXml(
+  pubs: SeoPublication[],
+  profiles: Array<SeoAuthorProfile & { updated_at?: string | null }> = [],
+): { xml: string; counts: { static: number; publications: number; authors: number } } {
   type E = { loc: string; lastmod?: string; changefreq?: string; priority?: string; image?: { loc: string; title: string } };
   const entries: E[] = STATIC_SITEMAP_PAGES.map((s) => ({ loc: absoluteUrl(s.path), changefreq: s.changefreq, priority: s.priority }));
   for (const p of pubs) {
@@ -386,9 +405,17 @@ export function buildSitemapXml(pubs: SeoPublication[]): { xml: string; counts: 
     });
   }
   const authors = groupByAuthor(pubs);
-  for (const { name, pubs: list } of authors.values()) {
-    const last = list.map((p) => p.updated_at || p.created_at || "").sort().pop();
-    entries.push({ loc: absoluteUrl(buildAuthorPath(name)), lastmod: day(last), changefreq: "monthly", priority: "0.6" });
+  const bySlug = new Map(profiles.map((p) => [p.slug, p]));
+  for (const [slug, { name, pubs: list }] of authors.entries()) {
+    const prof = bySlug.get(slug);
+    const last = [...list.map((p) => p.updated_at || p.created_at || ""), prof?.updated_at || ""].sort().pop();
+    entries.push({
+      loc: absoluteUrl(buildAuthorPath(name)),
+      lastmod: day(last),
+      changefreq: "monthly",
+      priority: "0.6",
+      image: prof?.photo_url ? { loc: prof.photo_url, title: `Photo de ${name}` } : undefined,
+    });
   }
   const body = entries.map((e) =>
     [
