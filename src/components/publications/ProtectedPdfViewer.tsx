@@ -966,7 +966,10 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
         )}
         {documentSource && (
         // Enveloppe déplacée pendant le glissement pour tourner les pages (sans effet sur le zoom).
-        <div ref={swipeElRef} className="mx-auto" style={{ willChange: "transform" }} data-pdf-swipe="">
+        // En plein écran, m-auto centre aussi la page verticalement quand elle est moins haute que
+        // l'écran (téléphone en portrait) ; plus grande (zoom), les marges auto valent 0 et la page
+        // reste entièrement accessible en défilant (contrairement à justify/items-center).
+        <div ref={swipeElRef} className={isFullscreen ? "m-auto" : "mx-auto"} style={{ willChange: "transform" }} data-pdf-swipe="">
         <Document
           key={resolvedUrl}
           file={documentSource}
