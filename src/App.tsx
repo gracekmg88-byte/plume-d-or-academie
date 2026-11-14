@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route, useLocation, useNavigationType } from "re
 import { lazy, Suspense, useEffect, useLayoutEffect, useRef } from "react";
 import { warmUpCache } from "@/lib/image-cache";
 import { PushNotificationInit } from "@/components/PushNotificationInit";
+import { WelcomeDialogs } from "@/components/layout/WelcomeDialogs";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AuthProvider } from "@/hooks/useAuth";
@@ -477,6 +478,7 @@ const App = () => (
               <BrowserRouter>
                 <NavigationWarmup />
                 <AnimatedRoutes />
+                <WelcomeDialogs />
               </BrowserRouter>
             </TooltipProvider>
           </LanguageProvider>

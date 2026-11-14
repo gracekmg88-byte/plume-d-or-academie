@@ -194,6 +194,17 @@ const translations = {
     "newsletter.success": "Vous êtes abonné ! Merci 🎉",
     "newsletter.alreadySubscribed": "Vous êtes déjà abonné à la newsletter",
     "newsletter.error": "Erreur lors de l'inscription",
+    // Accueil : vie privée (1re visite) et invitation Play Store (Android)
+    "welcome.privacyTitle": "Le respect de votre vie privée est une priorité pour KMG Bibliothèque",
+    "welcome.privacyIntro": "Bienvenue ! Pour vous offrir la meilleure expérience, nous conservons sur votre appareil votre session, vos préférences (thème, langue) et les livres lus hors ligne.",
+    "welcome.privacyAccount": "Si vous créez un compte, nous enregistrons votre adresse e-mail, votre historique de lecture et vos favoris, uniquement pour faire fonctionner le service.",
+    "welcome.privacyNoAds": "Aucune publicité, aucun traqueur, aucune revente de vos données.",
+    "welcome.learnMore": "En savoir plus",
+    "welcome.accept": "Accepter et continuer",
+    "welcome.appTitle": "Téléchargez l'application KMG Bibliothèque",
+    "welcome.appText": "Lisez vos livres plus facilement, même hors ligne, et recevez une notification à chaque nouvelle publication. L'application est gratuite sur Google Play.",
+    "welcome.appDownload": "Télécharger sur Google Play",
+    "welcome.appLater": "Plus tard",
   },
   en: {
     // Nav
@@ -386,6 +397,17 @@ const translations = {
     "newsletter.success": "You're subscribed! Thank you 🎉",
     "newsletter.alreadySubscribed": "You're already subscribed to the newsletter",
     "newsletter.error": "Subscription error",
+    // Welcome: privacy (first visit) and Play Store invitation (Android)
+    "welcome.privacyTitle": "Your privacy is a priority for KMG Bibliothèque",
+    "welcome.privacyIntro": "Welcome! To give you the best experience, we keep your session, your preferences (theme, language) and the books you read offline on your device.",
+    "welcome.privacyAccount": "If you create an account, we store your email address, your reading history and your favorites, only to run the service.",
+    "welcome.privacyNoAds": "No ads, no trackers, and we never sell your data.",
+    "welcome.learnMore": "Learn more",
+    "welcome.accept": "Accept and continue",
+    "welcome.appTitle": "Download the KMG Bibliothèque app",
+    "welcome.appText": "Read your books more easily, even offline, and get notified of every new publication. The app is free on Google Play.",
+    "welcome.appDownload": "Get it on Google Play",
+    "welcome.appLater": "Later",
   },
 } as const;
 
