@@ -28,6 +28,11 @@ import {
   useAdminPayments,
   useAdminSubscriptions,
   useGrantPremium,
+  useReminderSettings,
+  useReminders,
+  useRunReminders,
+  useSetReminderSetting,
+  type ReminderRunResult,
   usePlans,
   usePremiumEnforced,
   useRevokePremium,
@@ -65,6 +70,7 @@ export default function AdminPremium() {
             <TabsTrigger value="expires">Expirés</TabsTrigger>
             <TabsTrigger value="paiements">Paiements</TabsTrigger>
             <TabsTrigger value="erreurs">Erreurs</TabsTrigger>
+            <TabsTrigger value="notifications">Notifications</TabsTrigger>
             <TabsTrigger value="formules">Formules & prix</TabsTrigger>
             <TabsTrigger value="livres">Livres Premium</TabsTrigger>
             <TabsTrigger value="reglages">Réglages</TabsTrigger>
@@ -73,6 +79,7 @@ export default function AdminPremium() {
           <TabsContent value="expires"><ExpiredTab /></TabsContent>
           <TabsContent value="paiements"><PaymentsTab /></TabsContent>
           <TabsContent value="erreurs"><ErrorsTab /></TabsContent>
+          <TabsContent value="notifications"><RemindersTab /></TabsContent>
           <TabsContent value="formules"><PlansTab /></TabsContent>
           <TabsContent value="livres"><BooksTab /></TabsContent>
           <TabsContent value="reglages"><SettingsTab /></TabsContent>
@@ -552,8 +559,92 @@ function SettingsTab() {
         )}
       </div>
       <div className="rounded-xl border border-dashed border-border p-5 text-sm text-muted-foreground">
-        Rappels automatiques (J-7, J-3, jour de l'expiration), paiement Google Play et paiement par carte : prochaines étapes.
+        Paiement Google Play et paiement par carte : prochaines étapes. Les rappels se règlent dans l'onglet « Notifications ».
       </div>
+    </div>
+  );
+}
+
+// ─── Rappels d'expiration ───────────────────────────────────────────────────────────────
+const kindLabel: Record<string, string> = { j7: "J-7", j3: "J-3", j0: "Jour J", expired: "Expiré" };
+const channelLabel: Record<string, string> = { in_app: "Appli / site", push: "Push", email: "E-mail" };
+
+function RemindersTab() {
+  const { data: reminders = [], isLoading } = useReminders();
+  const { data: settings } = useReminderSettings();
+  const setSetting = useSetReminderSetting();
+  const run = useRunReminders();
+  const [last, setLast] = useState<ReminderRunResult | null>(null);
+  const [confirmRun, setConfirmRun] = useState(false);
+  const [confirmEmail, setConfirmEmail] = useState(false);
+
+  const launch = async (dryRun: boolean) => {
+    try {
+      const r = await run.mutateAsync(dryRun);
+      setLast(r);
+      setConfirmRun(false);
+      toast.success(dryRun ? `Simulation : ${r.sent} rappel(s) seraient envoyés` : `${r.sent} rappel(s) envoyé(s)`);
+    } catch (e) { toast.error("Échec", { description: errMsg(e) }); }
+  };
+  const toggle = async (key: "premium_reminders_push" | "premium_reminders_email", value: boolean) => {
+    try { await setSetting.mutateAsync({ key, value }); setConfirmEmail(false); toast.success("Réglage enregistré"); }
+    catch (e) { toast.error("Échec", { description: errMsg(e) }); }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="rounded-xl border border-border bg-card p-5 space-y-4 max-w-2xl">
+        <p className="text-sm text-muted-foreground">
+          Chaque jour à 8 h (heure de Kinshasa), les abonnés dont l'abonnement payé arrive à échéance reçoivent un rappel
+          7 jours avant, 3 jours avant et le jour même — une seule fois chacun. La notification dans l'appli et sur le site est
+          toujours envoyée. Les abonnements sans date de fin ne reçoivent pas de rappel.
+        </p>
+        <div className="flex items-center justify-between gap-4">
+          <div><div className="font-medium">Notification push sur le téléphone</div><div className="text-xs text-muted-foreground">Appareils sur lesquels l'abonné a installé l'application.</div></div>
+          <Switch checked={!!settings?.push} disabled={setSetting.isPending} onCheckedChange={(v) => toggle("premium_reminders_push", v)} />
+        </div>
+        <div className="flex items-center justify-between gap-4">
+          <div><div className="font-medium">E-mail de rappel</div><div className="text-xs text-muted-foreground">Uniquement aux adresses vérifiées.</div></div>
+          <Switch checked={!!settings?.email} disabled={setSetting.isPending} onCheckedChange={(v) => (v ? setConfirmEmail(true) : toggle("premium_reminders_email", false))} />
+        </div>
+        {confirmEmail && (
+          <div className="rounded-lg border border-amber-500/40 bg-amber-500/5 p-3 text-sm space-y-2">
+            <p>Des e-mails réels partiront automatiquement vers les abonnés concernés. Confirmer ?</p>
+            <div className="flex gap-2"><Button size="sm" onClick={() => toggle("premium_reminders_email", true)}>Activer les e-mails</Button><Button size="sm" variant="ghost" onClick={() => setConfirmEmail(false)}>Annuler</Button></div>
+          </div>
+        )}
+        <div className="flex flex-wrap gap-2 pt-2">
+          <Button variant="outline" disabled={run.isPending} onClick={() => launch(true)}>{run.isPending && <Loader2 className="h-4 w-4 mr-1 animate-spin" />}Simuler (rien n'est envoyé)</Button>
+          {confirmRun ? (
+            <>
+              <Button disabled={run.isPending} onClick={() => launch(false)}>Confirmer l'envoi</Button>
+              <Button variant="ghost" onClick={() => setConfirmRun(false)}>Annuler</Button>
+            </>
+          ) : (
+            <Button disabled={run.isPending} onClick={() => setConfirmRun(true)}>Lancer maintenant</Button>
+          )}
+        </div>
+        {last && (
+          <div className="rounded-lg bg-muted/50 p-3 text-sm">
+            {last.dry_run ? "Simulation" : "Exécution"} : {last.checked} compte(s) avec abonnement, {last.due} à l'approche de l'échéance, {last.sent} rappel(s) {last.dry_run ? "à envoyer" : "envoyé(s)"}.
+          </div>
+        )}
+      </div>
+
+      <section className="space-y-2">
+        <h3 className="font-semibold">Rappels envoyés</h3>
+        {isLoading ? <Spinner /> : reminders.map((r) => (
+          <div key={r.id} className="rounded-lg border border-border bg-card p-3 flex flex-col md:flex-row md:items-center gap-2 text-sm">
+            <Badge variant="secondary">{kindLabel[r.kind] ?? r.kind}</Badge>
+            <div className="flex-1 min-w-0 truncate">{r.email ?? r.user_id}</div>
+            <div className="text-muted-foreground">échéance {fmtDay(r.expires_at)}</div>
+            <div className="text-muted-foreground">{r.channels.map((c) => channelLabel[c] ?? c).join(", ") || "aucun canal"}</div>
+            <div className="text-muted-foreground">{fmt(r.sent_at)}</div>
+            {r.error && <div className="text-destructive text-xs w-full">{r.error}</div>}
+          </div>
+        ))}
+        {!isLoading && reminders.length === 0 && <Empty text="Aucun rappel envoyé pour l'instant." />}
+      </section>
     </div>
   );
 }

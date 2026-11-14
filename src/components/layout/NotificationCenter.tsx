@@ -28,6 +28,9 @@ export function NotificationCenter() {
     }
     if (notification.type === "publication" && notification.reference_id) {
       navigate(`/publication/${notification.reference_id}`);
+    } else if (notification.type === "subscription") {
+      // Rappel d'expiration de l'abonnement Premium → profil (section « Mon abonnement »).
+      navigate("/profil");
     }
   };
 

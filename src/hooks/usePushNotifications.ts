@@ -65,7 +65,10 @@ export function usePushNotifications() {
           "pushNotificationActionPerformed",
           (action) => {
             const data = action.notification.data;
-            if (data?.publication_id) {
+            if (typeof data?.url === "string" && data.url.startsWith("/")) {
+              // Rappel d'abonnement (et autres liens internes) : page indiquée par le serveur.
+              window.location.href = data.url;
+            } else if (data?.publication_id) {
               window.location.href = `/publication/${data.publication_id}`;
             }
           }

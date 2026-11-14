@@ -207,3 +207,63 @@ export function useSetPublicationAccess() {
     },
   });
 }
+
+// ─── Rappels d'expiration ───────────────────────────────────────────────────────────────
+export type ReminderRow = Tables<"subscription_reminders"> & { email: string | null };
+
+export function useReminders() {
+  return useQuery({
+    queryKey: ["admin-subscription-reminders"],
+    queryFn: async (): Promise<ReminderRow[]> => {
+      const [{ data, error }, { data: profiles }] = await Promise.all([
+        supabase.from("subscription_reminders").select("*").order("sent_at", { ascending: false }).limit(500),
+        supabase.from("user_profiles").select("user_id,email"),
+      ]);
+      if (error) throw error;
+      const byUser = new Map((profiles || []).map((p) => [p.user_id, p.email]));
+      return (data || []).map((r) => ({ ...r, email: byUser.get(r.user_id) ?? null }));
+    },
+  });
+}
+
+export function useReminderSettings() {
+  return useQuery({
+    queryKey: ["site-setting", "premium_reminders"],
+    queryFn: async () => {
+      const { data } = await supabase.from("site_settings").select("key,value").in("key", ["premium_reminders_push", "premium_reminders_email"]);
+      const get = (k: string) => data?.find((d) => d.key === k)?.value === "true";
+      return { push: get("premium_reminders_push"), email: get("premium_reminders_email") };
+    },
+  });
+}
+
+export function useSetReminderSetting() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { key: "premium_reminders_push" | "premium_reminders_email"; value: boolean }) => {
+      const { error } = await supabase.from("site_settings").update({ value: input.value ? "true" : "false" }).eq("key", input.key);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["site-setting", "premium_reminders"] }),
+  });
+}
+
+export interface ReminderRunResult {
+  dry_run: boolean;
+  checked: number;
+  due: number;
+  sent: number;
+  results: Array<{ user_id: string; kind: string; expires_at: string; title?: string; channels?: string[]; errors?: string[] }>;
+}
+
+export function useRunReminders() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (dryRun: boolean): Promise<ReminderRunResult> => {
+      const { data, error } = await supabase.functions.invoke("subscription-reminders", { body: { dry_run: dryRun } });
+      if (error) throw new Error((await functionError(error)).message);
+      return data as ReminderRunResult;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-subscription-reminders"] }),
+  });
+}

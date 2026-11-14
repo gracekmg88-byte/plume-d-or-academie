@@ -38,3 +38,6 @@ verify_jwt = false
 
 [functions.set-publication-access]
 verify_jwt = false
+
+[functions.subscription-reminders]
+verify_jwt = false
