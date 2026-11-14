@@ -1,7 +1,10 @@
 <!doctype html>
-<html lang="fr">
+<html lang="fr" class="kmg-booting">
   <head>
     <meta charset="UTF-8" />
+    <!-- Démarrage : fond bleu nuit (comme l'écran du logo) au lieu du blanc, jusqu'à ce que le site soit
+         prêt ; la classe kmg-booting est retirée par src/lib/app-splash.ts. -->
+    <style>html.kmg-booting,html.kmg-booting body{background:#0f172a}</style>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
@@ -114,7 +117,7 @@
       @keyframes kmg-bar{0%{transform:translateX(-100%)}100%{transform:translateX(250%)}}
       @media (prefers-reduced-motion:reduce){#app-splash img,#app-splash .kmg-bar::after{animation:none}}
     </style>
-    <noscript><style>#app-splash{display:none}</style></noscript>
+    <noscript><style>#app-splash{display:none}html.kmg-booting,html.kmg-booting body{background:none}</style></noscript>
   </head>
 
   <body>
