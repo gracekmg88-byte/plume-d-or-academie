@@ -227,6 +227,17 @@
   transform: translateY(0);
 }
 
+/* Lecteur PDF en plein écran de secours (iPhone) : voir ProtectedPdfViewer. */
+html.kmg-reader-fullscreen .page-transition-root {
+  transform: none !important;
+  animation: none !important;
+}
+html.kmg-reader-fullscreen,
+html.kmg-reader-fullscreen body {
+  overflow: hidden !important;
+  overscroll-behavior: none;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;

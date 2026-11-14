@@ -730,6 +730,17 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
     });
   }, [autoDisabledKey, prefKey]);
 
+  // Plein écran « de secours » (iPhone : Safari et Chrome refusent requestFullscreen sur un élément) :
+  // le lecteur passe en position fixe par-dessus le site. La classe sur <html> neutralise le
+  // transform de .page-transition-root (sinon le lecteur s'accroche à la page entière au lieu de
+  // l'écran : longue zone blanche) et bloque le défilement du site derrière (flèche « remonter »).
+  useEffect(() => {
+    if (!isFullscreen || document.fullscreenElement) return;
+    const html = document.documentElement;
+    html.classList.add("kmg-reader-fullscreen");
+    return () => html.classList.remove("kmg-reader-fullscreen");
+  }, [isFullscreen]);
+
   // Track native fullscreen state (handles ESC key) & persist preference per document
   useEffect(() => {
     const handler = () => {
