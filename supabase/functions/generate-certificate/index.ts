@@ -158,6 +158,8 @@ Deno.serve(async (req) => {
       publicationNumber,
       verificationUrl,
       qrBytes,
+      // Régénération : on garde la date de délivrance d'origine
+      issuedAt: existing?.issued_at ?? undefined,
     });
 
     const pdfPath = `${certificateNumber}/certificate.pdf`;
