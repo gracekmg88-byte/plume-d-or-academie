@@ -232,8 +232,11 @@ export function authorSeo(name: string, pubs: SeoPublication[], profile?: SeoAut
   const titles = pubs.map((p) => `« ${clean(p.title)} »`);
   const bio = clean(profile?.biography);
   const photo = profile?.photo_url || null;
+  // Pas de « Nom : Nom… » quand le début de la biographie nomme déjà l'auteur.
+  const bioHead = slugify(bio.slice(0, 60)).split("-");
+  const bioNamesAuthor = slugify(name).split("-").some((w) => w.length >= 3 && bioHead.includes(w));
   const description = bio
-    ? clamp(`${name} : ${bio}`, 160)
+    ? clamp(bioNamesAuthor ? bio : `${name} : ${bio}`, 160)
     : clamp(`${name} sur ${SITE_NAME} : ${n} publication${n > 1 ? "s" : ""} — ${titles.join(", ")}.`, 160);
   const first = pubs.find((p) => p.cover_image_url);
   const bioParagraphs = (profile?.biography || "").split(/\r?\n\s*\r?\n/).map(clean).filter(Boolean);
