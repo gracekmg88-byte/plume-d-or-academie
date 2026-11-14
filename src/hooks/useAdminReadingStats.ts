@@ -19,14 +19,27 @@ export function useAdminReadingStats() {
   const { data: stats, isLoading } = useQuery<AdminReadingStats>({
     queryKey: ["admin-reading-stats"],
     queryFn: async () => {
-      const { data: history, error } = await supabase
-        .from("reading_history")
-        .select("*")
-        .order("started_at", { ascending: false });
+      // Le serveur renvoie au plus 1 000 lignes par demande : on lit l'historique par pages
+      // pour que les statistiques portent sur toutes les sessions (et pas seulement les 1 000 dernières).
+      const PAGE_SIZE = 1000;
+      const records: Array<{
+        user_id: string;
+        publication_id: string;
+        started_at: string;
+        reading_duration_seconds: number | null;
+      }> = [];
+      for (let from = 0; ; from += PAGE_SIZE) {
+        const { data: page, error } = await supabase
+          .from("reading_history")
+          .select("user_id, publication_id, started_at, reading_duration_seconds")
+          .order("started_at", { ascending: false })
+          .order("id", { ascending: true })
+          .range(from, from + PAGE_SIZE - 1);
 
-      if (error) throw error;
-
-      const records = history || [];
+        if (error) throw error;
+        records.push(...(page ?? []));
+        if (!page || page.length < PAGE_SIZE) break;
+      }
 
       // Unique readers
       const uniqueReaders = new Set(records.map((r) => r.user_id)).size;

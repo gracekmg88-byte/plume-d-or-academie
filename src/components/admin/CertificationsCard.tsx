@@ -2,12 +2,15 @@ import { Link } from "react-router-dom";
 import { ShieldCheck, ExternalLink, Award } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useRecentCertificates } from "@/hooks/useCertificate";
+import { useCertificatesCount, useRecentCertificates } from "@/hooks/useCertificate";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
 export function CertificationsCard() {
   const { data: certs = [], isLoading } = useRecentCertificates(8);
+  // Total réel (la liste ci-dessous ne montre que les 8 plus récents)
+  const { data: totalCount } = useCertificatesCount();
+  const total = totalCount ?? certs.length;
 
   return (
     <Card>
@@ -18,7 +21,7 @@ export function CertificationsCard() {
             Certifications numériques
           </CardTitle>
           <p className="text-xs text-muted-foreground">
-            {certs.length} certificat{certs.length > 1 ? "s" : ""} émis
+            {total} certificat{total > 1 ? "s" : ""} émis
           </p>
         </div>
         <Award className="h-8 w-8 text-emerald-500/40" />

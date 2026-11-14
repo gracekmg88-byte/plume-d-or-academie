@@ -80,6 +80,7 @@ export function useGenerateCertificate() {
       qc.invalidateQueries({ queryKey: ["publications"] });
       qc.invalidateQueries({ queryKey: ["admin-publications"] });
       qc.invalidateQueries({ queryKey: ["recent-certificates"] });
+      qc.invalidateQueries({ queryKey: ["certificates-count"] });
     },
     onError: (e: Error) => {
       toast.error("Échec de génération", { description: e.message });
@@ -99,6 +100,20 @@ export function useRecentCertificates(limit = 10) {
         .limit(limit);
       if (error) throw error;
       return data as Certificate[];
+    },
+  });
+}
+
+/** Nombre total de certificats émis (sans télécharger les fiches). */
+export function useCertificatesCount() {
+  return useQuery({
+    queryKey: ["certificates-count"],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from("certificates")
+        .select("id", { count: "exact", head: true });
+      if (error) throw error;
+      return count ?? 0;
     },
   });
 }

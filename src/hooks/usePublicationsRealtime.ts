@@ -17,6 +17,7 @@ export function usePublicationsRealtime(enabled = true) {
       queryClient.invalidateQueries({ queryKey: ["similar-publications"] });
       queryClient.invalidateQueries({ queryKey: ["recommendations"] });
       queryClient.invalidateQueries({ queryKey: ["recent-certificates"] });
+      queryClient.invalidateQueries({ queryKey: ["certificates-count"] });
     };
 
     const channel = supabase
