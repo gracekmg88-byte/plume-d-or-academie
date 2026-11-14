@@ -4,11 +4,11 @@ import { ArrowLeft, User } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { SEO } from "@/components/seo/SEO";
+import { authorSeo, type SeoPublication } from "@/seo/pageSeo";
 import { Breadcrumb } from "@/components/publications/Breadcrumb";
 import { PublicationCard } from "@/components/publications/PublicationCard";
 import { useAuthorPublications } from "@/hooks/useAuthorPublications";
 
-const SITE_URL = "https://www.kmgbibliotheque.com";
 
 export default function Auteur() {
   const { slug } = useParams<{ slug: string }>();
@@ -23,57 +23,21 @@ export default function Auteur() {
 
   if (!slug) return <Navigate to="/bibliotheque" replace />;
 
-  const url = `${SITE_URL}/auteur/${slug}`;
-  const description = data && data.length > 0
-    ? `${authorName} — auteur publié chez KMG Bibliothèque. Découvrez ${data.length} publication${data.length > 1 ? "s" : ""} : livres, mémoires, TFC et articles académiques.`
-    : `${authorName} — auteur publié chez KMG Bibliothèque.`;
-
-  const jsonLd: Record<string, unknown>[] = [
-    {
-      "@context": "https://schema.org",
-      "@type": "Person",
-      name: authorName,
-      url,
-      jobTitle: "Auteur",
-      worksFor: {
-        "@type": "Organization",
-        name: "KMG Bibliothèque",
-        url: SITE_URL,
-      },
-    },
-    {
-      "@context": "https://schema.org",
-      "@type": "BreadcrumbList",
-      itemListElement: [
-        { "@type": "ListItem", position: 1, name: "Accueil", item: SITE_URL },
-        { "@type": "ListItem", position: 2, name: "Auteurs", item: `${SITE_URL}/bibliotheque` },
-        { "@type": "ListItem", position: 3, name: authorName, item: url },
-      ],
-    },
-  ];
-
-  if (data && data.length > 0) {
-    jsonLd.push({
-      "@context": "https://schema.org",
-      "@type": "ItemList",
-      itemListElement: data.slice(0, 20).map((p, i) => ({
-        "@type": "ListItem",
-        position: i + 1,
-        url: `${SITE_URL}/publication/${p.id}`,
-        name: p.title,
-      })),
-    });
-  }
+  // Balises de référencement : même module que les pages prérendues et les Pages Functions
+  // (src/seo/pageSeo.ts). Aucune donnée inventée : nom + liste réelle des publications.
+  const seoPage = data && data.length > 0 ? authorSeo(authorName, data as SeoPublication[]) : null;
 
   return (
     <Layout>
       <SEO
-        title={`${authorName} — Auteur`}
-        description={description}
-        path={`/auteur/${slug}`}
+        title={seoPage?.title ?? `${authorName} — Auteur`}
+        description={seoPage?.description ?? `${authorName} sur KMG Bibliothèque.`}
+        path={seoPage?.path ?? `/auteur/${slug}`}
         type="profile"
-        keywords={[authorName, "auteur", "publications", "KMG Bibliothèque", "bibliothèque"]}
-        jsonLd={jsonLd}
+        image={seoPage?.image}
+        keywords={[authorName, "auteur", "publications", "KMG Bibliothèque"]}
+        jsonLd={seoPage?.jsonLd}
+        noindex={!isLoading && !seoPage}
       />
       <div className="container py-8 md:py-12">
         <Breadcrumb

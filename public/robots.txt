@@ -1,17 +1,15 @@
-User-agent: Googlebot
-Allow: /
-
-User-agent: Bingbot
-Allow: /
-
-User-agent: Twitterbot
-Allow: /
-
-User-agent: facebookexternalhit
-Allow: /
-
+# KMG Bibliothèque — règles pour les robots d'exploration.
+# Un seul groupe pour tous les robots : un groupe dédié (ex. « User-agent: Googlebot ») ferait
+# ignorer à ce robot les interdictions ci-dessous.
 User-agent: *
 Allow: /
+
+# Espaces privés : administration, compte, connexion, messagerie, outils internes.
 Disallow: /admin
+Disallow: /profil
+Disallow: /auth
+Disallow: /reset-password
+Disallow: /chat
+Disallow: /diagnostic-catalogue
 
 Sitemap: https://www.kmgbibliotheque.com/sitemap.xml

@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 
 const SITE_URL = "https://www.kmgbibliotheque.com";
@@ -35,6 +36,12 @@ export function SEO({
   const kw = keywords && keywords.length > 0
     ? Array.from(new Set(keywords.filter(Boolean).map((k) => k.trim()))).join(", ")
     : null;
+
+  // Balises posées par le serveur (pages prérendues / Pages Functions, attribut data-kmg-seo) :
+  // retirées dès que l'application pose les siennes, pour qu'il n'y ait jamais de doublon.
+  useEffect(() => {
+    document.querySelectorAll("[data-kmg-seo]").forEach((el) => el.remove());
+  }, []);
 
   return (
     <Helmet>

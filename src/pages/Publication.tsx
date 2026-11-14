@@ -26,6 +26,7 @@ import { CertificationSection } from "@/components/publications/CertificationSec
 import { format } from "date-fns";
 import { fr, enUS } from "date-fns/locale";
 import { SEO } from "@/components/seo/SEO";
+import { publicationSeo, type SeoPublication } from "@/seo/pageSeo";
 import { Breadcrumb } from "@/components/publications/Breadcrumb";
 import { SimilarBooks } from "@/components/publications/SimilarBooks";
 import { buildPublicationPath, buildAuthorPath, parseSlugSuffix, categoryPath } from "@/lib/slug";
@@ -422,112 +423,38 @@ export default function Publication() {
   const pubCategory = displayPub.category as Category | undefined;
   const pubType: "book" | "article" =
     pubCategory === "livre" ? "book" : "article";
-  const schemaType =
-    pubCategory === "livre"
-      ? "Book"
-      : pubCategory === "article"
-        ? "ScholarlyArticle"
-        : pubCategory === "memoire" || pubCategory === "tfc"
-          ? "Thesis"
-          : "CreativeWork";
-  const pubDescription = displayPub.description
-    ? displayPub.description.slice(0, 200)
-    : `${displayPub.title} — ${displayPub.author || ""} sur KMG Bibliothèque. Lecture en ligne gratuite.`;
-
-  // Canonical SEO-friendly path
-  const canonicalPath = buildPublicationPath({
-    id: displayPub.id,
-    title: displayPub.title,
-    category: displayPub.category,
-  });
-  const canonicalUrl = `https://www.kmgbibliotheque.com${canonicalPath}`;
+  // Balises de référencement : même module que les pages prérendues et les Pages Functions
+  // (src/seo/pageSeo.ts) — titre « Titre | Auteur | KMG Bibliothèque », JSON-LD, Open Graph.
+  const seoPage = publicationSeo(displayPub as SeoPublication);
+  const canonicalPath = seoPage.path;
+  const coverAlt = seoPage.imageAlt;
   const authorPath = displayPub.author ? buildAuthorPath(displayPub.author) : null;
-  const coverAlt = displayPub.author
-    ? `Couverture de "${displayPub.title}" par ${displayPub.author}`
-    : `Couverture de "${displayPub.title}"`;
-  const datePublished = displayPub.created_at
-    ? new Date(displayPub.created_at).toISOString().slice(0, 10)
-    : undefined;
 
   const categoryLabel = config.label;
   const categoryRoute = categoryPath(displayPub.category);
-
-  const bookJsonLd: Record<string, unknown> = {
-    "@context": "https://schema.org",
-    "@type": schemaType,
-    name: displayPub.title,
-    headline: displayPub.title,
-    author: displayPub.author
-      ? {
-          "@type": "Person",
-          name: displayPub.author,
-          url: authorPath ? `https://www.kmgbibliotheque.com${authorPath}` : undefined,
-        }
-      : undefined,
-    description: displayPub.description || pubDescription,
-    image: displayPub.cover_image_url || undefined,
-    url: canonicalUrl,
-    inLanguage: "fr",
-    isAccessibleForFree: true,
-    bookFormat: schemaType === "Book" ? "https://schema.org/EBook" : undefined,
-    learningResourceType:
-      schemaType === "Thesis"
-        ? pubCategory === "tfc"
-          ? "Travail de fin de cycle"
-          : "Mémoire universitaire"
-        : undefined,
-    genre: categoryLabel,
-    datePublished,
-    abstract: (displayPub as { summary?: string | null }).summary || undefined,
-    identifier: (displayPub as { publication_number?: string | null }).publication_number || undefined,
-    isbn:
-      (displayPub.description || "").match(/ISBN[:\s]*([0-9Xx\-]{10,17})/)?.[1] || undefined,
-    publisher: {
-      "@type": "Organization",
-      name: "KMG Bibliothèque",
-      url: "https://www.kmgbibliotheque.com",
-    },
-  };
-
-  const breadcrumbJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Accueil", item: "https://www.kmgbibliotheque.com" },
-      { "@type": "ListItem", position: 2, name: "Bibliothèque", item: "https://www.kmgbibliotheque.com/bibliotheque" },
-      { "@type": "ListItem", position: 3, name: categoryLabel, item: `https://www.kmgbibliotheque.com/bibliotheque?category=${displayPub.category}` },
-      { "@type": "ListItem", position: 4, name: displayPub.title, item: canonicalUrl },
-    ],
-  };
 
   const seoKeywords = [
     displayPub.title,
     displayPub.author || "",
     categoryLabel,
     "KMG Bibliothèque",
-    "KMG Bibliothèque",
-    "lecture en ligne",
     pubCategory === "livre" ? "livre numérique" : "",
     pubCategory === "memoire" ? "mémoire académique" : "",
     pubCategory === "tfc" ? "travail de fin de cycle" : "",
     pubCategory === "article" ? "article scientifique" : "",
   ].filter(Boolean);
 
-  const extraMeta: Array<{ property?: string; name?: string; content: string }> = [];
-  if (displayPub.author) extraMeta.push({ property: "book:author", content: displayPub.author });
-  if (datePublished) extraMeta.push({ property: "book:release_date", content: datePublished });
-
   return (
     <Layout>
       <SEO
-        title={`${displayPub.title}${displayPub.author ? ` — ${displayPub.author}` : ""}`}
-        description={pubDescription}
+        title={seoPage.title}
+        description={seoPage.description}
         path={canonicalPath}
         type={pubType}
-        image={displayPub.cover_image_url || undefined}
+        image={seoPage.image}
         keywords={seoKeywords}
-        extraMeta={extraMeta}
-        jsonLd={[bookJsonLd, breadcrumbJsonLd]}
+        extraMeta={seoPage.extraMeta}
+        jsonLd={seoPage.jsonLd}
       />
 
       <div className="container py-8 md:py-12">
