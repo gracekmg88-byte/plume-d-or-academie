@@ -11,7 +11,9 @@ import { SEO } from "@/components/seo/SEO";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/hooks/useAuth";
-import { availablePaymentProvider, formatPrice, useMySubscription } from "@/hooks/useMySubscription";
+import { formatPrice, useMySubscription, usePaymentProvider } from "@/hooks/useMySubscription";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const day = (d: Date) => format(d, "d MMMM yyyy", { locale: fr });
 
@@ -20,9 +22,29 @@ export default function AbonnementPaiement() {
   const [params, setParams] = useSearchParams();
   const { data, isLoading } = useMySubscription();
   const [accepted, setAccepted] = useState(false);
-  const provider = availablePaymentProvider();
+  const [starting, setStarting] = useState(false);
+  const { provider, adminTest } = usePaymentProvider();
 
-  const plans = data?.activePlans ?? [];
+  // Un administrateur peut tester les formules encore désactivées (le serveur vérifie le rôle).
+  const plans = adminTest ? (data?.plans ?? []).filter((p) => p.price_amount != null) : data?.activePlans ?? [];
+
+  const startPayment = async (planCode: string) => {
+    setStarting(true);
+    try {
+      const { data: res, error } = await supabase.functions.invoke("opt-create-checkout", { body: { plan_code: planCode } });
+      if (error || !(res as { url?: string })?.url) {
+        let message = "Le paiement n'a pas pu être lancé. Réessayez dans quelques instants.";
+        const ctx = (error as { context?: Response } | null)?.context;
+        if (ctx && typeof ctx.json === "function") { try { message = (await ctx.json())?.error || message; } catch { /* corps illisible */ } }
+        throw new Error(message);
+      }
+      // Redirection vers la page sécurisée OPTGateway (saisie de la carte chez le prestataire).
+      window.location.href = (res as { url: string }).url;
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : String(e));
+      setStarting(false);
+    }
+  };
   const selected = useMemo(() => plans.find((p) => p.code === params.get("formule")) ?? plans[0] ?? null, [plans, params]);
 
   if (!loading && !user) return <Navigate to="/auth" replace />;
@@ -88,10 +110,22 @@ export default function AbonnementPaiement() {
                   <span>J'ai compris : paiement unique de {formatPrice(selected.price_amount, selected.currency)}, sans renouvellement automatique. Je renouvellerai moi-même si je le souhaite.</span>
                 </label>
 
-                {provider ? (
-                  <Button className="w-full gap-2" disabled={!accepted} onClick={() => { /* branché aux étapes Google Play / OPT Gateway */ }}>
-                    {provider === "google_play" ? <ShieldCheck className="h-4 w-4" /> : <CreditCard className="h-4 w-4" />}
-                    Payer {formatPrice(selected.price_amount, selected.currency)}
+                {provider === "opt_gateway" ? (
+                  <>
+                    {adminTest && (
+                      <p className="rounded-lg border border-amber-500/40 bg-amber-500/5 p-2 text-xs">
+                        Mode administrateur : le paiement par carte n'est pas encore ouvert aux clients. Avec une clé de test, aucun argent réel n'est débité.
+                      </p>
+                    )}
+                    <Button className="w-full gap-2" disabled={!accepted || starting} onClick={() => startPayment(selected.code)}>
+                      {starting ? <Loader2 className="h-4 w-4 animate-spin" /> : <CreditCard className="h-4 w-4" />}
+                      Payer {formatPrice(selected.price_amount, selected.currency)} par carte
+                    </Button>
+                    <p className="text-xs text-muted-foreground text-center">Visa ou Mastercard — vous saisirez votre carte sur la page sécurisée de notre prestataire.</p>
+                  </>
+                ) : provider === "google_play" ? (
+                  <Button className="w-full gap-2" disabled>
+                    <ShieldCheck className="h-4 w-4" /> Payer avec Google Play
                   </Button>
                 ) : (
                   <div className="rounded-lg bg-muted/60 p-3 text-sm text-muted-foreground">

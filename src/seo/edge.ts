@@ -263,6 +263,7 @@ const APP_ROUTES = new Set([
   "/profil",
   "/abonnement",
   "/abonnement/payer",
+  "/abonnement/retour",
   "/depot-memoire",
   "/chat",
   // « /installer » n'est pas listée : l'application y affiche la page introuvable → 404.

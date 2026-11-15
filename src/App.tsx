@@ -50,6 +50,7 @@ const ResetPassword = lazy(loadResetPasswordPage);
 const Profil = lazy(loadProfilPage);
 const Abonnement = lazy(loadAbonnementPage);
 const AbonnementPaiement = lazy(() => import("./pages/AbonnementPaiement"));
+const AbonnementRetour = lazy(() => import("./pages/AbonnementRetour"));
 const AdminLogin = lazy(loadAdminLoginPage);
 const AdminDashboard = lazy(loadAdminDashboardPage);
 const AdminMessages = lazy(loadAdminMessagesPage);
@@ -444,6 +445,7 @@ function AnimatedRoutes() {
           <Route path="/profil" element={<Profil />} />
           <Route path="/abonnement" element={<Abonnement />} />
           <Route path="/abonnement/payer" element={<AbonnementPaiement />} />
+          <Route path="/abonnement/retour" element={<AbonnementRetour />} />
           <Route path="/admin" element={<AdminLogin />} />
           <Route path="/admin/dashboard" element={<AdminGuard><AdminDashboard /></AdminGuard>} />
           <Route path="/admin/messages" element={<AdminGuard><AdminMessages /></AdminGuard>} />

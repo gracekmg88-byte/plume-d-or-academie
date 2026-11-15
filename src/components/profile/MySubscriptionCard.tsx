@@ -8,7 +8,7 @@ import { AlertTriangle, CalendarClock, Crown, History, RefreshCw } from "lucide-
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { availablePaymentProvider, formatPrice, useMySubscription } from "@/hooks/useMySubscription";
+import { formatPrice, useMySubscription, usePaymentProvider } from "@/hooks/useMySubscription";
 
 const day = (d: Date | string | null | undefined) => (d ? format(new Date(d), "d MMMM yyyy", { locale: fr }) : "—");
 const providerLabel: Record<string, string> = { google_play: "Google Play", opt_gateway: "Carte bancaire", admin: "Attribué par KMG Bibliothèque" };
@@ -16,10 +16,11 @@ const paymentStatus: Record<string, string> = { succeeded: "Confirmé", pending:
 
 export function MySubscriptionCard() {
   const { data, isLoading } = useMySubscription();
+  const { provider, adminTest } = usePaymentProvider();
   if (isLoading || !data) return null;
 
-  const provider = availablePaymentProvider();
-  const canPay = !!provider && data.activePlans.length > 0;
+  const payablePlans = adminTest ? data.plans.filter((p) => p.price_amount != null) : data.activePlans;
+  const canPay = !!provider && payablePlans.length > 0;
   const hasHistory = data.periods.length > 0;
   // Rien à montrer : jamais abonné et aucune formule disponible ici.
   if (!hasHistory && !canPay) return null;

@@ -41,3 +41,12 @@ verify_jwt = false
 
 [functions.subscription-reminders]
 verify_jwt = false
+
+[functions.opt-create-checkout]
+verify_jwt = false
+
+[functions.opt-webhook]
+verify_jwt = false
+
+[functions.opt-payment-status]
+verify_jwt = false

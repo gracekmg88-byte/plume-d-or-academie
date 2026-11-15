@@ -54,9 +54,29 @@ export function computeSubscription(periods: Period[], plans: Plan[], now = new 
 }
 
 /** Le paiement est-il possible ici ? Android : Google Play uniquement ; site : carte. */
-export function availablePaymentProvider(): "google_play" | "opt_gateway" | null {
+export function availablePaymentProvider(optGatewayOpen = false): "google_play" | "opt_gateway" | null {
   if (Capacitor.isNativePlatform()) return billingConfig.paymentProviders.google_play ? "google_play" : null;
-  return billingConfig.paymentProviders.opt_gateway ? "opt_gateway" : null;
+  return optGatewayOpen ? "opt_gateway" : null;
+}
+
+/**
+ * Moyen de paiement proposé à ce visiteur. Sur le site, la carte (OPTGateway) est ouverte par le
+ * réglage opt_gateway_enabled ; un administrateur la voit aussi avant ouverture, pour tester
+ * (le serveur applique la même règle).
+ */
+export function usePaymentProvider() {
+  const { isAdmin } = useAuth();
+  const { data: open = false } = useQuery({
+    queryKey: ["site-setting", "opt_gateway_enabled"],
+    staleTime: 60_000,
+    queryFn: async () => {
+      const { data } = await supabase.from("site_settings").select("value").eq("key", "opt_gateway_enabled").maybeSingle();
+      return data?.value === "true";
+    },
+  });
+  const native = Capacitor.isNativePlatform();
+  const provider = availablePaymentProvider(open || (!native && !!isAdmin));
+  return { provider, adminTest: !native && !!isAdmin && !open };
 }
 
 export function useMySubscription() {

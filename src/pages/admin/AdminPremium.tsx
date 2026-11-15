@@ -4,7 +4,7 @@
 // Toutes les écritures sensibles passent par des fonctions serveur qui vérifient le rôle admin.
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { format, differenceInCalendarDays } from "date-fns";
 import { fr } from "date-fns/locale";
 import { AlertTriangle, ArrowLeft, Crown, Loader2, Lock, Pencil, Plus, Search, Unlock } from "lucide-react";
@@ -558,8 +558,55 @@ function SettingsTab() {
           </div>
         )}
       </div>
+      <CardPaymentSetting />
       <div className="rounded-xl border border-dashed border-border p-5 text-sm text-muted-foreground">
-        Paiement Google Play et paiement par carte : prochaines étapes. Les rappels se règlent dans l'onglet « Notifications ».
+        Paiement Google Play : prochaine étape. Les rappels se règlent dans l'onglet « Notifications ».
+      </div>
+    </div>
+  );
+}
+
+// ─── Paiement par carte (OPTGateway) ────────────────────────────────────────────────────
+const WEBHOOK_URL = "https://bwepnibdlmuwtcacyyec.supabase.co/functions/v1/opt-webhook";
+
+function CardPaymentSetting() {
+  const qc = useQueryClient();
+  const [confirm, setConfirm] = useState(false);
+  const { data: open, isLoading } = useQuery({
+    queryKey: ["site-setting", "opt_gateway_enabled"],
+    queryFn: async () => {
+      const { data } = await supabase.from("site_settings").select("value").eq("key", "opt_gateway_enabled").maybeSingle();
+      return data?.value === "true";
+    },
+  });
+  const save = async (v: boolean) => {
+    const { error } = await supabase.from("site_settings").update({ value: v ? "true" : "false" }).eq("key", "opt_gateway_enabled");
+    if (error) { toast.error("Échec", { description: error.message }); return; }
+    qc.invalidateQueries({ queryKey: ["site-setting", "opt_gateway_enabled"] });
+    setConfirm(false);
+    toast.success(v ? "Paiement par carte ouvert aux clients" : "Paiement par carte réservé aux tests admin");
+  };
+  if (isLoading) return null;
+  return (
+    <div className="rounded-xl border border-border bg-card p-5 space-y-3">
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <div className="font-semibold">Paiement par carte sur le site (OPTGateway)</div>
+          <div className="text-sm text-muted-foreground">
+            Désactivé : seuls les administrateurs voient le bouton « Payer » (pour tester avec la clé de test). Activé : tous les clients du site peuvent payer.
+          </div>
+        </div>
+        <Switch checked={!!open} onCheckedChange={(v) => (v ? setConfirm(true) : save(false))} />
+      </div>
+      {confirm && (
+        <div className="rounded-lg border border-amber-500/40 bg-amber-500/5 p-3 text-sm space-y-2">
+          <p>Ouvrez le paiement seulement avec la clé réelle (sk_live_…), le webhook configuré et des formules actives. Confirmer ?</p>
+          <div className="flex gap-2"><Button size="sm" onClick={() => save(true)}>Ouvrir le paiement</Button><Button size="sm" variant="ghost" onClick={() => setConfirm(false)}>Annuler</Button></div>
+        </div>
+      )}
+      <div className="text-xs text-muted-foreground space-y-1">
+        <div>Adresse du webhook à déclarer dans l'espace marchand OPTGateway (page Webhooks) :</div>
+        <code className="block break-all rounded bg-muted px-2 py-1">{WEBHOOK_URL}</code>
       </div>
     </div>
   );
