@@ -446,6 +446,8 @@ function AnimatedRoutes() {
           <Route path="/abonnement" element={<Abonnement />} />
           <Route path="/abonnement/payer" element={<AbonnementPaiement />} />
           <Route path="/abonnement/retour" element={<AbonnementRetour />} />
+          <Route path="/abonnement/retour/:ref" element={<AbonnementRetour />} />
+          <Route path="/abonnement/retour/:ref/annule" element={<AbonnementRetour />} />
           <Route path="/admin" element={<AdminLogin />} />
           <Route path="/admin/dashboard" element={<AdminGuard><AdminDashboard /></AdminGuard>} />
           <Route path="/admin/messages" element={<AdminGuard><AdminMessages /></AdminGuard>} />

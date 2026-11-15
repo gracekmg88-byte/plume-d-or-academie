@@ -73,8 +73,10 @@ Deno.serve(async (req) => {
       reference,
       description: `KMG Bibliothèque — ${plan.name} (${plan.duration_days} jours)`,
       methods: ["card"],
-      return_url: `${SITE_URL}/abonnement/retour?ref=${encodeURIComponent(reference)}`,
-      cancel_url: `${SITE_URL}/abonnement/retour?ref=${encodeURIComponent(reference)}&annule=1`,
+      // Adresses sans « ? » : l'étape carte d'OPTGateway refusait return_url avec paramètres
+      // (« return_url obligatoire pour Carte bancaire »). La référence est dans le chemin.
+      return_url: `${SITE_URL}/abonnement/retour/${encodeURIComponent(reference)}`,
+      cancel_url: `${SITE_URL}/abonnement/retour/${encodeURIComponent(reference)}/annule`,
       metadata: { payment_id: pay.id, plan_code: plan.code },
       expires_in_minutes: 60,
     });

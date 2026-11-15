@@ -271,7 +271,7 @@ const APP_ROUTES = new Set([
   "/confidentialite",
   "/admin",
 ]);
-const APP_PREFIXES = ["/admin/", "/verify/"];
+const APP_PREFIXES = ["/admin/", "/verify/", "/abonnement/retour/"];
 
 export function isKnownAppPath(pathname: string): boolean {
   const p = pathname.length > 1 ? pathname.replace(/\/+$/, "") : pathname;

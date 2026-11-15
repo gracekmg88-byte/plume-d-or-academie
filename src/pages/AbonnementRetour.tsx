@@ -2,7 +2,7 @@
 // L'adresse de retour NE prouve rien : le statut affiché vient du serveur, qui vérifie le
 // paiement auprès d'OPTGateway avant d'activer le Premium.
 import { useEffect, useRef, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -26,7 +26,9 @@ const MAX_TRIES = 40; // ~2 minutes (toutes les 3 s)
 
 export default function AbonnementRetour() {
   const [params] = useSearchParams();
-  const reference = params.get("ref") ?? "";
+  const { ref: refParam } = useParams<{ ref?: string }>();
+  // /abonnement/retour/<référence>[/annule] (ou ancien format ?ref=…)
+  const reference = refParam ?? params.get("ref") ?? "";
   const { user, authReady } = useAuth();
   const qc = useQueryClient();
   const [state, setState] = useState<StatusResponse | null>(null);
