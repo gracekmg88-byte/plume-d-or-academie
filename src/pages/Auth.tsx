@@ -168,7 +168,7 @@ export default function Auth() {
     <div className="min-h-screen flex items-center justify-center bg-parchment p-4">
       <SEO
         title="Connexion / Inscription — KMG Bibliothèque"
-        description="Connectez-vous ou créez un compte gratuit pour accéder à la bibliothèque académique KMG Bibliothèque."
+        description="Connectez-vous ou créez un compte gratuit pour accéder à la bibliothèque académique KMG Bibliothèque : de nombreux documents gratuits et des ouvrages Premium."
         path="/auth"
         noindex
       />
@@ -387,8 +387,8 @@ export default function Auth() {
           </Tabs>
 
           <p className="text-center text-sm text-muted-foreground mt-6">
-            En vous inscrivant, vous bénéficiez d'un accès{" "}
-            <span className="font-semibold">100% gratuit</span> à toute la bibliothèque.
+            L'inscription est <span className="font-semibold">gratuite</span> et donne accès à de nombreux documents.
+            Certains ouvrages sont réservés aux abonnés Premium.
           </p>
         </div>
 

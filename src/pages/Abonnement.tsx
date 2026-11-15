@@ -17,9 +17,9 @@ import { useActivePlans } from "@/hooks/useMySubscription";
 
 const freeFeatures = [
   { text: "Lecture en ligne", included: true },
-  { text: "Accès à tous les documents", included: true },
+  { text: "Accès aux documents gratuits", included: true },
   { text: "Navigation dans la bibliothèque", included: true },
-  { text: "Téléchargement des documents", included: true },
+  { text: "Ouvrages Premium réservés aux abonnés", included: true },
 ];
 
 export default function Abonnement() {
@@ -37,10 +37,10 @@ export default function Abonnement() {
         <div className="container py-12 md:py-20">
           <div className="text-center max-w-3xl mx-auto mb-12">
             <h1 className="font-serif text-4xl md:text-5xl font-bold text-foreground mb-4">
-              Accès gratuit à la bibliothèque
+              Accès à la bibliothèque
             </h1>
             <p className="text-lg text-muted-foreground leading-relaxed">
-              Profitez d'un accès complet à notre collection de documents académiques.
+              L'inscription est gratuite et donne accès à de nombreux documents académiques. Certains ouvrages sont réservés aux abonnés Premium.
             </p>
           </div>
 
@@ -49,7 +49,7 @@ export default function Abonnement() {
             <Card className="relative border-2 border-primary shadow-elegant">
               <CardHeader className="text-center pb-2">
                 <CardTitle className="font-serif text-2xl">Accès Gratuit</CardTitle>
-                <CardDescription>Tous les documents disponibles</CardDescription>
+                <CardDescription>Les documents gratuits de la bibliothèque</CardDescription>
                 <div className="mt-4">
                   <span className="font-serif text-4xl font-bold text-foreground">Gratuit</span>
                 </div>
@@ -145,7 +145,7 @@ export default function Abonnement() {
   // Original subscription page when billing is enabled (future use)
   return (
     <Layout>
-      <SEO title="Abonnement — KMG Bibliothèque" description="KMG Bibliothèque est entièrement gratuit pour tous : accédez librement à l'ensemble du catalogue académique." path="/abonnement" />
+      <SEO title="Abonnement — KMG Bibliothèque" description="Abonnement Premium KMG Bibliothèque : inscription gratuite, de nombreux documents gratuits et des ouvrages réservés aux abonnés Premium." path="/abonnement" />
       <div className="container py-12 md:py-20">
         <div className="text-center max-w-3xl mx-auto">
           <h1 className="font-serif text-4xl md:text-5xl font-bold text-foreground mb-4">

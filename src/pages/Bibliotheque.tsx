@@ -190,7 +190,7 @@ export default function Bibliotheque() {
     <Layout>
       <SEO
         title="Bibliothèque — livres, mémoires, TFC et articles"
-        description="Catalogue académique complet : livres, mémoires, TFC et articles scientifiques avec filtres, recherche et tri. Lecture gratuite, en ligne et hors-ligne."
+        description="Catalogue académique complet : livres, mémoires, TFC et articles scientifiques avec filtres, recherche et tri. Nombreux documents gratuits, lecture en ligne et hors-ligne."
         path="/bibliotheque"
         jsonLd={{
           "@context": "https://schema.org",

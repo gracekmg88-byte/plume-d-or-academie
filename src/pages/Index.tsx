@@ -77,7 +77,7 @@ export default function Index() {
     <Layout>
       <SEO
         title="KMG Bibliothèque Numérique"
-        description="Consultez gratuitement livres, mémoires, TFC et articles académiques en ligne et hors-ligne. Plateforme francophone éditée par KMG Multi Services."
+        description="Livres, mémoires, TFC et articles académiques en ligne et hors-ligne, dont de nombreux documents gratuits. Plateforme francophone éditée par KMG Multi Services."
         path="/"
         jsonLd={[
           {

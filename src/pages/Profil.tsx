@@ -113,14 +113,14 @@ export default function Profil() {
                     <div className="flex items-center justify-center gap-2 mb-4">
                       <BookOpen className="h-6 w-6 text-primary" />
                       <Badge className="bg-primary text-primary-foreground text-lg px-4 py-1">
-                        ACCÈS COMPLET
+                        COMPTE ACTIF
                       </Badge>
                     </div>
                     <p className="text-foreground font-medium">
-                      Vous avez accès à tous les contenus !
+                      Vous avez accès à tous les documents gratuits.
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      Lecture et téléchargement de tous les documents
+                      Les ouvrages Premium sont réservés aux abonnés.
                     </p>
                   </div>
                 ) : (
