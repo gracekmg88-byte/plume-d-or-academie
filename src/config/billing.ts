@@ -25,6 +25,18 @@ export const billingConfig = {
   billingEnabled: false,
 
   /**
+   * Moyens de paiement réellement branchés (vérification serveur en place).
+   * Tant qu'un moyen est à false, la page de paiement n'affiche pas de bouton actif pour lui.
+   *  • google_play : achats dans l'application Android (forfaits prépayés, Play Billing).
+   *  • opt_gateway : carte Visa / Mastercard sur le site web.
+   * Sur Android, seul Google Play est proposé (règles du Play Store pour le contenu numérique).
+   */
+  paymentProviders: {
+    google_play: false,
+    opt_gateway: false,
+  },
+
+  /**
    * Message to display when premium features are coming soon.
    * This neutral message is Google Play compliant.
    */

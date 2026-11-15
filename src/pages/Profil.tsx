@@ -3,6 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { User, Mail, Crown, Calendar, LogOut, Star, BookOpen, Trash2, WifiOff, HardDrive } from "lucide-react";
 import { NotificationPreferencesCard } from "@/components/profile/NotificationPreferencesCard";
 import { FavoritesSection } from "@/components/profile/FavoritesSection";
+import { MySubscriptionCard } from "@/components/profile/MySubscriptionCard";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -198,6 +199,8 @@ export default function Profil() {
                 </div>
               </div>
               {/* Favorites */}
+              <MySubscriptionCard />
+
               <FavoritesSection />
 
               {/* Notification Preferences */}
