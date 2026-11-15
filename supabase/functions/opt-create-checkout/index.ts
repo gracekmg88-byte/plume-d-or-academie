@@ -67,23 +67,26 @@ Deno.serve(async (req) => {
     if (payErr) throw payErr;
     paymentId = pay.id;
 
-    const session = await optRequest("POST", "/v1/checkout/sessions", {
+    // Paiement direct par carte (POST /v1/payments) : OPTGateway renvoie l'adresse de la page
+    // bancaire sécurisée (next_action.type = "redirect"). Utilisé à la place de la page hébergée,
+    // dont l'étape carte refusait le return_url de la session (« return_url obligatoire pour
+    // Carte bancaire », signalé au prestataire).
+    const created = await optRequest("POST", "/v1/payments", {
+      method: "card",
       amount,
       currency: plan.currency,
       reference,
       description: `KMG Bibliothèque — ${plan.name} (${plan.duration_days} jours)`,
-      methods: ["card"],
-      // Adresses sans « ? » : l'étape carte d'OPTGateway refusait return_url avec paramètres
-      // (« return_url obligatoire pour Carte bancaire »). La référence est dans le chemin.
       return_url: `${SITE_URL}/abonnement/retour/${encodeURIComponent(reference)}`,
-      cancel_url: `${SITE_URL}/abonnement/retour/${encodeURIComponent(reference)}/annule`,
       metadata: { payment_id: pay.id, plan_code: plan.code },
-      expires_in_minutes: 60,
     });
-    if (!session?.id || !session?.url) throw new Error("Réponse OPTGateway incomplète");
+    const redirectUrl = created?.next_action?.type === "redirect" ? created.next_action.url : null;
+    if (!created?.id || !redirectUrl) {
+      throw new Error(`Réponse OPTGateway inattendue (next_action : ${created?.next_action?.type ?? "absent"})`);
+    }
 
     await admin.from("payments").update({
-      provider_data: { mode: optMode(), session_id: session.id, checkout_url: session.url, session_status: session.status ?? null },
+      provider_data: { mode: optMode(), flow: "direct", payment_id: created.id, remote_status: created.status ?? null },
     }).eq("id", pay.id);
 
     await admin.from("audit_log").insert({
@@ -91,7 +94,7 @@ Deno.serve(async (req) => {
       new_value: `${reference} · ${amount} ${plan.currency} · ${plan.code} · ${optMode()}`,
     });
 
-    return json({ url: session.url, reference, mode: optMode() });
+    return json({ url: redirectUrl, reference, mode: optMode() });
   } catch (e) {
     console.error("opt-create-checkout", e);
     const msg = e instanceof OptApiError ? `${e.message}${e.code ? ` (${e.code})` : ""}` : e instanceof Error ? e.message : "Erreur";
