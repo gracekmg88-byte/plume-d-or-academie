@@ -2,6 +2,7 @@
 // Les droits sont vérifiés par le serveur (fonction get-reading-url, fonctions SQL) :
 // rien ici ne permet à un client de s'attribuer le Premium.
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { invokeWithTimeout } from "@/lib/invoke-with-timeout";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 
@@ -194,9 +195,9 @@ export function useSetPublicationAccess() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (input: { publicationId: string; accessLevel: "free" | "premium" }) => {
-      const { error } = await supabase.functions.invoke("set-publication-access", {
-        body: { publication_id: input.publicationId, access_level: input.accessLevel },
-      });
+      const { error } = await invokeWithTimeout("set-publication-access", {
+        publication_id: input.publicationId, access_level: input.accessLevel,
+      }, { callMs: 120_000 }); // un gros PDF peut prendre du temps à déplacer
       if (error) throw new Error((await functionError(error)).message);
     },
     onSuccess: () => {

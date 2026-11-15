@@ -6,7 +6,7 @@
 // l'achat à Google. Les achats ne sont donc PAS confirmés par l'appli (autoAcknowledgePurchases:false).
 import { Capacitor } from "@capacitor/core";
 import { NativePurchases, PURCHASE_TYPE } from "@capgo/native-purchases";
-import { supabase } from "@/integrations/supabase/client";
+import { invokeWithTimeout } from "@/lib/invoke-with-timeout";
 
 export const isAndroidApp = () => Capacitor.isNativePlatform() && Capacitor.getPlatform() === "android";
 
@@ -55,7 +55,13 @@ export interface VerifyResult {
 }
 
 async function verifyOnServer(purchaseToken: string): Promise<VerifyResult> {
-  const { data, error } = await supabase.functions.invoke("google-play-verify", { body: { purchase_token: purchaseToken } });
+  let res;
+  try {
+    res = await invokeWithTimeout("google-play-verify", { purchase_token: purchaseToken });
+  } catch (e) {
+    return { success: false, error: `${e instanceof Error ? e.message : String(e)} Votre achat n'est pas perdu : utilisez « Récupérer mes achats Google Play ».` };
+  }
+  const { data, error } = res;
   if (error) {
     let message = "La vérification de l'achat a échoué. Réessayez : votre achat n'est pas perdu.";
     const ctx = (error as { context?: Response }).context;
