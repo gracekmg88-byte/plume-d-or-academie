@@ -50,3 +50,6 @@ verify_jwt = false
 
 [functions.opt-payment-status]
 verify_jwt = false
+
+[functions.google-play-verify]
+verify_jwt = false

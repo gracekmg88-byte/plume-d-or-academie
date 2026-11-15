@@ -559,9 +559,7 @@ function SettingsTab() {
         )}
       </div>
       <CardPaymentSetting />
-      <div className="rounded-xl border border-dashed border-border p-5 text-sm text-muted-foreground">
-        Paiement Google Play : prochaine étape. Les rappels se règlent dans l'onglet « Notifications ».
-      </div>
+      <GooglePlaySetting />
     </div>
   );
 }
@@ -608,6 +606,47 @@ function CardPaymentSetting() {
         <div>Adresse du webhook à déclarer dans l'espace marchand OPTGateway (page Webhooks) :</div>
         <code className="block break-all rounded bg-muted px-2 py-1">{WEBHOOK_URL}</code>
       </div>
+    </div>
+  );
+}
+
+// ─── Paiement Google Play (application Android) ─────────────────────────────────────────
+function GooglePlaySetting() {
+  const qc = useQueryClient();
+  const [confirm, setConfirm] = useState(false);
+  const { data: open, isLoading } = useQuery({
+    queryKey: ["site-setting", "google_play_enabled"],
+    queryFn: async () => {
+      const { data } = await supabase.from("site_settings").select("value").eq("key", "google_play_enabled").maybeSingle();
+      return data?.value === "true";
+    },
+  });
+  const save = async (v: boolean) => {
+    const { error } = await supabase.from("site_settings").update({ value: v ? "true" : "false" }).eq("key", "google_play_enabled");
+    if (error) { toast.error("Échec", { description: error.message }); return; }
+    qc.invalidateQueries({ queryKey: ["site-setting"] });
+    setConfirm(false);
+    toast.success(v ? "Paiement Google Play ouvert aux clients" : "Paiement Google Play réservé aux tests admin");
+  };
+  if (isLoading) return null;
+  return (
+    <div className="rounded-xl border border-border bg-card p-5 space-y-3">
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <div className="font-semibold">Paiement Google Play dans l'application Android</div>
+          <div className="text-sm text-muted-foreground">
+            Désactivé : seuls les administrateurs voient le bouton (achats gratuits avec un compte « testeur de licence »). Activé : tous les utilisateurs de l'appli Android peuvent s'abonner.
+          </div>
+        </div>
+        <Switch checked={!!open} onCheckedChange={(v) => (v ? setConfirm(true) : save(false))} />
+      </div>
+      {confirm && (
+        <div className="rounded-lg border border-amber-500/40 bg-amber-500/5 p-3 text-sm space-y-2">
+          <p>Ouvrez seulement après un achat de test réussi, avec l'abonnement et ses forfaits actifs dans la Play Console et des formules actives ici. Confirmer ?</p>
+          <div className="flex gap-2"><Button size="sm" onClick={() => save(true)}>Ouvrir le paiement Google Play</Button><Button size="sm" variant="ghost" onClick={() => setConfirm(false)}>Annuler</Button></div>
+        </div>
+      )}
+      <p className="text-xs text-muted-foreground">Play Console : abonnement « kmg_premium », forfaits prépayés « mensuel-prepaye » et « annuel-prepaye ».</p>
     </div>
   );
 }

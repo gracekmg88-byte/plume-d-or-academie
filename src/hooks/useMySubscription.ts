@@ -54,8 +54,8 @@ export function computeSubscription(periods: Period[], plans: Plan[], now = new 
 }
 
 /** Le paiement est-il possible ici ? Android : Google Play uniquement ; site : carte. */
-export function availablePaymentProvider(optGatewayOpen = false): "google_play" | "opt_gateway" | null {
-  if (Capacitor.isNativePlatform()) return billingConfig.paymentProviders.google_play ? "google_play" : null;
+export function availablePaymentProvider(optGatewayOpen = false, googlePlayOpen = false): "google_play" | "opt_gateway" | null {
+  if (Capacitor.isNativePlatform()) return Capacitor.getPlatform() === "android" && googlePlayOpen ? "google_play" : null;
   return optGatewayOpen ? "opt_gateway" : null;
 }
 
@@ -66,17 +66,19 @@ export function availablePaymentProvider(optGatewayOpen = false): "google_play" 
  */
 export function usePaymentProvider() {
   const { isAdmin } = useAuth();
-  const { data: open = false } = useQuery({
-    queryKey: ["site-setting", "opt_gateway_enabled"],
+  const { data: settings } = useQuery({
+    queryKey: ["site-setting", "payment_providers"],
     staleTime: 60_000,
     queryFn: async () => {
-      const { data } = await supabase.from("site_settings").select("value").eq("key", "opt_gateway_enabled").maybeSingle();
-      return data?.value === "true";
+      const { data } = await supabase.from("site_settings").select("key,value").in("key", ["opt_gateway_enabled", "google_play_enabled"]);
+      const get = (k: string) => data?.find((d) => d.key === k)?.value === "true";
+      return { opt: get("opt_gateway_enabled"), play: get("google_play_enabled") };
     },
   });
   const native = Capacitor.isNativePlatform();
-  const provider = availablePaymentProvider(open || (!native && !!isAdmin));
-  return { provider, adminTest: !native && !!isAdmin && !open };
+  const open = native ? !!settings?.play : !!settings?.opt;
+  const provider = availablePaymentProvider(!!settings?.opt || (!native && !!isAdmin), !!settings?.play || (native && !!isAdmin));
+  return { provider, adminTest: !!isAdmin && !open };
 }
 
 export function useMySubscription() {
