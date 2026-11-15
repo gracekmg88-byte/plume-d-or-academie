@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import {
   Check,
   X,
@@ -13,6 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useAuth } from "@/hooks/useAuth";
 import { useBillingConfig } from "@/hooks/useBillingConfig";
 import { SEO } from "@/components/seo/SEO";
+import { useActivePlans } from "@/hooks/useMySubscription";
 
 const freeFeatures = [
   { text: "Lecture en ligne", included: true },
@@ -24,6 +25,10 @@ const freeFeatures = [
 export default function Abonnement() {
   const { user } = useAuth();
   const { hidePremiumUI, comingSoonMessage } = useBillingConfig();
+  const { data: activePlans = [] } = useActivePlans();
+
+  // Formules Premium proposées : la page de choix et de paiement remplace la page d'information.
+  if (activePlans.length > 0) return <Navigate to="/abonnement/payer" replace />;
 
   // When billing is disabled, show a simple free access page
   if (hidePremiumUI) {

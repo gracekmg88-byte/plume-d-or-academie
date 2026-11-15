@@ -662,7 +662,7 @@ export default function Publication() {
                   {readingDenied.code === "login_required" ? (
                     <Button asChild><Link to="/auth">Se connecter</Link></Button>
                   ) : (
-                    <Button asChild><Link to="/abonnement">Voir les formules Premium</Link></Button>
+                    <Button asChild><Link to="/abonnement/payer">Voir les formules Premium</Link></Button>
                   )}
                 </div>
               </div>

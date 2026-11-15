@@ -91,7 +91,7 @@ export function PremiumLockMessage() {
             <Button variant="outline">Se connecter</Button>
           </Link>
         )}
-        <Link to="/abonnement">
+        <Link to="/abonnement/payer">
           <Button className="gap-2">
             <Crown className="h-4 w-4" />
             Voir les options

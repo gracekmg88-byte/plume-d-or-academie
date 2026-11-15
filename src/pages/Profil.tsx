@@ -172,7 +172,7 @@ export default function Profil() {
                           <p>✓ Téléchargement illimité</p>
                           <p>✓ Accès à tous les contenus premium</p>
                         </div>
-                        <Link to="/abonnement">
+                        <Link to="/abonnement/payer">
                           <Button className="w-full gap-2 mt-4">
                             <Crown className="h-4 w-4" />
                             Voir les options
