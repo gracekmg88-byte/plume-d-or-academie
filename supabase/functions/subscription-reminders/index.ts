@@ -126,6 +126,25 @@ async function sendEmail(to: string, name: string | null, title: string, body: s
   if (!r.ok) throw new Error(`Resend ${r.status}`);
 }
 
+/**
+ * Clé de service ? Supabase a deux formats (ancien JWT « service_role » et nouveau
+ * « sb_secret_… ») ; la tâche planifiée peut utiliser l'un ou l'autre. On accepte la clé si elle
+ * est celle de la fonction, ou si l'API d'administration de Supabase la reconnaît comme telle.
+ */
+async function isServiceKey(token: string): Promise<boolean> {
+  if (!token) return false;
+  if (token === SERVICE_KEY) return true;
+  if (!token.startsWith("sb_secret_") && !token.startsWith("eyJ")) return false;
+  try {
+    const r = await fetch(`${SUPABASE_URL}/auth/v1/admin/users?page=1&per_page=1`, {
+      headers: { apikey: token, Authorization: `Bearer ${token}` },
+    });
+    return r.ok;
+  } catch {
+    return false;
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
   if (req.method !== "POST") return json({ error: "Méthode non autorisée" }, 405);
@@ -135,7 +154,7 @@ Deno.serve(async (req) => {
   // Autorisation : tâche planifiée (clé de service) ou administrateur connecté.
   const auth = req.headers.get("Authorization") ?? "";
   const token = auth.startsWith("Bearer ") ? auth.slice(7).trim() : "";
-  if (token !== SERVICE_KEY) {
+  if (!(await isServiceKey(token))) {
     const { data } = token ? await createClient(SUPABASE_URL, ANON_KEY).auth.getUser(token) : { data: null };
     const uid = data?.user?.id;
     if (!uid) return json({ error: "Non authentifié" }, 401);
