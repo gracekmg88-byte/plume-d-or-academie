@@ -50,7 +50,7 @@ function AdminAuthLogsContent() {
     <div className="min-h-screen bg-background">
       <div className="container py-8 max-w-5xl">
         <div className="flex items-center justify-between mb-6">
-          <Link to="/admin/dashboard">
+          <Link to="/admin/dashboard" state={{ restoreScroll: true }}>
             <Button variant="ghost" size="sm">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Retour

@@ -90,7 +90,7 @@ export default function AdminAuthors() {
     <Layout>
       <SEO title="Profils des auteurs" description="Biographies et photos des auteurs" path="/admin/authors" noindex />
       <div className="container py-8 md:py-12 space-y-6">
-        <Link to="/admin/dashboard" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+        <Link to="/admin/dashboard" state={{ restoreScroll: true }} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
           <ArrowLeft className="h-4 w-4" /> Retour au tableau de bord
         </Link>
 

@@ -152,7 +152,7 @@ export default function AdminSubmissions() {
             </span>
           </div>
           <div className="flex items-center gap-4">
-            <Link to="/admin/dashboard" className="text-secondary-foreground/70 hover:text-secondary-foreground text-sm flex items-center gap-1">
+            <Link to="/admin/dashboard" state={{ restoreScroll: true }} className="text-secondary-foreground/70 hover:text-secondary-foreground text-sm flex items-center gap-1">
               <ArrowLeft className="h-4 w-4" />
               Dashboard
             </Link>

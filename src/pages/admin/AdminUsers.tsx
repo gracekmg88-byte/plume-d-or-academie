@@ -263,7 +263,7 @@ export default function AdminUsers() {
 
         {/* Back to dashboard */}
         <div className="mt-8">
-          <Button variant="outline" onClick={() => navigate("/admin/dashboard")}>
+          <Button variant="outline" onClick={() => navigate("/admin/dashboard", { state: { restoreScroll: true } })}>
             ← Retour au tableau de bord
           </Button>
         </div>

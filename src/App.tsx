@@ -213,9 +213,11 @@ function ScrollManager({ location }: { location: ReturnType<typeof useLocation> 
     const navState = location.state as {
       restoredFromPublication?: boolean;
       returnKey?: string | null;
+      restoreScroll?: boolean;
     } | null;
     const isReturnFromPublication = Boolean(navState?.restoredFromPublication);
-    const shouldRestore = navType === "POP" || isReturnFromPublication;
+    // Boutons « Retour » (ex. administration) : retrouver la position quittée sur la page d'arrivée.
+    const shouldRestore = navType === "POP" || isReturnFromPublication || Boolean(navState?.restoreScroll);
 
     if (shouldRestore) {
       const restoreKey = isReturnFromPublication && navState?.returnKey ? navState.returnKey : key;

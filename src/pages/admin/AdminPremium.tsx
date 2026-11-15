@@ -53,7 +53,7 @@ export default function AdminPremium() {
     <Layout>
       <SEO title="Abonnement Premium" description="Gestion des abonnements Premium" path="/admin/premium" noindex />
       <div className="container py-8 md:py-12 space-y-6">
-        <Link to="/admin/dashboard" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+        <Link to="/admin/dashboard" state={{ restoreScroll: true }} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
           <ArrowLeft className="h-4 w-4" /> Retour au tableau de bord
         </Link>
         <div className="flex items-center gap-3">
@@ -465,7 +465,7 @@ function BooksTab() {
   const setAccess = useSetPublicationAccess();
   const [q, setQ] = useState("");
   const [busyId, setBusyId] = useState<string | null>(null);
-  const { data: pubs = [], isLoading } = useQuery({
+  const { data: pubs = [], isLoading, error: loadError, refetch } = useQuery({
     queryKey: ["admin-premium-publications"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -490,31 +490,56 @@ function BooksTab() {
 
   return (
     <div className="space-y-4">
-      <p className="text-sm text-muted-foreground">
-        {premiumCount} publication{premiumCount > 1 ? "s" : ""} réservée{premiumCount > 1 ? "s" : ""} aux abonnés. Le PDF d'un livre Premium est
-        déplacé dans un stockage privé : il n'a plus d'adresse publique et n'est lisible que par un lien temporaire délivré par le serveur.
-      </p>
+      <div className="rounded-lg border border-amber-500/40 bg-amber-500/5 p-3 text-sm space-y-1">
+        <p className="font-medium">
+          Pour réserver un livre aux abonnés : appuyez sur « Réserver aux abonnés » à côté du livre.
+        </p>
+        <p className="text-muted-foreground">
+          {premiumCount} publication{premiumCount > 1 ? "s" : ""} réservée{premiumCount > 1 ? "s" : ""} aux abonnés. Les non-abonnés ne
+          peuvent plus lire un livre réservé : son PDF est déplacé dans un stockage privé, lisible seulement par un lien temporaire délivré
+          par le serveur aux abonnés. « Rendre gratuit » annule l'opération.
+        </p>
+      </div>
       <div className="relative max-w-md">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input className="pl-9" placeholder="Rechercher une publication…" value={q} onChange={(e) => setQ(e.target.value)} />
       </div>
-      {isLoading ? <Spinner /> : (
+      {isLoading ? <Spinner /> : loadError ? (
+        <div className="rounded-lg border border-destructive/40 bg-destructive/5 p-4 text-sm space-y-2">
+          <p className="font-medium">La liste des livres n'a pas pu être chargée.</p>
+          <p className="text-muted-foreground">{errMsg(loadError)}</p>
+          <Button size="sm" variant="outline" onClick={() => refetch()}>Réessayer</Button>
+        </div>
+      ) : (
         <div className="grid gap-2">
           {filtered.map((p) => {
             const premium = p.access_level === "premium";
             return (
-              <div key={p.id} className="rounded-lg border border-border bg-card p-3 flex items-center gap-3">
+              <div key={p.id} className={`rounded-lg border p-3 flex flex-wrap sm:flex-nowrap items-center gap-3 ${premium ? "border-amber-500/50 bg-amber-500/5" : "border-border bg-card"}`}>
                 {premium ? <Lock className="h-4 w-4 text-amber-600 shrink-0" /> : <Unlock className="h-4 w-4 text-muted-foreground shrink-0" />}
                 <div className="flex-1 min-w-0">
                   <div className="font-medium truncate">{p.title}</div>
                   <div className="text-xs text-muted-foreground truncate">{p.author} · {p.category}{!p.is_published ? " · non publiée" : ""}</div>
                 </div>
-                {busyId === p.id ? <Loader2 className="h-4 w-4 animate-spin" /> : (
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-muted-foreground hidden sm:inline">{premium ? "Abonnés" : "Gratuit"}</span>
-                    <Switch checked={premium} disabled={!!busyId || (!p.file_url && !p.premium_file_path)} onCheckedChange={(v) => toggle(p.id, v)} />
-                  </div>
-                )}
+                <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                  <span className={`text-xs font-medium ${premium ? "text-amber-700 dark:text-amber-400" : "text-muted-foreground"}`}>
+                    {premium ? "Réservé aux abonnés" : "Gratuit"}
+                  </span>
+                  {!p.file_url && !p.premium_file_path ? (
+                    <span className="text-xs text-muted-foreground">(aucun PDF)</span>
+                  ) : (
+                    <Button
+                      size="sm"
+                      variant={premium ? "outline" : "default"}
+                      className="gap-1.5"
+                      disabled={!!busyId}
+                      onClick={() => toggle(p.id, !premium)}
+                    >
+                      {busyId === p.id ? <Loader2 className="h-4 w-4 animate-spin" /> : premium ? <Unlock className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
+                      {premium ? "Rendre gratuit" : "Réserver aux abonnés"}
+                    </Button>
+                  )}
+                </div>
               </div>
             );
           })}

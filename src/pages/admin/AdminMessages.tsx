@@ -131,7 +131,7 @@ export default function AdminMessages() {
       <div className="container py-8">
         {/* Back to Dashboard */}
         <Link
-          to="/admin/dashboard"
+          to="/admin/dashboard" state={{ restoreScroll: true }}
           className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-6"
         >
           <ArrowLeft className="h-4 w-4" />

@@ -207,7 +207,7 @@ export default function PublicationForm() {
       // Fire-and-forget: ping Google Search Console with the updated sitemap.
       void supabase.functions.invoke("gsc-admin", { body: { action: "auto" } }).catch(() => {});
 
-      navigate("/admin/dashboard");
+      navigate("/admin/dashboard", { state: { restoreScroll: true } });
     } catch (error: any) {
       toast.error(error.message || "Une erreur est survenue");
     } finally {
@@ -243,7 +243,7 @@ export default function PublicationForm() {
       {/* Header */}
       <header className="sticky top-0 z-50 bg-card border-b border-border">
         <div className="container flex h-16 items-center gap-4">
-          <Link to="/admin/dashboard" className="text-muted-foreground hover:text-foreground">
+          <Link to="/admin/dashboard" state={{ restoreScroll: true }} className="text-muted-foreground hover:text-foreground">
             <ArrowLeft className="h-5 w-5" />
           </Link>
           <h1 className="font-serif text-xl font-bold text-foreground">
@@ -500,7 +500,7 @@ export default function PublicationForm() {
 
           {/* Submit */}
           <div className="flex gap-4">
-            <Link to="/admin/dashboard" className="flex-1">
+            <Link to="/admin/dashboard" state={{ restoreScroll: true }} className="flex-1">
               <Button type="button" variant="outline" className="w-full">
                 Annuler
               </Button>
