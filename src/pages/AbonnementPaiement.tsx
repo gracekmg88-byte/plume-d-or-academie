@@ -3,10 +3,11 @@
 // uniquement par le serveur, après vérification du paiement auprès de Google Play ou d'OPT Gateway.
 import { useMemo, useState } from "react";
 import { Capacitor } from "@capacitor/core";
-import { Link, Navigate, useSearchParams } from "react-router-dom";
+import { Link, Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { addDays, format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { ArrowLeft, Check, CreditCard, Crown, Loader2, Lock, ShieldCheck } from "lucide-react";
+import { ArrowLeft, Check, CreditCard, Crown, Loader2, Lock, ShieldCheck, Smartphone } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { Layout } from "@/components/layout/Layout";
 import { SEO } from "@/components/seo/SEO";
 import { Button } from "@/components/ui/button";
@@ -26,6 +27,11 @@ export default function AbonnementPaiement() {
   const { data, isLoading } = useMySubscription();
   const [accepted, setAccepted] = useState(false);
   const [starting, setStarting] = useState(false);
+  // Site : carte bancaire ou mobile money (M-Pesa, Orange Money, Airtel Money) via OPTGateway.
+  const [payMethod, setPayMethod] = useState<"mobile_money" | "card">("mobile_money");
+  const [phone, setPhone] = useState("");
+  const navigate = useNavigate();
+  const phoneOk = /^(\+?243|0)?[89]\d{8}$/.test(phone.replace(/[\s.-]/g, ""));
   const { provider, adminTest } = usePaymentProvider();
 
   const qc = useQueryClient();
@@ -79,8 +85,16 @@ export default function AbonnementPaiement() {
   const startPayment = async (planCode: string) => {
     setStarting(true);
     try {
-      const { data: res, error } = await supabase.functions.invoke("opt-create-checkout", { body: { plan_code: planCode } });
-      if (error || !(res as { url?: string })?.url) {
+      const { data: res, error } = await supabase.functions.invoke("opt-create-checkout", {
+        body: payMethod === "mobile_money" ? { plan_code: planCode, method: "mobile_money", phone } : { plan_code: planCode, method: "card" },
+      });
+      const r = res as { url?: string | null; reference?: string; method?: string } | null;
+      if (!error && r?.method === "mobile_money" && r.reference) {
+        // Mobile money : le client confirme sur son téléphone ; la page de retour suit le paiement.
+        navigate(`/abonnement/retour/${encodeURIComponent(r.reference)}`, { state: { mobileMoney: true } });
+        return;
+      }
+      if (error || !r?.url) {
         let message = "Le paiement n'a pas pu être lancé. Réessayez dans quelques instants.";
         const ctx = (error as { context?: Response } | null)?.context;
         if (ctx && typeof ctx.json === "function") { try { message = (await ctx.json())?.error || message; } catch { /* corps illisible */ } }
@@ -175,11 +189,52 @@ export default function AbonnementPaiement() {
                         Mode administrateur : le paiement par carte n'est pas encore ouvert aux clients. Avec une clé de test, aucun argent réel n'est débité.
                       </p>
                     )}
-                    <Button className="w-full gap-2" disabled={!accepted || starting} onClick={() => startPayment(selected.code)}>
-                      {starting ? <Loader2 className="h-4 w-4 animate-spin" /> : <CreditCard className="h-4 w-4" />}
-                      Payer {formatPrice(selected.price_amount, selected.currency)} par carte
-                    </Button>
-                    <p className="text-xs text-muted-foreground text-center">Visa ou Mastercard — vous saisirez votre carte sur la page sécurisée de notre prestataire.</p>
+                    <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label="Moyen de paiement">
+                      {([
+                        { v: "mobile_money" as const, icon: Smartphone, label: "Mobile money", sub: "M-Pesa · Orange · Airtel" },
+                        { v: "card" as const, icon: CreditCard, label: "Carte bancaire", sub: "Visa · Mastercard" },
+                      ]).map((m) => (
+                        <button
+                          key={m.v}
+                          type="button"
+                          role="radio"
+                          aria-checked={payMethod === m.v}
+                          onClick={() => setPayMethod(m.v)}
+                          className={`rounded-lg border-2 p-3 text-left transition ${payMethod === m.v ? "border-amber-500 bg-amber-500/5" : "border-border hover:border-amber-500/50"}`}
+                        >
+                          <m.icon className="h-5 w-5 mb-1 text-amber-600" />
+                          <div className="text-sm font-semibold">{m.label}</div>
+                          <div className="text-[11px] text-muted-foreground">{m.sub}</div>
+                        </button>
+                      ))}
+                    </div>
+                    {payMethod === "mobile_money" ? (
+                      <>
+                        <label className="block text-sm font-medium" htmlFor="mm-phone">Numéro mobile money (RDC)</label>
+                        <Input
+                          id="mm-phone"
+                          type="tel"
+                          inputMode="tel"
+                          autoComplete="tel"
+                          placeholder="Ex. 0812345678"
+                          value={phone}
+                          onChange={(e) => setPhone(e.target.value)}
+                        />
+                        <Button className="w-full gap-2" disabled={!accepted || starting || !phoneOk} onClick={() => startPayment(selected.code)}>
+                          {starting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Smartphone className="h-4 w-4" />}
+                          Payer {formatPrice(selected.price_amount, selected.currency)} par mobile money
+                        </Button>
+                        <p className="text-xs text-muted-foreground text-center">Vous recevrez une demande de paiement sur ce téléphone : confirmez-la avec votre code PIN. Des frais de l'opérateur peuvent s'ajouter.</p>
+                      </>
+                    ) : (
+                      <>
+                        <Button className="w-full gap-2" disabled={!accepted || starting} onClick={() => startPayment(selected.code)}>
+                          {starting ? <Loader2 className="h-4 w-4 animate-spin" /> : <CreditCard className="h-4 w-4" />}
+                          Payer {formatPrice(selected.price_amount, selected.currency)} par carte
+                        </Button>
+                        <p className="text-xs text-muted-foreground text-center">Visa ou Mastercard — vous saisirez votre carte sur la page sécurisée de notre prestataire.</p>
+                      </>
+                    )}
                   </>
                 ) : provider === "google_play" && offerFor(selected) ? (
                   <>

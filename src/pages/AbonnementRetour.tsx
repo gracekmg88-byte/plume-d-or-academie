@@ -2,7 +2,7 @@
 // L'adresse de retour NE prouve rien : le statut affiché vient du serveur, qui vérifie le
 // paiement auprès d'OPTGateway avant d'activer le Premium.
 import { useEffect, useRef, useState } from "react";
-import { Link, useParams, useSearchParams } from "react-router-dom";
+import { Link, useLocation, useParams, useSearchParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -23,12 +23,16 @@ interface StatusResponse {
 }
 
 const MAX_TRIES = 40; // ~2 minutes (toutes les 3 s)
+const MAX_TRIES_MOBILE = 80; // mobile money : ~4 minutes pour confirmer sur le téléphone
 
 export default function AbonnementRetour() {
   const [params] = useSearchParams();
   const { ref: refParam } = useParams<{ ref?: string }>();
   // /abonnement/retour/<référence>[/annule] (ou ancien format ?ref=…)
   const reference = refParam ?? params.get("ref") ?? "";
+  const location = useLocation();
+  const mobileMoney = Boolean((location.state as { mobileMoney?: boolean } | null)?.mobileMoney);
+  const maxTries = mobileMoney ? MAX_TRIES_MOBILE : MAX_TRIES;
   const { user, authReady } = useAuth();
   const qc = useQueryClient();
   const [state, setState] = useState<StatusResponse | null>(null);
@@ -52,11 +56,11 @@ export default function AbonnementRetour() {
         qc.invalidateQueries({ queryKey: ["reading-url"] });
         return;
       }
-      if (r.status === "pending" && n < MAX_TRIES) timer.current = window.setTimeout(() => check(n + 1), 3000);
+      if (r.status === "pending" && n < maxTries) timer.current = window.setTimeout(() => check(n + 1), 3000);
     };
     void check(1);
     return () => { stopped = true; if (timer.current) window.clearTimeout(timer.current); };
-  }, [authReady, user, reference, qc]);
+  }, [authReady, user, reference, qc, maxTries]);
 
   const status = state?.status;
   return (
@@ -98,7 +102,7 @@ export default function AbonnementRetour() {
             <p className="text-muted-foreground">Aucun montant n'a été validé pour cet abonnement. Vous pouvez réessayer.</p>
             <Button asChild><Link to="/abonnement/payer">Réessayer</Link></Button>
           </>
-        ) : status === "pending" && tries >= MAX_TRIES ? (
+        ) : status === "pending" && tries >= maxTries ? (
           <>
             <Clock className="h-14 w-14 mx-auto text-amber-600" />
             <h1 className="font-serif text-2xl font-bold">Paiement en cours de traitement</h1>
@@ -108,8 +112,17 @@ export default function AbonnementRetour() {
         ) : (
           <>
             <Loader2 className="h-12 w-12 mx-auto animate-spin text-muted-foreground" />
-            <h1 className="font-serif text-2xl font-bold">Vérification du paiement…</h1>
-            <p className="text-muted-foreground">Nous confirmons votre paiement auprès de la banque. Ne fermez pas cette page.</p>
+            {mobileMoney ? (
+              <>
+                <h1 className="font-serif text-2xl font-bold">Confirmez sur votre téléphone</h1>
+                <p className="text-muted-foreground">Une demande de paiement a été envoyée à votre numéro mobile money. Validez-la avec votre code PIN : cette page se mettra à jour toute seule. Ne fermez pas cette page.</p>
+              </>
+            ) : (
+              <>
+                <h1 className="font-serif text-2xl font-bold">Vérification du paiement…</h1>
+                <p className="text-muted-foreground">Nous confirmons votre paiement auprès de la banque. Ne fermez pas cette page.</p>
+              </>
+            )}
           </>
         )}
         {reference && <p className="text-xs text-muted-foreground font-mono">Référence : {reference}</p>}
