@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { GoogleWebSignIn } from "@/components/auth/GoogleWebSignIn";
+import { completeGoogleRedirect, startGoogleRedirect } from "@/lib/google-gsi";
 import { Feather, Mail, Lock, User, AlertCircle, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -55,6 +56,19 @@ export default function Auth() {
       navigate("/profil");
     }
   }, [user, navigate]);
+
+  // Site : retour de Google après le bouton de secours (jeton dans l'adresse, voir google-gsi.ts).
+  useEffect(() => {
+    if (isNativeApp()) return;
+    let active = true;
+    setGoogleLoading(true);
+    void completeGoogleRedirect().then((msg) => {
+      if (!active) return;
+      setGoogleLoading(false);
+      if (msg) setError(msg);
+    });
+    return () => { active = false; };
+  }, []);
 
   // Appli Android : erreur éventuelle au retour de la connexion Google (voir native-auth.ts).
   useEffect(() => {
@@ -151,15 +165,10 @@ export default function Auth() {
         await signInWithGoogleNative();
         return;
       }
-      // Site web : connexion Google native Supabase (client OAuth Google propre au projet).
-      // Après le retour de Google, la session est lue dans l'URL et l'effet `user` redirige vers /profil.
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: { redirectTo: `${window.location.origin}/auth` },
-      });
-      if (error) {
-        setError("Erreur de connexion avec Google");
-      }
+      // Site web (bouton de secours) : Google renvoie directement sur notre site — la fenêtre Google
+      // affiche « kmgbibliotheque.com », plus jamais l'adresse technique de la base (supabase.co).
+      await startGoogleRedirect();
+      return;
     } catch (e) {
       // Fenêtre Google fermée volontairement : pas de message d'erreur.
       if (!(e instanceof GoogleSignInCancelled)) setError("Erreur de connexion avec Google");
