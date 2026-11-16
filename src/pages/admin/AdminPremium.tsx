@@ -154,7 +154,7 @@ function SubscribersTab() {
       </div>
       <p className="text-sm text-muted-foreground">{rows.length} abonné{rows.length > 1 ? "s" : ""} Premium actif{rows.length > 1 ? "s" : ""}.</p>
       {isLoading ? <Spinner /> : (
-        <div className="grid gap-3">
+        <div className="grid grid-cols-1 gap-3">
           {filtered.map((r) => {
             const left = r.expires_at ? differenceInCalendarDays(new Date(r.expires_at), new Date()) : null;
             const providers = [...new Set(r.periods.map((p) => providerLabel[p.payment_provider]))].join(", ");
@@ -279,7 +279,7 @@ function ExpiredTab() {
   const rows = [...last.values()].sort((a, b) => (b.expires_at ?? b.updated_at).localeCompare(a.expires_at ?? a.updated_at));
   if (isLoading) return <Spinner />;
   return (
-    <div className="grid gap-3">
+    <div className="grid grid-cols-1 gap-3">
       {rows.map((s) => (
         <div key={s.id} className="rounded-xl border border-border bg-card p-4 flex flex-col sm:flex-row sm:items-center gap-2">
           <div className="flex-1 min-w-0">
@@ -309,7 +309,7 @@ function PaymentsTab() {
   const planName = new Map(plans.map((p) => [p.id, p.name]));
   if (isLoading) return <Spinner />;
   return (
-    <div className="grid gap-2">
+    <div className="grid grid-cols-1 gap-2">
       {data.map((p) => (
         <div key={p.id} className="rounded-lg border border-border bg-card p-3 flex flex-col md:flex-row md:items-center gap-2 text-sm">
           <Badge variant={statusBadge[p.status]?.variant ?? "outline"}>{statusBadge[p.status]?.label ?? p.status}</Badge>
@@ -437,7 +437,7 @@ function PlanDialog({ plan, onClose }: { plan: Partial<SubscriptionPlan>; onClos
     <Dialog open onOpenChange={(o) => { if (!o) onClose(); }}>
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader><DialogTitle>{plan.id ? "Modifier la formule" : "Nouvelle formule"}</DialogTitle></DialogHeader>
-        <div className="grid gap-3">
+        <div className="grid grid-cols-1 gap-3">
           {!plan.id && <Field label="Code interne" value={f.code} onChange={(v) => set("code", v.toLowerCase())} placeholder="premium_trimestriel" />}
           <Field label="Nom affiché" value={f.name} onChange={(v) => set("name", v)} />
           <div className="space-y-1"><Label>Description</Label><Textarea rows={2} value={f.description} onChange={(e) => set("description", e.target.value)} /></div>
@@ -512,11 +512,11 @@ function BooksTab() {
           <Button size="sm" variant="outline" onClick={() => refetch()}>Réessayer</Button>
         </div>
       ) : (
-        <div className="grid gap-2">
+        <div className="grid grid-cols-1 gap-2">
           {filtered.map((p) => {
             const premium = p.access_level === "premium";
             return (
-              <div key={p.id} className={`rounded-lg border p-3 flex flex-wrap sm:flex-nowrap items-center gap-3 ${premium ? "border-amber-500/50 bg-amber-500/5" : "border-border bg-card"}`}>
+              <div key={p.id} className={`min-w-0 rounded-lg border p-3 flex flex-wrap sm:flex-nowrap items-center gap-3 ${premium ? "border-amber-500/50 bg-amber-500/5" : "border-border bg-card"}`}>
                 {premium ? <Lock className="h-4 w-4 text-amber-600 shrink-0" /> : <Unlock className="h-4 w-4 text-muted-foreground shrink-0" />}
                 <div className="flex-1 min-w-0">
                   <div className="font-medium truncate">{p.title}</div>
