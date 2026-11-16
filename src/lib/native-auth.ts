@@ -34,8 +34,85 @@ export function authLinkBaseUrl(): string {
   return isNativeApp() ? SITE_URL : window.location.origin;
 }
 
-/** Ouvre la connexion Google dans un onglet sécurisé ; la suite arrive par handleCallbackUrl. */
+// ─── Connexion Google NATIVE (Android, Credential Manager) ───────────────────────────────
+// La fenêtre Google du téléphone s'ouvre au nom « KMG Bibliothèque » (et non plus sur l'adresse
+// technique de la base). Google renvoie un jeton d'identité que Supabase vérifie (signInWithIdToken),
+// avec un nonce anti-rejeu. Clients OAuth Android déclarés dans Google Cloud (projet kmg-bibliotheque) :
+// package app.lovable.d11bc5d4512e4b5f9f8a79e7ee7ad869 + SHA-1 de la clé Play et de la clé d'importation.
+const GOOGLE_WEB_CLIENT_ID =
+  (import.meta.env.VITE_GOOGLE_WEB_CLIENT_ID as string | undefined) ||
+  "26513992668-2rhbrfriu34mvkhov51q1ahehrrk48ng.apps.googleusercontent.com";
+
+/** Annulation volontaire (fenêtre Google fermée) : pas d'erreur à afficher, pas de méthode de secours. */
+export class GoogleSignInCancelled extends Error {}
+
+let socialLoginReady: Promise<typeof import("@capgo/capacitor-social-login").SocialLogin> | null = null;
+function getSocialLogin() {
+  if (!socialLoginReady) {
+    socialLoginReady = import("@capgo/capacitor-social-login").then(async ({ SocialLogin }) => {
+      await SocialLogin.initialize({
+        google: {
+          webClientId: GOOGLE_WEB_CLIENT_ID,
+          mode: "online",
+          // Seule l'identité nous intéresse (pas d'API Google) : évite un blocage connu sur BridgeActivity.
+          skipAuthOnlyAuthorizationAfterSignIn: true,
+        },
+      });
+      return SocialLogin;
+    }).catch((e) => {
+      socialLoginReady = null;
+      throw e;
+    });
+  }
+  return socialLoginReady;
+}
+
+async function sha256Hex(text: string): Promise<string> {
+  const d = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+  return [...new Uint8Array(d)].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+async function signInWithGoogleCredentialManager(): Promise<void> {
+  const SocialLogin = await getSocialLogin();
+  const raw = new Uint8Array(32);
+  crypto.getRandomValues(raw);
+  const rawNonce = [...raw].map((b) => b.toString(16).padStart(2, "0")).join("");
+  let idToken: string | null | undefined;
+  try {
+    const res = await SocialLogin.login({
+      provider: "google",
+      options: { nonce: await sha256Hex(rawNonce), style: "bottom", filterByAuthorizedAccounts: false, autoSelectEnabled: false },
+    });
+    idToken = (res.result as { idToken?: string | null }).idToken;
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    if (/cancel|annul|dismiss/i.test(msg) || /(^|[^0-9])16([^0-9]|$)/.test(msg)) throw new GoogleSignInCancelled(msg);
+    throw e;
+  }
+  if (!idToken) throw new Error("Google n'a pas renvoyé de jeton d'identité");
+  const { error } = await supabase.auth.signInWithIdToken({ provider: "google", token: idToken, nonce: rawNonce });
+  if (error) throw error;
+  // Succès : onAuthStateChange (useAuth) met à jour l'utilisateur ; la page de connexion redirige.
+}
+
+/**
+ * Connexion Google dans l'appli : d'abord la fenêtre native du téléphone ; en cas d'échec
+ * technique (pas de compte Google sur l'appareil, services Google indisponibles…), repli
+ * automatique sur l'ancienne méthode (onglet sécurisé). Une annulation n'entraîne pas de repli.
+ */
 export async function signInWithGoogleNative(): Promise<void> {
+  try {
+    await signInWithGoogleCredentialManager();
+    return;
+  } catch (e) {
+    if (e instanceof GoogleSignInCancelled) throw e;
+    console.warn("[native-auth] connexion Google native indisponible, repli sur l'onglet sécurisé", e);
+  }
+  await signInWithGoogleCustomTab();
+}
+
+/** Ancienne méthode (secours) : onglet sécurisé ; la suite arrive par handleCallbackUrl. */
+async function signInWithGoogleCustomTab(): Promise<void> {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
     options: { redirectTo: NATIVE_AUTH_CALLBACK, skipBrowserRedirect: true },

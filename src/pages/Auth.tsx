@@ -16,6 +16,7 @@ import {
   authLinkBaseUrl,
   isNativeApp,
   signInWithGoogleNative,
+  GoogleSignInCancelled,
 } from "@/lib/native-auth";
 
 const loginSchema = z.object({
@@ -145,7 +146,7 @@ export default function Auth() {
     setError("");
     setGoogleLoading(true);
     try {
-      // Appli Android : onglet sécurisé + retour par le schéma de l'appli (native-auth.ts).
+      // Appli Android : fenêtre Google native du téléphone (repli : onglet sécurisé) — native-auth.ts.
       if (isNativeApp()) {
         await signInWithGoogleNative();
         return;
@@ -159,8 +160,9 @@ export default function Auth() {
       if (error) {
         setError("Erreur de connexion avec Google");
       }
-    } catch {
-      setError("Erreur de connexion avec Google");
+    } catch (e) {
+      // Fenêtre Google fermée volontairement : pas de message d'erreur.
+      if (!(e instanceof GoogleSignInCancelled)) setError("Erreur de connexion avec Google");
     } finally {
       setGoogleLoading(false);
     }
