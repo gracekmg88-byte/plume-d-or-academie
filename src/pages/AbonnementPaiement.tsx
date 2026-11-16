@@ -2,6 +2,7 @@
 // la nouvelle période) et confirmation. Le Premium n'est JAMAIS activé par cette page : il l'est
 // uniquement par le serveur, après vérification du paiement auprès de Google Play ou d'OPT Gateway.
 import { useMemo, useState } from "react";
+import { Capacitor } from "@capacitor/core";
 import { Link, Navigate, useSearchParams } from "react-router-dom";
 import { addDays, format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -196,8 +197,19 @@ export default function AbonnementPaiement() {
                     </button>
                   </>
                 ) : (
-                  <div className="rounded-lg bg-muted/60 p-3 text-sm text-muted-foreground">
-                    Le paiement en ligne n'est pas encore ouvert. Il sera disponible très prochainement.
+                  <div className="rounded-lg bg-muted/60 p-3 text-sm text-muted-foreground space-y-2">
+                    {Capacitor.isNativePlatform() ? (
+                      <p>Le paiement n'est pas encore ouvert dans l'application. Il sera disponible très prochainement.</p>
+                    ) : (
+                      <>
+                        <p>Le paiement par carte sur le site sera ouvert très prochainement. Vous pouvez dès maintenant vous abonner depuis l'application Android (paiement sécurisé Google Play), avec le même compte.</p>
+                        <Button asChild variant="outline" size="sm" className="w-full">
+                          <a href="https://play.google.com/store/apps/details?id=app.lovable.d11bc5d4512e4b5f9f8a79e7ee7ad869" target="_blank" rel="noopener noreferrer">
+                            Ouvrir l'application sur Google Play
+                          </a>
+                        </Button>
+                      </>
+                    )}
                   </div>
                 )}
                 <p className="text-xs text-muted-foreground flex items-center gap-1"><Lock className="h-3 w-3" /> Votre abonnement est activé uniquement après confirmation du paiement par notre serveur. Aucun numéro de carte n'est conservé par KMG Bibliothèque.</p>
