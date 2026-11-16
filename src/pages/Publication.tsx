@@ -71,6 +71,9 @@ export default function Publication() {
   const [resolvedUuid, setResolvedUuid] = useState<string | null | undefined>(
     isUuid ? rawId : initialPublicationId,
   );
+  // Échec réseau (≠ livre inexistant) : on l'affiche honnêtement avec « Réessayer ».
+  const [resolveFailed, setResolveFailed] = useState(false);
+  const [resolveAttempt, setResolveAttempt] = useState(0);
 
   // Commence à télécharger le moteur du lecteur PDF dès l'arrivée sur la fiche du livre.
   useEffect(() => { preloadPdfEngine(); }, []);
@@ -86,21 +89,35 @@ export default function Publication() {
     }
     // Reset to undefined so the skeleton stays visible while we resolve.
     setResolvedUuid(undefined);
+    setResolveFailed(false);
+    // Une recherche qui échoue (4G instable, appli réveillée, session à renouveler) n'est PAS un
+    // livre introuvable : jusqu'à 3 essais espacés, puis message « problème de connexion ».
+    const withRetry = async <T,>(run: () => PromiseLike<{ data: T | null; error: unknown }>, isCancelled: () => boolean) => {
+      for (let attempt = 0; attempt < 3; attempt++) {
+        const { data, error } = await run();
+        if (!error) return { data, failed: false };
+        if (isCancelled()) break;
+        await new Promise((r) => setTimeout(r, 800 * (attempt + 1)));
+      }
+      return { data: null, failed: true };
+    };
     // Slug → resolve UUID by id prefix
     if (slugSuffix) {
       let cancelled = false;
       (async () => {
         const lo = `${slugSuffix}00-0000-0000-0000-000000000000`;
         const hi = `${slugSuffix}ff-ffff-ffff-ffff-ffffffffffff`;
-        const { data } = await supabase
+        const { data, failed } = await withRetry<{ id: string }>(() => supabase
           .from("publications")
           .select("id")
           .gte("id", lo)
           .lte("id", hi)
           .eq("is_published", true)
           .limit(1)
-          .maybeSingle();
-        if (!cancelled) setResolvedUuid(data?.id ?? null);
+          .maybeSingle(), () => cancelled);
+        if (cancelled) return;
+        setResolveFailed(failed);
+        setResolvedUuid(data?.id ?? null);
       })();
       return () => { cancelled = true; };
     }
@@ -129,10 +146,10 @@ export default function Publication() {
       if (!cancelled) setResolvedUuid(resolved);
     })();
     return () => { cancelled = true; };
-  }, [rawId, isUuid, slugSuffix, initialPublicationId]);
+  }, [rawId, isUuid, slugSuffix, initialPublicationId, resolveAttempt]);
 
   const id = isUuid ? rawId : (resolvedUuid || "");
-  const { data: publication, isLoading, error } = usePublication(id);
+  const { data: publication, isLoading, error, refetch: refetchPublication } = usePublication(id);
   const incrementViews = useIncrementViews();
   const incrementDownloads = useIncrementDownloads();
   const { user, authReady, isAdmin, adminChecking } = useAuth();
@@ -403,6 +420,24 @@ export default function Publication() {
                 <div className="h-24 bg-muted rounded" />
               </div>
             </div>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  // Erreur réseau (et non « livre inexistant ») : PGRST116 = aucune ligne → vrai « introuvable ».
+  const loadFailed = isOnline && (resolveFailed || (!!error && (error as { code?: string }).code !== "PGRST116"));
+  if (!displayPub && loadFailed) {
+    return (
+      <Layout>
+        <div className="container py-12 text-center">
+          <WifiOff className="h-8 w-8 mx-auto text-amber-600 mb-4" />
+          <h1 className="font-serif text-2xl font-bold text-foreground mb-4">Problème de connexion</h1>
+          <p className="text-muted-foreground mb-6">Le document n'a pas pu être chargé. Vérifiez votre connexion internet, puis réessayez.</p>
+          <div className="flex flex-wrap justify-center gap-2">
+            <Button onClick={() => { setResolveAttempt((n) => n + 1); void refetchPublication(); }}>Réessayer</Button>
+            <Button asChild variant="outline"><Link to="/bibliotheque">{t("pub.back")}</Link></Button>
           </div>
         </div>
       </Layout>
