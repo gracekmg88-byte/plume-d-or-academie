@@ -3,6 +3,7 @@
 // livres réservés aux abonnés et réglage d'activation du contrôle Premium.
 // Toutes les écritures sensibles passent par des fonctions serveur qui vérifient le rôle admin.
 import { useMemo, useState } from "react";
+import { BACK_TO_DASHBOARD_STATE } from "@/lib/admin-nav";
 import { Link } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { format, differenceInCalendarDays } from "date-fns";
@@ -53,7 +54,7 @@ export default function AdminPremium() {
     <Layout>
       <SEO title="Abonnement Premium" description="Gestion des abonnements Premium" path="/admin/premium" noindex />
       <div className="container py-8 md:py-12 space-y-6">
-        <Link to="/admin/dashboard" state={{ restoreScroll: true }} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+        <Link to="/admin/dashboard" state={BACK_TO_DASHBOARD_STATE} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
           <ArrowLeft className="h-4 w-4" /> Retour au tableau de bord
         </Link>
         <div className="flex items-center gap-3">

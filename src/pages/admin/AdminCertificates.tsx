@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
+import { BACK_TO_DASHBOARD_STATE } from "@/lib/admin-nav";
 import { ShieldCheck, Search, Download, ExternalLink, ArrowLeft, RefreshCw, Loader2 } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { SEO } from "@/components/seo/SEO";
@@ -79,7 +80,7 @@ export default function AdminCertificates() {
     <Layout>
       <SEO title="Registre des certificats" description="Registre officiel des certifications" path="/admin/certificates" />
       <div className="container py-8 md:py-12 space-y-6">
-        <Link to="/admin/dashboard" state={{ restoreScroll: true }} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+        <Link to="/admin/dashboard" state={BACK_TO_DASHBOARD_STATE} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
           <ArrowLeft className="h-4 w-4" /> Retour au tableau de bord
         </Link>
 

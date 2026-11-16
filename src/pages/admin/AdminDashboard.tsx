@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { preloadAdminRoutes } from "@/lib/route-preload";
+import { saveScrollPosition } from "@/lib/scroll-restoration";
+import { ADMIN_DASHBOARD_SCROLL_KEY } from "@/lib/admin-nav";
 import { useNavigate, Link } from "react-router-dom";
 import { 
   Feather, LogOut, Plus, Book, FileText, GraduationCap, Newspaper, 
@@ -151,7 +153,8 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    // Position mémorisée au clic sur une option : les boutons « Retour » y ramènent.
+    <div className="min-h-screen bg-background" onClickCapture={() => saveScrollPosition(ADMIN_DASHBOARD_SCROLL_KEY)}>
       {/* Header */}
       <header className="sticky top-0 z-50 bg-secondary border-b border-border">
         <div className="container flex h-16 items-center justify-between">

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { BACK_TO_DASHBOARD_STATE } from "@/lib/admin-nav";
 import { Feather, LogOut, ArrowLeft, Lock, Eye, EyeOff, Settings, CreditCard, ImageDown, Loader2, Download, ClipboardList } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -207,7 +208,7 @@ export default function AdminSettings() {
       <div className="container py-8">
         {/* Back to Dashboard */}
         <Link
-          to="/admin/dashboard" state={{ restoreScroll: true }}
+          to="/admin/dashboard" state={BACK_TO_DASHBOARD_STATE}
           className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-6"
         >
           <ArrowLeft className="h-4 w-4" />

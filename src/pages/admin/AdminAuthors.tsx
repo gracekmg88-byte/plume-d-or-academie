@@ -3,6 +3,7 @@
 // La liste des auteurs vient des publications (champ « auteur ») ; un profil est rattaché
 // par le slug du nom, exactement comme l'adresse de la page auteur.
 import { useMemo, useRef, useState } from "react";
+import { BACK_TO_DASHBOARD_STATE } from "@/lib/admin-nav";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, ExternalLink, ImagePlus, Loader2, Pencil, Search, Trash2, User, Users } from "lucide-react";
@@ -90,7 +91,7 @@ export default function AdminAuthors() {
     <Layout>
       <SEO title="Profils des auteurs" description="Biographies et photos des auteurs" path="/admin/authors" noindex />
       <div className="container py-8 md:py-12 space-y-6">
-        <Link to="/admin/dashboard" state={{ restoreScroll: true }} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+        <Link to="/admin/dashboard" state={BACK_TO_DASHBOARD_STATE} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
           <ArrowLeft className="h-4 w-4" /> Retour au tableau de bord
         </Link>
 

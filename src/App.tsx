@@ -220,7 +220,7 @@ function ScrollManager({ location }: { location: ReturnType<typeof useLocation> 
     const shouldRestore = navType === "POP" || isReturnFromPublication || Boolean(navState?.restoreScroll);
 
     if (shouldRestore) {
-      const restoreKey = isReturnFromPublication && navState?.returnKey ? navState.returnKey : key;
+      const restoreKey = (isReturnFromPublication || navState?.restoreScroll) && navState?.returnKey ? navState.returnKey : key;
       const savedY = getSavedScrollPosition(restoreKey, routeId);
 
       isRestoringRef.current = true;
@@ -345,6 +345,9 @@ function ScrollManager({ location }: { location: ReturnType<typeof useLocation> 
 
     const handleScroll = () => {
       lastScrollYRef.current = window.scrollY;
+      // Juste après un changement de page, ce gestionnaire peut encore porter l'ancienne adresse :
+      // ne pas écraser la position de la page quittée par la remontée en haut de la nouvelle.
+      if (`${window.location.pathname}${window.location.search}` !== routeId) return;
       if (!isRestoringRef.current) {
         saveScrollPosition(key, routeId, window.scrollY);
       }

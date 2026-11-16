@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
+import { BACK_TO_DASHBOARD_STATE } from "@/lib/admin-nav";
 import { ArrowLeft, ShieldAlert, ShieldCheck, LogIn, LogOut, RefreshCw, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -50,7 +51,7 @@ function AdminAuthLogsContent() {
     <div className="min-h-screen bg-background">
       <div className="container py-8 max-w-5xl">
         <div className="flex items-center justify-between mb-6">
-          <Link to="/admin/dashboard" state={{ restoreScroll: true }}>
+          <Link to="/admin/dashboard" state={BACK_TO_DASHBOARD_STATE}>
             <Button variant="ghost" size="sm">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Retour

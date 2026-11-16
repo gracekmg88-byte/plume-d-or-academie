@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Smartphone, Trash2, ArrowLeft } from "lucide-react";
+import { BACK_TO_DASHBOARD_STATE } from "@/lib/admin-nav";
 import { Button } from "@/components/ui/button";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
@@ -69,7 +70,7 @@ export default function AdminDevices() {
       <header className="sticky top-0 z-50 bg-secondary border-b border-border">
         <div className="container flex h-16 items-center justify-between">
           <div className="flex items-center gap-3">
-            <Link to="/admin/dashboard" state={{ restoreScroll: true }}>
+            <Link to="/admin/dashboard" state={BACK_TO_DASHBOARD_STATE}>
               <Button variant="ghost" size="icon">
                 <ArrowLeft className="h-5 w-5" />
               </Button>

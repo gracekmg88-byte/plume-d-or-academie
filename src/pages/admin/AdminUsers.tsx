@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { BACK_TO_DASHBOARD_STATE } from "@/lib/admin-nav";
 import { useEffect } from "react";
 import {
   Users,
@@ -263,7 +264,7 @@ export default function AdminUsers() {
 
         {/* Back to dashboard */}
         <div className="mt-8">
-          <Button variant="outline" onClick={() => navigate("/admin/dashboard", { state: { restoreScroll: true } })}>
+          <Button variant="outline" onClick={() => navigate("/admin/dashboard", { state: BACK_TO_DASHBOARD_STATE })}>
             ← Retour au tableau de bord
           </Button>
         </div>

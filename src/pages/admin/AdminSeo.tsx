@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { BACK_TO_DASHBOARD_STATE } from "@/lib/admin-nav";
 import { Loader2, RefreshCw, Send, ShieldCheck, ArrowLeft, ExternalLink, CheckCircle2, XCircle, AlertCircle, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -109,7 +110,7 @@ export default function AdminSeo() {
     <div className="min-h-screen bg-background">
       <header className="border-b border-border/40 bg-card/50 backdrop-blur sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4 flex items-center gap-4">
-          <Link to="/admin/dashboard" state={{ restoreScroll: true }}>
+          <Link to="/admin/dashboard" state={BACK_TO_DASHBOARD_STATE}>
             <Button variant="ghost" size="sm"><ArrowLeft className="h-4 w-4 mr-2" />Dashboard</Button>
           </Link>
           <h1 className="text-xl font-bold">SEO & Indexation Google</h1>
