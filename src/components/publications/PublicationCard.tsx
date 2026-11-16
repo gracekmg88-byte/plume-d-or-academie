@@ -28,11 +28,13 @@ interface PublicationCardProps {
   variant?: PublicationCardVariant;
 }
 
-const categoryConfig: Record<Category, { label: string; icon: typeof Book; className: string }> = {
-  livre: { label: "Livre", icon: Book, className: "bg-primary/10 text-primary" },
-  memoire: { label: "Mémoire", icon: GraduationCap, className: "bg-blue-500/10 text-blue-600" },
-  tfc: { label: "TFC", icon: FileText, className: "bg-green-500/10 text-green-600" },
-  article: { label: "Article", icon: Newspaper, className: "bg-purple-500/10 text-purple-600" },
+// className : étiquette sur fond uni (liste). onCover : étiquette posée SUR la couverture —
+// fond plein et ombre, sinon le texte se perd dans l'image (lisibilité).
+const categoryConfig: Record<Category, { label: string; icon: typeof Book; className: string; onCover: string }> = {
+  livre: { label: "Livre", icon: Book, className: "bg-primary/10 text-primary", onCover: "bg-primary text-primary-foreground" },
+  memoire: { label: "Mémoire", icon: GraduationCap, className: "bg-blue-500/10 text-blue-600", onCover: "bg-blue-600 text-white" },
+  tfc: { label: "TFC", icon: FileText, className: "bg-green-500/10 text-green-600", onCover: "bg-green-600 text-white" },
+  article: { label: "Article", icon: Newspaper, className: "bg-purple-500/10 text-purple-600", onCover: "bg-purple-600 text-white" },
 };
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -218,7 +220,7 @@ export function PublicationCard({
                   <Icon className="h-20 w-20 text-muted-foreground/30" />
                 </div>
               )}
-              <Badge className={cn("absolute top-3 left-3 z-10", config.className)}>
+              <Badge className={cn("absolute top-3 left-3 z-10", config.onCover, "border-0 shadow-md shadow-black/30 hover:opacity-100")}>
                 <Icon className="h-3 w-3 mr-1" />
                 {config.label}
               </Badge>
@@ -272,7 +274,7 @@ export function PublicationCard({
                 <Icon className="h-10 w-10 text-muted-foreground/30" />
               </div>
             )}
-            <Badge className={cn("absolute top-2 left-2 z-10 text-[10px] px-1.5 py-0", config.className)}>
+            <Badge className={cn("absolute top-2 left-2 z-10 text-[10px] px-1.5 py-0", config.onCover, "border-0 shadow-md shadow-black/30 hover:opacity-100")}>
               {config.label}
             </Badge>
           </div>
@@ -305,7 +307,7 @@ export function PublicationCard({
               <Icon className="h-16 w-16 text-muted-foreground/30" />
             </div>
           )}
-          <Badge className={cn("absolute top-3 left-3 z-10", config.className)}>
+          <Badge className={cn("absolute top-3 left-3 z-10", config.onCover, "border-0 shadow-md shadow-black/30 hover:opacity-100")}>
             <Icon className="h-3 w-3 mr-1" />
             {config.label}
           </Badge>
