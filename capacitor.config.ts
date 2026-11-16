@@ -17,6 +17,17 @@ const config: CapacitorConfig = {
       showSpinner: false,
       splashFullScreen: true,
       splashImmersive: true
+    },
+    // Connexion Google native uniquement. Facebook DÉSACTIVÉ : sinon son SDK est embarqué et ajoute
+    // l'identifiant publicitaire (AD_ID) et des permissions publicitaires — contraire à la promesse
+    // « aucune publicité, aucun traqueur ». Apple et Twitter : non utilisés.
+    SocialLogin: {
+      providers: {
+        google: true,
+        facebook: false,
+        apple: false,
+        twitter: false
+      }
     }
   }
 };
