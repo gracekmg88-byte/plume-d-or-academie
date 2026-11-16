@@ -5,6 +5,22 @@ import { loadGsi } from "@/lib/google-gsi";
 type GsiCredential = { credential?: string };
 
 /**
+ * Note (sans donnée personnelle) qu'un visiteur a dû utiliser l'ancien bouton Google : permet de
+ * savoir si cela arrive souvent (connexion lente, navigateur ancien…). Table client_events.
+ */
+function logFallback(reason: string) {
+  try {
+    void (supabase.from("client_events" as never) as unknown as {
+      insert: (row: Record<string, string>) => Promise<unknown>;
+    }).insert({
+      kind: "google_gsi_fallback",
+      reason: reason.slice(0, 200),
+      user_agent: (navigator.userAgent || "").slice(0, 300),
+    });
+  } catch { /* diagnostic seulement */ }
+}
+
+/**
  * Connexion Google « directe » sur le site (Google Identity Services).
  *
  * Pourquoi : avec la redirection classique, la fenêtre Google affichait l'adresse technique de la
@@ -71,6 +87,7 @@ export function GoogleWebSignIn({ onError, onUnavailable, onBusyChange }: Props)
             if (error) {
               console.warn("[google] signInWithIdToken", error.message);
               onError("La connexion directe avec Google n'a pas abouti. Réessayez avec le bouton ci-dessous.");
+              logFallback(`signInWithIdToken: ${error.message}`);
               onUnavailable(); // l'ancien bouton (redirection) prend le relais
             }
             // Succès : la session est enregistrée ; la page Connexion redirige d'elle-même vers le profil.
@@ -90,7 +107,10 @@ export function GoogleWebSignIn({ onError, onUnavailable, onBusyChange }: Props)
         if (!cancelled) setReady(true);
       } catch (e) {
         console.warn("[google] bouton direct indisponible, retour à la redirection", e);
-        if (!cancelled) onUnavailable();
+        if (!cancelled) {
+          logFallback(e instanceof Error ? e.message : String(e));
+          onUnavailable();
+        }
       }
     })();
     return () => {

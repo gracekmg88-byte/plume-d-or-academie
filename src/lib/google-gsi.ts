@@ -20,7 +20,8 @@ declare global {
 }
 
 export let gsiPromise: Promise<GoogleId> | null = null;
-export function loadGsi(timeoutMs = 8000): Promise<GoogleId> {
+// 15 s : laisse le temps au script Google sur une 4G lente avant de basculer sur l'ancien bouton.
+export function loadGsi(timeoutMs = 15000): Promise<GoogleId> {
   if (window.google?.accounts?.id) return Promise.resolve(window.google.accounts.id);
   if (gsiPromise) return gsiPromise;
   gsiPromise = new Promise<GoogleId>((resolve, reject) => {
