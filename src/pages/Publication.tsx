@@ -27,7 +27,7 @@ import { format } from "date-fns";
 import { fr, enUS } from "date-fns/locale";
 import { SEO } from "@/components/seo/SEO";
 import { publicationSeo, type SeoPublication } from "@/seo/pageSeo";
-import { useReadingUrl, ReadingAccessError } from "@/hooks/usePremium";
+import { useReadingUrl, ReadingAccessError, usePremiumEnforced } from "@/hooks/usePremium";
 import { Breadcrumb } from "@/components/publications/Breadcrumb";
 import { SimilarBooks } from "@/components/publications/SimilarBooks";
 import { buildPublicationPath, buildAuthorPath, parseSlugSuffix, categoryPath } from "@/lib/slug";
@@ -135,8 +135,9 @@ export default function Publication() {
   const { data: publication, isLoading, error } = usePublication(id);
   const incrementViews = useIncrementViews();
   const incrementDownloads = useIncrementDownloads();
-  const { user } = useAuth();
+  const { user, authReady, isAdmin, adminChecking } = useAuth();
   const { isPremium, isLoading: subscriptionLoading } = useSubscription();
+  const { data: premiumEnforced } = usePremiumEnforced();
   const { hidePremiumUI } = useBillingConfig();
   const { t, language } = useLanguage();
   const { allowDownloads } = useDownloadSetting();
@@ -236,7 +237,18 @@ export default function Publication() {
   // vérification de l'abonnement (livre Premium).
   const readingUrlQuery = useReadingUrl(publication as { id: string; access_level?: string | null; file_url: string | null } | undefined, isOnline);
   const readingUrl = readingUrlQuery.data ?? null;
-  const readingDenied = readingUrlQuery.error instanceof ReadingAccessError ? readingUrlQuery.error : null;
+  const serverDenied = readingUrlQuery.error instanceof ReadingAccessError ? readingUrlQuery.error : null;
+  // Refus affiché IMMÉDIATEMENT quand l'appareil sait déjà que la personne n'y a pas droit (pas
+  // connectée, ou connectée sans abonnement) : plus d'attente de la réponse du serveur (1 à 3 s).
+  // Le serveur reste seul juge : s'il délivre finalement le lien, le PDF s'affiche à la place.
+  const predictedDenied = (() => {
+    if ((publication as { access_level?: string | null } | undefined)?.access_level !== "premium") return null;
+    if (premiumEnforced === false || !authReady || readingUrlQuery.data || !readingUrlQuery.isFetching) return null;
+    if (!user) return { code: "login_required" as const, message: "Connectez-vous pour lire ce document réservé aux abonnés." };
+    if (subscriptionLoading || adminChecking || isAdmin || isPremium) return null;
+    return { code: "premium_required" as const, message: "Ce document est réservé aux abonnés Premium." };
+  })();
+  const readingDenied: { code: string; message: string } | null = serverDenied ?? predictedDenied;
   const dateLocale = language === "fr" ? fr : enUS;
 
   // Load offline data if not online
