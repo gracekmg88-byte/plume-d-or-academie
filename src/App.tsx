@@ -433,7 +433,7 @@ function AnimatedRoutes() {
       <ScrollManager location={location} />
       <ErrorBoundary resetKey={location.key}>
       <Suspense fallback={<PageLoader />}>
-        <Routes location={location}>
+        <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/bibliotheque" element={<Bibliotheque />} />
           <Route path="/diagnostic-catalogue" element={<CatalogDiagnostic />} />

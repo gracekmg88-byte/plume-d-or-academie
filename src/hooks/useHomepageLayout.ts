@@ -20,10 +20,22 @@ export const HOMEPAGE_LAYOUT_OPTIONS: {
 const isLayout = (v: string | undefined | null): v is HomepageLayout =>
   v === "complet" || v === "epure" || v === "magazine" || v === "focus-catalogue";
 
+// Dernière disposition connue sur cet appareil : affichée tout de suite au lancement suivant,
+// au lieu de la disposition par défaut qui disparaissait ensuite (sections qui « flashent »).
+const STORAGE_KEY = "kmg:homepage_layout";
+const readStored = (): HomepageLayout | undefined => {
+  try {
+    const v = localStorage.getItem(STORAGE_KEY);
+    return isLayout(v) ? v : undefined;
+  } catch {
+    return undefined;
+  }
+};
+
 export function useHomepageLayout() {
   const queryClient = useQueryClient();
 
-  const { data: layout = "complet" as HomepageLayout, isLoading } = useQuery({
+  const { data, isLoading, isError, fetchStatus } = useQuery({
     queryKey: HOMEPAGE_LAYOUT_QUERY_KEY,
     queryFn: async (): Promise<HomepageLayout> => {
       const { data, error } = await supabase
@@ -32,8 +44,12 @@ export function useHomepageLayout() {
         .eq("key", "homepage_layout")
         .maybeSingle();
       if (error) throw error;
-      return isLayout(data?.value) ? (data!.value as HomepageLayout) : "complet";
+      const value = isLayout(data?.value) ? (data!.value as HomepageLayout) : "complet";
+      try { localStorage.setItem(STORAGE_KEY, value); } catch { /* stockage indisponible */ }
+      return value;
     },
+    initialData: readStored,
+    initialDataUpdatedAt: 0, // toujours revérifiée auprès du serveur
     staleTime: 10_000,
     refetchOnMount: "always",
     refetchOnWindowFocus: true,
@@ -49,5 +65,7 @@ export function useHomepageLayout() {
     ),
   );
 
-  return { layout: layout as HomepageLayout, isLoading, setLayout };
+  // ready : disposition connue (serveur ou dernière valeur de l'appareil). Tant qu'elle ne l'est
+  // pas, les pages n'affichent pas les sections qui en dépendent (pas de contenu qui disparaît).
+  return { layout: (data ?? "complet") as HomepageLayout, ready: data !== undefined || isError || fetchStatus === "paused", isLoading, setLayout }; // hors connexion : disposition par défaut
 }

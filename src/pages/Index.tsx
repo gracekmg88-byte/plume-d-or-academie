@@ -24,7 +24,7 @@ export default function Index() {
   const { data: publications, isLoading, isError, refetch, isShowingCachedList } = usePublications();
   const { t } = useLanguage();
   const { user } = useAuth();
-  const { layout: homepageLayout } = useHomepageLayout();
+  const { layout: homepageLayout, ready: layoutReady } = useHomepageLayout();
   usePublicationsRealtime(isOnline);
 
   // Chaque disposition suit exactement sa description dans l'admin (HOMEPAGE_LAYOUT_OPTIONS) :
@@ -34,11 +34,12 @@ export default function Index() {
   // - focus-catalogue : 8 récentes mises en avant, sans carrousel
   const recentCount = homepageLayout === "focus-catalogue" ? 8 : homepageLayout === "epure" ? 6 : 4;
   const recentPublications = publications?.slice(0, recentCount) || [];
-  const showStats = homepageLayout === "complet";
-  const showFeatures = homepageLayout === "complet";
-  const showCTA = homepageLayout === "complet" || homepageLayout === "magazine";
-  const showCarousel = homepageLayout !== "focus-catalogue";
-  const showRecommendations = homepageLayout !== "focus-catalogue";
+  // Sections affichées seulement une fois la disposition connue (sinon elles « flashent »).
+  const showStats = layoutReady && homepageLayout === "complet";
+  const showFeatures = layoutReady && homepageLayout === "complet";
+  const showCTA = layoutReady && (homepageLayout === "complet" || homepageLayout === "magazine");
+  const showCarousel = layoutReady && homepageLayout !== "focus-catalogue";
+  const showRecommendations = layoutReady && homepageLayout !== "focus-catalogue";
 
   // Statistiques réelles, calculées à partir des publications déjà chargées (aucune requête de plus).
   const countBy = (category: string) => publications?.filter((p) => p.category === category).length ?? 0;
@@ -257,7 +258,7 @@ export default function Index() {
                 </Button>
               </div>
             )}
-            {isLoading ? (
+            {isLoading || !layoutReady ? (
               <div className={`grid ${recentGridCols} gap-3 sm:gap-6`}>
                 {[...Array(skeletonCount)].map((_, i) => (
                   <div key={i} className="animate-pulse">

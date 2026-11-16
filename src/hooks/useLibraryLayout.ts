@@ -20,10 +20,22 @@ export const LIBRARY_LAYOUT_OPTIONS: {
 const isLayout = (v: string | undefined | null): v is LibraryLayout =>
   v === "grid" || v === "compact" || v === "list" || v === "magazine";
 
+// Dernière disposition connue sur cet appareil : affichée tout de suite au lancement suivant,
+// au lieu de la disposition par défaut qui disparaissait ensuite (sections qui « flashent »).
+const STORAGE_KEY = "kmg:library_layout";
+const readStored = (): LibraryLayout | undefined => {
+  try {
+    const v = localStorage.getItem(STORAGE_KEY);
+    return isLayout(v) ? v : undefined;
+  } catch {
+    return undefined;
+  }
+};
+
 export function useLibraryLayout() {
   const queryClient = useQueryClient();
 
-  const { data: layout = "grid" as LibraryLayout, isLoading } = useQuery({
+  const { data, isLoading, isError, fetchStatus } = useQuery({
     queryKey: LIBRARY_LAYOUT_QUERY_KEY,
     queryFn: async (): Promise<LibraryLayout> => {
       const { data, error } = await supabase
@@ -32,8 +44,12 @@ export function useLibraryLayout() {
         .eq("key", "library_layout")
         .maybeSingle();
       if (error) throw error;
-      return isLayout(data?.value) ? (data!.value as LibraryLayout) : "grid";
+      const value = isLayout(data?.value) ? (data!.value as LibraryLayout) : "grid";
+      try { localStorage.setItem(STORAGE_KEY, value); } catch { /* stockage indisponible */ }
+      return value;
     },
+    initialData: readStored,
+    initialDataUpdatedAt: 0, // toujours revérifiée auprès du serveur
     // Même politique que la page d'accueil : un changement fait dans l'admin apparaît
     // à la prochaine ouverture de la bibliothèque ou au retour dans l'appli.
     staleTime: 10_000,
@@ -51,5 +67,7 @@ export function useLibraryLayout() {
     ),
   );
 
-  return { layout: layout as LibraryLayout, isLoading, setLayout };
+  // ready : disposition connue (serveur ou dernière valeur de l'appareil). Tant qu'elle ne l'est
+  // pas, les pages n'affichent pas les sections qui en dépendent (pas de contenu qui disparaît).
+  return { layout: (data ?? "grid") as LibraryLayout, ready: data !== undefined || isError || fetchStatus === "paused", isLoading, setLayout }; // hors connexion : disposition par défaut
 }

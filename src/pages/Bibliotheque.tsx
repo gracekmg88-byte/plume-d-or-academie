@@ -41,7 +41,7 @@ export default function Bibliotheque() {
   const ITEMS_PER_PAGE = 12;
   const isOnline = useOnlineStatus();
   const { t } = useLanguage();
-  const { layout } = useLibraryLayout();
+  const { layout, ready: layoutReady } = useLibraryLayout();
   usePublicationsRealtime(isOnline);
   
   
@@ -73,7 +73,8 @@ export default function Bibliotheque() {
   }, [publications]);
 
   const sourceData = isOnline ? publications : offlinePubs;
-  const actualLoading = isOnline ? isLoading : offlineLoading;
+  // Disposition pas encore connue : squelette plutôt qu'une grille qui changerait aussitôt.
+  const actualLoading = (isOnline ? isLoading : offlineLoading) || !layoutReady;
 
   // Extract unique authors for filter dropdown
   const authors = useMemo(() => {

@@ -312,6 +312,37 @@ html.kmg-reader-fullscreen body {
   }
 }
 
+/* Arrivée sur une page : le contenu monte légèrement en apparaissant. « backwards » (et non
+   « both ») : une fois l'animation finie, plus aucun transform ne reste sur la page (sinon les
+   éléments en position fixe à l'intérieur s'accrocheraient à la page au lieu de l'écran). */
+@keyframes pageContentIn {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.page-transition-enter {
+  animation: pageContentIn 420ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+/* Le mécanisme anti-scintillement (html.route-visual-hold) coupe toutes les animations pendant
+   un changement de page ; la transition d'arrivée doit, elle, rester jouée. */
+html.route-visual-hold .page-transition-enter {
+  animation-duration: 420ms !important;
+}
+html.route-visual-hold .page-transition-enter :is(section:first-of-type h1, main h1:first-of-type) {
+  animation-duration: 340ms !important;
+}
+html.route-visual-hold .page-transition-enter :is(section:first-of-type h1 + p, main h1:first-of-type + p) {
+  animation-duration: 380ms !important;
+  animation-delay: 60ms !important;
+}
+
 .page-transition-enter :is(section:first-of-type h1, main h1:first-of-type) {
   animation: pageTitleIn 340ms cubic-bezier(0.22, 1, 0.36, 1) both;
   will-change: opacity, transform;
@@ -325,6 +356,8 @@ html.kmg-reader-fullscreen body {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .page-transition-enter,
+  html.route-visual-hold .page-transition-enter,
   .page-transition-enter :is(section:first-of-type h1, main h1:first-of-type),
   .page-transition-enter :is(section:first-of-type h1 + p, main h1:first-of-type + p) {
     animation: none;
