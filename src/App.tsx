@@ -397,14 +397,21 @@ function NavigationWarmup() {
       }
     };
 
+    // Vers la page Connexion : charger aussi tout de suite le bouton Google (sinon léger délai).
+    const warmGoogle = (path: string | null) => {
+      if (path === "/auth") void import("@/lib/google-gsi").then((m) => m.preloadGoogleSignIn());
+    };
+
     const handler = (e: Event) => {
       const path = extractPath(e.target);
       if (path && prefetchRouteFn) prefetchRouteFn(path);
+      warmGoogle(path);
     };
 
     const prepareBeforeNavigation = (e: Event) => {
       const path = extractPath(e.target);
       if (!path) return;
+      warmGoogle(path);
       const currentPath = `${window.location.pathname}${window.location.search}`;
       if (path !== currentPath) void ensureNavigationReady(path);
     };

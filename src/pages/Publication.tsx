@@ -249,6 +249,10 @@ export default function Publication() {
     return { code: "premium_required" as const, message: "Ce document est réservé aux abonnés Premium." };
   })();
   const readingDenied: { code: string; message: string } | null = serverDenied ?? predictedDenied;
+  // « Connectez-vous… » affiché : le lecteur va sans doute toucher « Se connecter » → bouton Google préchargé.
+  useEffect(() => {
+    if (readingDenied?.code === "login_required") void import("@/lib/google-gsi").then((m) => m.preloadGoogleSignIn());
+  }, [readingDenied?.code]);
   const dateLocale = language === "fr" ? fr : enUS;
 
   // Load offline data if not online
