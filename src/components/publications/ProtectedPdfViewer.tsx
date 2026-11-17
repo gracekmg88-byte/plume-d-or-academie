@@ -16,6 +16,8 @@ interface ProtectedPdfViewerProps {
   title: string;
   initialPage?: number;
   onPageChange?: (page: number) => void;
+  /** Le document n'a pas pu être lu (réseau, lien expiré…) : la page peut fournir un nouveau lien. */
+  onSourceError?: () => void;
 }
 
 const FULLSCREEN_PREF_PREFIX = "pdfViewer:fullscreen:";
@@ -44,7 +46,7 @@ type View = { dx: number; dy: number; r: number };
 type Gesture = { d0: number; m0: { x: number; y: number }; base: View; L: number; T: number };
 const IDENTITY: View = { dx: 0, dy: 0, r: 1 };
 
-export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }: ProtectedPdfViewerProps) {
+export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange, onSourceError }: ProtectedPdfViewerProps) {
   // Appli Android : captures d'écran bloquées tant que le lecteur est affiché.
   useBlockScreenCapture();
   const prefKey = useMemo(() => `${FULLSCREEN_PREF_PREFIX}${stablePdfKey(fileUrl)}`, [fileUrl]);
@@ -95,6 +97,14 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
   });
   const containerRef = useRef<HTMLDivElement | null>(null);
   const scrollAreaRef = useRef<HTMLDivElement | null>(null);
+  // Zone de lecture : elle est recréée après un « Impossible de charger » suivi d'un nouvel essai.
+  // Les gestes (pincement, glissement) doivent alors être rebranchés sur la nouvelle zone — avant,
+  // ils restaient sur l'ancienne : zoom et glissement ne répondaient plus.
+  const [areaEl, setAreaEl] = useState<HTMLDivElement | null>(null);
+  const setScrollArea = useCallback((el: HTMLDivElement | null) => {
+    scrollAreaRef.current = el;
+    setAreaEl(el);
+  }, []);
   const pageNativeWidthRef = useRef<number | null>(null);
   // Zoom tactile : état courant du geste, sans re-rendu React à chaque mouvement de doigt.
   const frontElRef = useRef<HTMLDivElement | null>(null);
@@ -149,6 +159,9 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
     let opened: PdfRangeSource | null = null;
     const setup = new AbortController();
     setDocumentSource(null);
+    // Nouveau lien (ex. lien Premium renouvelé) : on efface l'erreur précédente et on recharge.
+    setError(false);
+    setLoading(true);
     (async () => {
       // 1. Copie gardée sur l'appareil (quelques millisecondes ; au-delà de 400 ms on n'attend pas).
       const cached = await Promise.race([
@@ -515,7 +528,7 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
       area.removeEventListener("wheel", onWheel);
       if (wheelTimer) clearTimeout(wheelTimer);
     };
-  }, [animateZoomTo, applyView, beginGesture, commitView, viewFor]);
+  }, [animateZoomTo, applyView, beginGesture, commitView, viewFor, areaEl]);
 
   // Tourner les pages d'un glissement horizontal à un doigt (comme une liseuse). Écouteurs séparés :
   // le zoom à deux doigts et le double-tapotement ci-dessus ne sont pas modifiés. Dès qu'un deuxième
@@ -610,7 +623,7 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
       slideInRef.current = null;
       swipeBusyRef.current = false;
     };
-  }, [finishSlideIn, lockHeight, setSwipeStyle]);
+  }, [finishSlideIn, lockHeight, setSwipeStyle, areaEl]);
 
   // Compute a "fit-to-width" scale based on the visible container and the page's
   // native width. Re-runs on resize, fullscreen toggle, and orientation changes.
@@ -711,7 +724,7 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
       el.removeEventListener("scroll", onScroll);
       if (saveTimer) clearTimeout(saveTimer);
     };
-  }, [scrollKey]);
+  }, [scrollKey, areaEl]);
 
   // Restore saved scroll position only once on initial viewer mount.
   useEffect(() => {
@@ -927,8 +940,11 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
   }, []);
 
   const autoRetryRef = useRef(0);
+  const onSourceErrorRef = useRef(onSourceError);
+  onSourceErrorRef.current = onSourceError;
   useEffect(() => {
     if (!error) return;
+    onSourceErrorRef.current?.();
     const onOnline = () => retry();
     window.addEventListener("online", onOnline);
     // Un essai rapide (la copie gardée sur l'appareil suffit souvent), puis un autre plus tard.
@@ -1051,7 +1067,7 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
 
       {/* PDF Content */}
       <div
-        ref={scrollAreaRef}
+        ref={setScrollArea}
         className={cn(
           // Pas de justify-center : centrée par mx-auto quand elle est plus étroite, la page zoomée
           // reste entièrement accessible en défilant (sinon sa partie gauche serait hors d'atteinte).
