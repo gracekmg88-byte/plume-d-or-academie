@@ -269,6 +269,7 @@ const APP_ROUTES = new Set([
   // « /installer » n'est pas listée : l'application y affiche la page introuvable → 404.
   "/verification",
   "/confidentialite",
+  "/suppression-compte",
   "/admin",
 ]);
 const APP_PREFIXES = ["/admin/", "/verify/", "/abonnement/retour/"];
