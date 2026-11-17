@@ -23,7 +23,10 @@ export default function SuppressionCompte() {
           </h1>
           <p className="text-muted-foreground leading-relaxed">
             Vous pouvez supprimer vous-même votre compte KMG Bibliothèque à tout moment, depuis le site
-            www.kmgbibliotheque.com ou depuis l'application.
+            www.kmgbibliotheque.com ou depuis l'application Android <strong>KMG Mémoires &amp; Livres PDF</strong>.
+          </p>
+          <p className="text-sm text-muted-foreground">
+            Application : KMG Bibliothèque – KMG Mémoires &amp; Livres PDF · Développeur : KOT MUNON GRÂCE (KMG Multi Services)
           </p>
 
           <article className="rounded-2xl border border-border bg-card p-6 space-y-3">
@@ -47,8 +50,10 @@ export default function SuppressionCompte() {
             </p>
             <h2 className="font-serif text-xl font-semibold text-foreground pt-2">Données conservées</h2>
             <p>
-              Les reçus de paiement sont conservés sans lien avec votre compte, pour nos obligations
-              comptables. Les ouvrages déjà publiés dans la bibliothèque restent en ligne.
+              Les reçus de paiement (montant, date, référence) sont conservés sans lien avec votre compte,
+              pendant le temps exigé par nos obligations comptables. Les ouvrages déjà publiés dans la
+              bibliothèque restent en ligne. Toutes les autres données sont supprimées immédiatement et
+              définitivement.
             </p>
           </article>
 
@@ -59,7 +64,7 @@ export default function SuppressionCompte() {
               <a href="mailto:kmgmultiservices98@gmail.com" className="text-primary hover:underline font-medium">
                 kmgmultiservices98@gmail.com
               </a>{" "}
-              et nous supprimerons votre compte.
+              en indiquant l'adresse e-mail de votre compte : nous le supprimerons sous 72 heures.
             </span>
           </p>
         </div>
