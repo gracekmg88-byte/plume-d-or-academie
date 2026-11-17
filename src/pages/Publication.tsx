@@ -174,6 +174,10 @@ export default function Publication() {
   const currentPageRef = useRef<number>(resumePage);
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const incrementedViewForIdRef = useRef<string | null>(null);
+  // Adresse du PDF déjà ouverte dans le lecteur pour ce livre : gardée telle quelle pendant la
+  // lecture (revérification de la fiche en arrière-plan, connexion qui saute un instant…). Sinon le
+  // lecteur se fermait et rechargeait le document : page et zoom perdus, « chargement » sans fin.
+  const shownPdfRef = useRef<{ id: string; url: string } | null>(null);
   const routeKey = `${location.pathname}${location.search}`;
   const returnTo = typeof returnState?.returnTo === "string"
     ? returnState.returnTo
@@ -411,7 +415,9 @@ export default function Publication() {
   // While we're still resolving a slug/publication_number to a UUID, keep the
   // loading skeleton visible to avoid a "not found" flash before the fetch runs.
   const resolvingId = !isUuid && resolvedUuid === undefined;
-  const actualLoading = resolvingId || (isOnline ? (isLoading || subscriptionLoading || !id) : offlineLoading);
+  // Connexion perdue pendant la lecture : la page reste affichée (avant, elle était remplacée par un
+  // écran de chargement, ce qui fermait le lecteur).
+  const actualLoading = resolvingId || (isOnline ? (isLoading || subscriptionLoading || !id) : offlineLoading && !publication);
 
   if (actualLoading) {
     return (
@@ -480,11 +486,15 @@ export default function Publication() {
   const Icon = config.icon;
 
   // For offline, use local PDF URI if available
-  const pdfUrl = !isOnline && offlineData?.local_pdf_uri
+  const computedPdfUrl = !isOnline && offlineData?.local_pdf_uri
     ? offlineData.local_pdf_uri
     : !publicationFresh
       ? null
       : readingUrl ?? ((displayPub as { access_level?: string | null }).access_level !== "premium" ? displayPub.file_url : null);
+  const keptPdf = shownPdfRef.current?.id === id && !readingDenied ? shownPdfRef.current.url : null;
+  const pdfUrl = keptPdf ?? computedPdfUrl;
+  if (readingDenied) shownPdfRef.current = null;
+  else if (pdfUrl && id) shownPdfRef.current = { id, url: pdfUrl };
 
   const pubCategory = displayPub.category as Category | undefined;
   const pubType: "book" | "article" =

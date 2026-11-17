@@ -103,6 +103,7 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
   const gestureRef = useRef<Gesture | null>(null);
   const pendingReadyRef = useRef<number | null>(null);
   const anchorRef = useRef<{ left: number; top: number } | null>(null);
+  const keepViewRef = useRef(false);
   const layerSeqRef = useRef(0);
   const frontIdRef = useRef(frontId);
   frontIdRef.current = frontId;
@@ -241,6 +242,7 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
     const s = typeof update === "function" ? update(current) : update;
     if (Math.abs(s - current) < 1e-3) return; // rien à changer : ne pas interrompre un zoom en cours
     pendingReadyRef.current = null;
+    keepViewRef.current = false;
     applyView(IDENTITY);
     setLayers((ls) => {
       const f = ls.find((l) => l.id === frontIdRef.current) ?? ls[0];
@@ -303,6 +305,7 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
 
   // Le calque caché est prêt : il remplace la page affichée, à la même position à l'écran.
   const promoteLayer = useCallback((id: number) => {
+    keepViewRef.current = false;
     const el = frontElRef.current;
     const rect = el?.getBoundingClientRect();
     anchorRef.current = rect ? { left: rect.left, top: rect.top } : null;
@@ -323,6 +326,11 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
   useLayoutEffect(() => {
     const el = frontElRef.current;
     const area = scrollAreaRef.current;
+    // Passage plein écran en cours : la page garde sa mise à l'échelle GPU jusqu'à l'échange de calque.
+    if (keepViewRef.current) {
+      if (zoomLabelRef.current) zoomLabelRef.current.textContent = formatZoom(scaleRef.current);
+      return;
+    }
     if (el) {
       el.style.transform = "";
       el.style.transition = "";
@@ -619,9 +627,32 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
     if (fitRef.current && Math.abs(next - fitRef.current) / fitRef.current < 0.02 && userZoomedRef.current) return;
     setFitScale(next);
     fitRef.current = next;
+    // Entrée / sortie du plein écran : la page affichée est mise tout de suite à la bonne taille par le
+    // GPU, et la version nette est dessinée dans un calque caché puis échangée (comme après un zoom).
+    // Avant, la page était redessinée sur place : elle disparaissait un instant (« flash »).
+    if (fsResizeRef.current && frontElRef.current && !gestureRef.current) {
+      fsResizeRef.current = false;
+      const s0 = scaleRef.current;
+      const target = userZoomedRef.current ? Math.min(next * MAX_ZOOM, Math.max(next, s0)) : next;
+      if (Math.abs(target - s0) < 1e-3) return;
+      // Garde la page centrée pendant l'échange (sa boîte garde encore l'ancienne largeur).
+      const area = scrollAreaRef.current;
+      const box = frontElRef.current.getBoundingClientRect();
+      const width = box.width * (target / s0);
+      const dx = area && width < area.clientWidth ? area.getBoundingClientRect().left + (area.clientWidth - width) / 2 - box.left : 0;
+      pendingReadyRef.current = null;
+      keepViewRef.current = true;
+      applyView({ r: target / s0, dx, dy: 0 });
+      const id = ++layerSeqRef.current;
+      setLayers((ls) => {
+        const f = ls.find((l) => l.id === frontIdRef.current) ?? ls[0];
+        return [f, { id, scale: target }];
+      });
+      return;
+    }
     // 100 % = ajusté à la largeur ; un zoom enregistré reste entre 100 % et 400 %.
     setScale((prev) => (userZoomedRef.current ? Math.min(next * MAX_ZOOM, Math.max(next, prev)) : next));
-  }, [setScale]);
+  }, [setScale, applyView]);
 
   useEffect(() => {
     const onResize = () => recomputeFitScale();
@@ -633,7 +664,15 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
     };
   }, [recomputeFitScale]);
 
-  useEffect(() => { recomputeFitScale(); }, [isFullscreen, recomputeFitScale]);
+  const fsResizeRef = useRef(false);
+  const fsFirstRef = useRef(true);
+  useEffect(() => {
+    if (fsFirstRef.current) { fsFirstRef.current = false; recomputeFitScale(); return; }
+    fsResizeRef.current = true;
+    recomputeFitScale();
+    // Si rien n'a changé d'échelle, le drapeau ne doit pas s'appliquer à un recalcul ultérieur.
+    fsResizeRef.current = false;
+  }, [isFullscreen, recomputeFitScale]);
 
   // Persist current page locally on every change
   useEffect(() => {
@@ -705,6 +744,7 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
   const shownPageRef = useRef(currentPage);
   useEffect(() => {
     pendingReadyRef.current = null;
+    keepViewRef.current = false;
     setLayers((ls) => (ls.length > 1 ? ls.filter((l) => l.id === frontIdRef.current) : ls));
     applyView(IDENTITY);
     if (shownPageRef.current !== currentPage) {
@@ -879,12 +919,25 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
     }
   };
 
-  const retry = () => {
+  const retry = useCallback(() => {
     setError(false);
     setLoading(true);
     // Un contenu déjà transmis au moteur PDF n'est plus réutilisable : on relit la source.
     setSourceAttempt((n) => n + 1);
-  };
+  }, []);
+
+  const autoRetryRef = useRef(0);
+  useEffect(() => {
+    if (!error) return;
+    const onOnline = () => retry();
+    window.addEventListener("online", onOnline);
+    // Un essai rapide (la copie gardée sur l'appareil suffit souvent), puis un autre plus tard.
+    const timer = autoRetryRef.current < 2
+      ? window.setTimeout(() => { autoRetryRef.current += 1; retry(); }, autoRetryRef.current === 0 ? 800 : 5000)
+      : undefined;
+    return () => { window.removeEventListener("online", onOnline); if (timer) window.clearTimeout(timer); };
+  }, [error, retry]);
+  useEffect(() => { if (!loading && !error) autoRetryRef.current = 0; }, [loading, error]);
 
   if (error) {
     return (
