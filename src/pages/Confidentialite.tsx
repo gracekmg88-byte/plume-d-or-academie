@@ -89,8 +89,10 @@ export default function Confidentialite() {
       body: (
         <>
           <p>
-            Les données de compte sont conservées tant que le compte est actif. Vous pouvez nous
-            demander à tout moment l'export ou la suppression de vos données personnelles par email.
+            Les données de compte sont conservées tant que le compte est actif. Vous pouvez supprimer
+            vous-même votre compte à tout moment depuis <strong>Mon profil</strong> (voir{" "}
+            <a href="/suppression-compte" className="text-primary hover:underline">Supprimer mon compte</a>),
+            ou nous demander par email l'export ou la suppression de vos données personnelles.
             Les contenus déposés peuvent être retirés sur demande de leur auteur.
           </p>
         </>

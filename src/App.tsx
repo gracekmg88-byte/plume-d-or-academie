@@ -73,6 +73,7 @@ const Auteur = lazy(() => import("./pages/Auteur"));
 const AdminAuthLogs = lazy(() => import("./pages/admin/AdminAuthLogs"));
 const CatalogDiagnostic = lazy(() => import("./pages/CatalogDiagnostic"));
 const Confidentialite = lazy(() => import("./pages/Confidentialite"));
+const SuppressionCompte = lazy(() => import("./pages/SuppressionCompte"));
 
 import { AdminGuard } from "@/components/auth/AdminGuard";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -474,6 +475,7 @@ function AnimatedRoutes() {
           <Route path="/verify/:number" element={<VerifyCertificate />} />
           <Route path="/verification" element={<VerifyHome />} />
           <Route path="/confidentialite" element={<Confidentialite />} />
+          <Route path="/suppression-compte" element={<SuppressionCompte />} />
           <Route path="/admin/certificates" element={<AdminGuard><AdminCertificates /></AdminGuard>} />
           <Route path="/admin/authors" element={<AdminGuard><AdminAuthors /></AdminGuard>} />
           <Route path="/admin/premium" element={<AdminGuard><AdminPremium /></AdminGuard>} />

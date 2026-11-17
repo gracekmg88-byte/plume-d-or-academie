@@ -4,6 +4,7 @@ import { User, Mail, Crown, Calendar, LogOut, Star, BookOpen, Trash2, WifiOff, H
 import { NotificationPreferencesCard } from "@/components/profile/NotificationPreferencesCard";
 import { FavoritesSection } from "@/components/profile/FavoritesSection";
 import { MySubscriptionCard } from "@/components/profile/MySubscriptionCard";
+import { DeleteAccountCard } from "@/components/profile/DeleteAccountCard";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,7 +19,7 @@ import { SEO } from "@/components/seo/SEO";
 import { toast } from "sonner";
 
 export default function Profil() {
-  const { user, loading, signOut } = useAuth();
+  const { user, loading, signOut, isAdmin } = useAuth();
   const { profile, isPremium, isLoading: profileLoading } = useSubscription();
   const { hidePremiumUI } = useBillingConfig();
   const navigate = useNavigate();
@@ -282,6 +283,8 @@ export default function Profil() {
                 <LogOut className="h-4 w-4" />
                 Se déconnecter
               </Button>
+
+              <DeleteAccountCard isAdmin={isAdmin} />
             </CardContent>
           </Card>
 

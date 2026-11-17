@@ -53,3 +53,6 @@ verify_jwt = false
 
 [functions.google-play-verify]
 verify_jwt = false
+
+[functions.delete-account]
+verify_jwt = false
