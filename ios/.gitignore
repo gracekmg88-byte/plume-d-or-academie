@@ -11,3 +11,6 @@ capacitor-cordova-ios-plugins
 # Generated Config files
 App/App/capacitor.config.json
 App/App/config.xml
+
+# Configuration Firebase (comme google-services.json côté Android) : hors GitHub
+App/App/GoogleService-Info.plist

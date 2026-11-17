@@ -37,7 +37,7 @@ export function usePushNotifications() {
             {
               user_id: user.id,
               token: token.value,
-              platform: "android",
+              platform: Capacitor.getPlatform(), // "android" ou "ios" (jeton FCM dans les deux cas)
             },
             { onConflict: "user_id,token" }
           );

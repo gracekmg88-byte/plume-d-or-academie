@@ -18,14 +18,16 @@ const config: CapacitorConfig = {
       splashFullScreen: true,
       splashImmersive: true
     },
-    // Connexion Google native uniquement. Facebook DÉSACTIVÉ : sinon son SDK est embarqué et ajoute
+    // Connexion Google native. Facebook DÉSACTIVÉ : sinon son SDK est embarqué et ajoute
     // l'identifiant publicitaire (AD_ID) et des permissions publicitaires — contraire à la promesse
-    // « aucune publicité, aucun traqueur ». Apple et Twitter : non utilisés.
+    // « aucune publicité, aucun traqueur ». Apple : utilisé sur iPhone seulement (« Continuer avec
+    // Apple », exigé par l'App Store ; sur Android il n'ajoute que androidx.browser, déjà présent).
+    // Twitter : non utilisé.
     SocialLogin: {
       providers: {
         google: true,
         facebook: false,
-        apple: false,
+        apple: true,
         twitter: false
       }
     }

@@ -25,6 +25,8 @@ export const NATIVE_AUTH_ERROR_EVENT = "kmg-native-auth-error";
 const SITE_URL = (import.meta.env.VITE_SITE_URL || "https://www.kmgbibliotheque.com").replace(/\/+$/, "");
 
 export const isNativeApp = (): boolean => Capacitor.isNativePlatform();
+/** Appli iPhone (App Store). */
+export const isIOSApp = (): boolean => Capacitor.isNativePlatform() && Capacitor.getPlatform() === "ios";
 
 /**
  * Base des liens envoyés par e-mail (confirmation d'inscription, réinitialisation du mot de passe).
@@ -43,6 +45,11 @@ const GOOGLE_WEB_CLIENT_ID =
   (import.meta.env.VITE_GOOGLE_WEB_CLIENT_ID as string | undefined) ||
   "26513992668-2rhbrfriu34mvkhov51q1ahehrrk48ng.apps.googleusercontent.com";
 
+// iPhone : client OAuth « iOS » du même projet Google Cloud (identifiant d'appli com.kmgbibliotheque.app).
+// Son schéma inversé est déclaré dans ios/App/App/Info.plist. Le jeton Google a alors ce client
+// pour destinataire : il doit figurer dans la liste des « Client IDs » du fournisseur Google de Supabase.
+const GOOGLE_IOS_CLIENT_ID = "26513992668-7lkek0f68pcucs0tno6fk0m5f57ns6jb.apps.googleusercontent.com";
+
 /** Annulation volontaire (fenêtre Google fermée) : pas d'erreur à afficher, pas de méthode de secours. */
 export class GoogleSignInCancelled extends Error {}
 
@@ -50,13 +57,17 @@ let socialLoginReady: Promise<typeof import("@capgo/capacitor-social-login").Soc
 function getSocialLogin() {
   if (!socialLoginReady) {
     socialLoginReady = import("@capgo/capacitor-social-login").then(async ({ SocialLogin }) => {
+      const ios = isIOSApp();
       await SocialLogin.initialize({
         google: {
           webClientId: GOOGLE_WEB_CLIENT_ID,
+          ...(ios ? { iOSClientId: GOOGLE_IOS_CLIENT_ID } : {}),
           mode: "online",
           // Seule l'identité nous intéresse (pas d'API Google) : évite un blocage connu sur BridgeActivity.
           skipAuthOnlyAuthorizationAfterSignIn: true,
         },
+        // « Se connecter avec Apple » : iPhone seulement (fenêtre native d'Apple, sans redirection).
+        ...(ios ? { apple: { redirectUrl: "" } } : {}),
       });
       return SocialLogin;
     }).catch((e) => {
@@ -93,6 +104,30 @@ async function signInWithGoogleCredentialManager(): Promise<void> {
   const { error } = await supabase.auth.signInWithIdToken({ provider: "google", token: idToken, nonce: rawNonce });
   if (error) throw error;
   // Succès : onAuthStateChange (useAuth) met à jour l'utilisateur ; la page de connexion redirige.
+}
+
+/**
+ * « Continuer avec Apple » (iPhone, exigé par l'App Store dès qu'une connexion Google est proposée).
+ * Apple reçoit l'empreinte SHA-256 du nonce ; Supabase vérifie le jeton avec le nonce brut.
+ */
+export async function signInWithAppleNative(): Promise<void> {
+  const SocialLogin = await getSocialLogin();
+  const raw = new Uint8Array(32);
+  crypto.getRandomValues(raw);
+  const rawNonce = [...raw].map((b) => b.toString(16).padStart(2, "0")).join("");
+  let idToken: string | null | undefined;
+  try {
+    const res = await SocialLogin.login({ provider: "apple", options: { scopes: ["name", "email"], nonce: await sha256Hex(rawNonce) } });
+    idToken = (res.result as { idToken?: string | null }).idToken;
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    // ASAuthorizationError.canceled = 1001
+    if (/cancel|annul|1001/i.test(msg)) throw new GoogleSignInCancelled(msg);
+    throw e;
+  }
+  if (!idToken) throw new Error("Apple n'a pas renvoyé de jeton d'identité");
+  const { error } = await supabase.auth.signInWithIdToken({ provider: "apple", token: idToken, nonce: rawNonce });
+  if (error) throw error;
 }
 
 /**

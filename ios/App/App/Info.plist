@@ -44,6 +44,20 @@
 				<string>app.lovable.d11bc5d4512e4b5f9f8a79e7ee7ad869</string>
 			</array>
 		</dict>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.kmgbibliotheque.app.google</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.26513992668-7lkek0f68pcucs0tno6fk0m5f57ns6jb</string>
+			</array>
+		</dict>
+	</array>
+	<key>GIDClientID</key>
+	<string>26513992668-7lkek0f68pcucs0tno6fk0m5f57ns6jb.apps.googleusercontent.com</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
 	</array>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>

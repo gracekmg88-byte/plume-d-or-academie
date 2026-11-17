@@ -53,9 +53,19 @@ export function computeSubscription(periods: Period[], plans: Plan[], now = new 
   };
 }
 
-/** Le paiement est-il possible ici ? Android : Google Play uniquement ; site : carte. */
-export function availablePaymentProvider(optGatewayOpen = false, googlePlayOpen = false): "google_play" | "opt_gateway" | null {
-  if (Capacitor.isNativePlatform()) return Capacitor.getPlatform() === "android" && googlePlayOpen ? "google_play" : null;
+export type PaymentProvider = "google_play" | "apple_iap" | "opt_gateway";
+
+/**
+ * Le paiement est-il possible ici ? Android : Google Play uniquement ; iPhone : App Store
+ * uniquement (règle d'Apple : aucun autre moyen de paiement dans l'appli) ; site : carte / mobile money.
+ */
+export function availablePaymentProvider(optGatewayOpen = false, googlePlayOpen = false, appStoreOpen = false): PaymentProvider | null {
+  if (Capacitor.isNativePlatform()) {
+    const platform = Capacitor.getPlatform();
+    if (platform === "android") return googlePlayOpen ? "google_play" : null;
+    if (platform === "ios") return appStoreOpen ? "apple_iap" : null;
+    return null;
+  }
   return optGatewayOpen ? "opt_gateway" : null;
 }
 
@@ -70,14 +80,19 @@ export function usePaymentProvider() {
     queryKey: ["site-setting", "payment_providers"],
     staleTime: 60_000,
     queryFn: async () => {
-      const { data } = await supabase.from("site_settings").select("key,value").in("key", ["opt_gateway_enabled", "google_play_enabled"]);
+      const { data } = await supabase.from("site_settings").select("key,value").in("key", ["opt_gateway_enabled", "google_play_enabled", "apple_iap_enabled"]);
       const get = (k: string) => data?.find((d) => d.key === k)?.value === "true";
-      return { opt: get("opt_gateway_enabled"), play: get("google_play_enabled") };
+      return { opt: get("opt_gateway_enabled"), play: get("google_play_enabled"), apple: get("apple_iap_enabled") };
     },
   });
   const native = Capacitor.isNativePlatform();
-  const open = native ? !!settings?.play : !!settings?.opt;
-  const provider = availablePaymentProvider(!!settings?.opt || (!native && !!isAdmin), !!settings?.play || (native && !!isAdmin));
+  const ios = native && Capacitor.getPlatform() === "ios";
+  const open = native ? (ios ? !!settings?.apple : !!settings?.play) : !!settings?.opt;
+  const provider = availablePaymentProvider(
+    !!settings?.opt || (!native && !!isAdmin),
+    !!settings?.play || (native && !!isAdmin),
+    !!settings?.apple || (ios && !!isAdmin),
+  );
   return { provider, adminTest: !!isAdmin && !open };
 }
 

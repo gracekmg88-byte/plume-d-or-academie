@@ -16,6 +16,8 @@ import {
   NATIVE_AUTH_ERROR_EVENT,
   authLinkBaseUrl,
   isNativeApp,
+  isIOSApp,
+  signInWithAppleNative,
   signInWithGoogleNative,
   GoogleSignInCancelled,
 } from "@/lib/native-auth";
@@ -177,6 +179,26 @@ export default function Auth() {
     }
   };
 
+  // iPhone : « Continuer avec Apple » (exigé par l'App Store), placé avant Google, même taille.
+  const [appleLoading, setAppleLoading] = useState(false);
+  const handleAppleSignIn = async () => {
+    setError("");
+    setAppleLoading(true);
+    try {
+      await signInWithAppleNative();
+    } catch (e) {
+      if (!(e instanceof GoogleSignInCancelled)) setError("Erreur de connexion avec Apple");
+    } finally {
+      setAppleLoading(false);
+    }
+  };
+  const appleButton = isIOSApp() ? (
+    <Button type="button" className="w-full gap-2 bg-black text-white hover:bg-black/85" disabled={appleLoading} onClick={handleAppleSignIn}>
+      <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.37 12.6c-.02-2.3 1.88-3.4 1.96-3.46-1.07-1.56-2.73-1.77-3.32-1.8-1.41-.14-2.76.83-3.47.83-.72 0-1.82-.81-2.99-.79-1.54.02-2.96.9-3.75 2.27-1.6 2.78-.41 6.89 1.15 9.14.76 1.1 1.67 2.34 2.86 2.3 1.15-.05 1.58-.74 2.96-.74 1.39 0 1.77.74 2.98.72 1.23-.02 2.01-1.12 2.76-2.23.87-1.28 1.23-2.52 1.25-2.58-.03-.01-2.39-.92-2.41-3.66zM14.09 5.84c.63-.77 1.06-1.83.94-2.89-.91.04-2.02.61-2.67 1.37-.58.67-1.1 1.76-.96 2.8 1.02.08 2.06-.52 2.69-1.28z"/></svg>
+      {appleLoading ? "Connexion..." : "Continuer avec Apple"}
+    </Button>
+  ) : null;
+
   // Site web : bouton Google « direct » (fenêtre au nom de kmgbibliotheque.com). Appli Android, ou
   // si le script Google ne se charge pas : ancien bouton (redirection), qui reste toujours disponible.
   const legacyGoogleButton = (
@@ -318,7 +340,10 @@ export default function Auth() {
                   <div className="relative flex justify-center text-xs uppercase"><span className="bg-card px-2 text-muted-foreground">ou</span></div>
                 </div>
 
-                {googleButton}
+                <div className="space-y-2">
+                  {appleButton}
+                  {googleButton}
+                </div>
               </form>
             </TabsContent>
 
@@ -404,7 +429,10 @@ export default function Auth() {
                   <div className="relative flex justify-center text-xs uppercase"><span className="bg-card px-2 text-muted-foreground">ou</span></div>
                 </div>
 
-                {googleButton}
+                <div className="space-y-2">
+                  {appleButton}
+                  {googleButton}
+                </div>
               </form>
             </TabsContent>
           </Tabs>

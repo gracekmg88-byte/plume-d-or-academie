@@ -11,7 +11,7 @@ import { Progress } from "@/components/ui/progress";
 import { formatPrice, useMySubscription, usePaymentProvider } from "@/hooks/useMySubscription";
 
 const day = (d: Date | string | null | undefined) => (d ? format(new Date(d), "d MMMM yyyy", { locale: fr }) : "—");
-const providerLabel: Record<string, string> = { google_play: "Google Play", opt_gateway: "Carte bancaire", admin: "Attribué par KMG Bibliothèque" };
+const providerLabel: Record<string, string> = { google_play: "Google Play", apple_iap: "App Store", opt_gateway: "Carte bancaire", admin: "Attribué par KMG Bibliothèque" };
 const paymentStatus: Record<string, string> = { succeeded: "Confirmé", pending: "En attente", failed: "Échoué", cancelled: "Annulé", refunded: "Remboursé" };
 
 export function MySubscriptionCard() {
