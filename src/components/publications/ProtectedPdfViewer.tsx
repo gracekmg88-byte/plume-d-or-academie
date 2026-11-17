@@ -741,6 +741,45 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange }
     return () => html.classList.remove("kmg-reader-fullscreen");
   }, [isFullscreen]);
 
+  // Bouton « retour » du téléphone (ou du navigateur) en plein écran : il QUITTE le plein écran et
+  // ramène exactement à l'endroit de la page où l'on était, au lieu de quitter la page / remonter en haut.
+  // L'entrée en plein écran ajoute une étape dans l'historique ; la sortie (retour, bouton Quitter,
+  // Échap) la retire et restaure la position de défilement mémorisée.
+  const fsHistoryRef = useRef(false);
+  const fsScrollRef = useRef(0);
+  const restorePageScroll = useCallback(() => {
+    const y = fsScrollRef.current;
+    const go = () => window.scrollTo({ top: y, left: 0, behavior: "instant" as ScrollBehavior });
+    requestAnimationFrame(() => requestAnimationFrame(go));
+    window.setTimeout(go, 250);
+  }, []);
+  useEffect(() => {
+    if (isFullscreen && !fsHistoryRef.current) {
+      fsScrollRef.current = window.scrollY;
+      try {
+        window.history.pushState({ ...(window.history.state ?? {}), kmgReaderFs: true }, "");
+        fsHistoryRef.current = true;
+      } catch { /* historique indisponible : comportement d'avant */ }
+    } else if (!isFullscreen && fsHistoryRef.current) {
+      // Sortie par « Quitter » ou Échap : on retire l'étape ajoutée (sans quitter la page).
+      fsHistoryRef.current = false;
+      if ((window.history.state as { kmgReaderFs?: boolean } | null)?.kmgReaderFs) window.history.back();
+      restorePageScroll();
+    }
+  }, [isFullscreen, restorePageScroll]);
+  useEffect(() => {
+    const onPop = () => {
+      if (!fsHistoryRef.current) return;
+      fsHistoryRef.current = false;
+      if (document.fullscreenElement && document.exitFullscreen) void document.exitFullscreen().catch(() => undefined);
+      setIsFullscreen(false);
+      try { localStorage.removeItem(prefKey); } catch { /* ignore */ }
+      restorePageScroll();
+    };
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, [prefKey, restorePageScroll]);
+
   // Track native fullscreen state (handles ESC key) & persist preference per document
   useEffect(() => {
     const handler = () => {

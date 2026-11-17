@@ -1,6 +1,6 @@
 import { useEffect, useCallback, useState, useMemo, useRef, useLayoutEffect } from "react";
 import { useParams, Link, useSearchParams, useLocation, useNavigate, Navigate } from "react-router-dom";
-import { ArrowLeft, Book, FileText, GraduationCap, Newspaper, Eye, Calendar, User, Lock, Download, WifiOff, CheckCircle, Heart } from "lucide-react";
+import { ArrowLeft, Book, FileText, GraduationCap, Newspaper, Eye, Calendar, User, Lock, Download, WifiOff, CheckCircle, Heart, Loader2 } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,7 +15,7 @@ import { useBillingConfig } from "@/hooks/useBillingConfig";
 import { useDownloadSetting } from "@/hooks/useDownloadSetting";
 import { useOnlineStatus } from "@/hooks/useOffline";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { savePublicationOffline, getOfflinePublication, isPublicationCached, type OfflinePublication } from "@/lib/offline-storage";
+import { savePublicationOffline, getOfflinePublication, isPublicationCached, removeOfflinePublication, type OfflinePublication } from "@/lib/offline-storage";
 import { useTrackReading } from "@/hooks/useReadingHistory";
 import { supabase } from "@/integrations/supabase/client";
 import { FavoriteButton } from "@/components/publications/FavoriteButton";
@@ -149,7 +149,12 @@ export default function Publication() {
   }, [rawId, isUuid, slugSuffix, initialPublicationId, resolveAttempt]);
 
   const id = isUuid ? rawId : (resolvedUuid || "");
-  const { data: publication, isLoading, error, refetch: refetchPublication } = usePublication(id);
+  const publicationQuery = usePublication(id);
+  const { data: publication, isLoading, error, refetch: refetchPublication } = publicationQuery;
+  // La fiche peut d'abord s'afficher depuis la liste gardée sur l'appareil (rapide), mais cette copie
+  // peut être ANCIENNE (livre passé depuis en « réservé aux abonnés »). Le PDF n'est donc proposé
+  // qu'une fois la fiche confirmée par le serveur — sinon un PDF mémorisé s'ouvrait quelques secondes.
+  const publicationFresh = publicationQuery.isFetchedAfterMount && !publicationQuery.isFetching;
   const incrementViews = useIncrementViews();
   const incrementDownloads = useIncrementDownloads();
   const { user, authReady, isAdmin, adminChecking } = useAuth();
@@ -252,7 +257,7 @@ export default function Publication() {
   const hasFullAccess = hidePremiumUI || isPremium;
   // Adresse du PDF : publique (livre gratuit) ou lien temporaire délivré par le serveur après
   // vérification de l'abonnement (livre Premium).
-  const readingUrlQuery = useReadingUrl(publication as { id: string; access_level?: string | null; file_url: string | null } | undefined, isOnline);
+  const readingUrlQuery = useReadingUrl(publication as { id: string; access_level?: string | null; file_url: string | null } | undefined, isOnline && publicationFresh);
   const readingUrl = readingUrlQuery.data ?? null;
   const serverDenied = readingUrlQuery.error instanceof ReadingAccessError ? readingUrlQuery.error : null;
   // Refus affiché IMMÉDIATEMENT quand l'appareil sait déjà que la personne n'y a pas droit (pas
@@ -269,7 +274,9 @@ export default function Publication() {
   // « Connectez-vous… » affiché : le lecteur va sans doute toucher « Se connecter » → bouton Google préchargé.
   useEffect(() => {
     if (readingDenied?.code === "login_required") void import("@/lib/google-gsi").then((m) => m.preloadGoogleSignIn());
-  }, [readingDenied?.code]);
+    // Accès refusé par le serveur : on retire aussi la copie hors ligne éventuelle de ce livre.
+    if (serverDenied && id) void removeOfflinePublication(id).then(() => setIsCached(false)).catch(() => undefined);
+  }, [readingDenied?.code, !!serverDenied, id]);
   const dateLocale = language === "fr" ? fr : enUS;
 
   // Load offline data if not online
@@ -475,7 +482,9 @@ export default function Publication() {
   // For offline, use local PDF URI if available
   const pdfUrl = !isOnline && offlineData?.local_pdf_uri
     ? offlineData.local_pdf_uri
-    : readingUrl ?? ((displayPub as { access_level?: string | null }).access_level !== "premium" ? displayPub.file_url : null);
+    : !publicationFresh
+      ? null
+      : readingUrl ?? ((displayPub as { access_level?: string | null }).access_level !== "premium" ? displayPub.file_url : null);
 
   const pubCategory = displayPub.category as Category | undefined;
   const pubType: "book" | "article" =
@@ -703,6 +712,13 @@ export default function Publication() {
               existingSummary={(displayPub as any).summary || null}
               isAdmin={false}
             />
+
+            {/* Vérification en cours (fiche confirmée par le serveur, droit de lecture) */}
+            {!pdfUrl && !readingDenied && isOnline && (!publicationFresh || readingUrlQuery.isFetching) && (
+              <div className="mt-8 rounded-xl border border-border bg-card p-6 flex items-center justify-center gap-2 text-sm text-muted-foreground" id="document-viewer">
+                <Loader2 className="h-4 w-4 animate-spin" /> Préparation du document…
+              </div>
+            )}
 
             {/* Lecture refusée par le serveur (livre réservé aux abonnés) */}
             {!pdfUrl && readingDenied && (

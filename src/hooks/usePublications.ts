@@ -104,6 +104,9 @@ export function usePublication(id: string) {
     queryFn: () => fetchPublication(id),
     enabled: !!id,
     staleTime: 60_000,
+    // Toujours revérifiée à l'ouverture de la fiche : la copie locale (liste) peut être ancienne
+    // (ex. livre passé en « réservé aux abonnés ») ; le PDF n'est proposé qu'après cette vérification.
+    refetchOnMount: "always",
     // Seed from any cached list so the page renders instantly without a spinner
     initialData: () => {
       if (!id) return undefined;

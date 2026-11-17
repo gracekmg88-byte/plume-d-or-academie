@@ -134,9 +134,11 @@ export default function AdminAuthors() {
         {loading ? (
           <div className="flex justify-center py-16"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
         ) : (
-          <div className="grid gap-3">
+          <div className="grid grid-cols-1 gap-3">
             {filtered.map((r) => (
-              <div key={r.slug} className="flex items-center gap-4 rounded-xl border border-border bg-card p-4">
+              // grid-cols-1 + min-w-0 : sur téléphone, un nom long n'élargit plus la ligne (le bouton
+              // « Modifier » sortait de l'écran) ; les boutons passent à la ligne si besoin.
+              <div key={r.slug} className="min-w-0 flex flex-wrap sm:flex-nowrap items-center gap-3 sm:gap-4 rounded-xl border border-border bg-card p-4">
                 {r.profile?.photo_url ? (
                   <img src={r.profile.photo_url} alt={`Photo de ${r.name}`} className="h-12 w-12 rounded-full object-cover shrink-0" />
                 ) : (
@@ -152,6 +154,7 @@ export default function AdminAuthors() {
                     {r.profile?.photo_url && <Badge variant="secondary">Photo</Badge>}
                   </div>
                 </div>
+                <div className="flex items-center gap-2 ml-auto shrink-0">
                 {r.published > 0 && (
                   <Button asChild size="icon" variant="ghost" title="Voir la page publique">
                     <a href={buildAuthorPath(r.name)} target="_blank" rel="noreferrer"><ExternalLink className="h-4 w-4" /></a>
@@ -160,6 +163,7 @@ export default function AdminAuthors() {
                 <Button size="sm" variant="outline" onClick={() => setEditing(r)}>
                   <Pencil className="h-4 w-4 mr-1" /> Modifier
                 </Button>
+                </div>
               </div>
             ))}
             {filtered.length === 0 && <p className="text-center text-muted-foreground py-10">Aucun auteur trouvé.</p>}
