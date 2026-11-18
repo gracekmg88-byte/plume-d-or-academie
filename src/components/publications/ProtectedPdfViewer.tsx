@@ -679,7 +679,10 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange, 
 
   const fsResizeRef = useRef(false);
   const fsFirstRef = useRef(true);
-  useEffect(() => {
+  // useLayoutEffect (et non useEffect) : la page doit être remise à la bonne taille AVANT que l'écran
+  // soit redessiné. Avec useEffect, le téléphone affichait d'abord une image de la page encore à la
+  // taille du plein écran (le « flash » à la sortie), puis la corrigeait.
+  useLayoutEffect(() => {
     if (fsFirstRef.current) { fsFirstRef.current = false; recomputeFitScale(); return; }
     fsResizeRef.current = true;
     recomputeFitScale();
@@ -787,7 +790,8 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange, 
   // le lecteur passe en position fixe par-dessus le site. La classe sur <html> neutralise le
   // transform de .page-transition-root (sinon le lecteur s'accroche à la page entière au lieu de
   // l'écran : longue zone blanche) et bloque le défilement du site derrière (flèche « remonter »).
-  useEffect(() => {
+  // Même raison : classe ajoutée / retirée avant l'affichage de l'image suivante.
+  useLayoutEffect(() => {
     if (!isFullscreen || document.fullscreenElement) return;
     const html = document.documentElement;
     html.classList.add("kmg-reader-fullscreen");
