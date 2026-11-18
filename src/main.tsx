@@ -1,3 +1,5 @@
+// Toujours en premier : compatibilités pour les navigateurs anciens (lecteur PDF).
+import "./lib/polyfills";
 import { createRoot } from "react-dom/client";
 import { HelmetProvider } from "react-helmet-async";
 import App from "./App.tsx";

@@ -178,6 +178,25 @@ export default function Publication() {
   // lecture (revérification de la fiche en arrière-plan, connexion qui saute un instant…). Sinon le
   // lecteur se fermait et rechargeait le document : page et zoom perdus, « chargement » sans fin.
   const shownPdfRef = useRef<{ id: string; url: string; at: number; renew?: boolean } | null>(null);
+  // Hauteur du lecteur (et des annotations) pour ce livre, mémorisée pendant la session. Au retour sur
+  // la fiche (ex. après un « livre similaire »), la place est réservée pendant la vérification : la page
+  // garde sa hauteur et le retour ramène exactement à l'endroit quitté (avant : trop bas, vers le pied de page).
+  const viewerObserverRef = useRef<ResizeObserver | null>(null);
+  const viewerHeightKey = `kmg:viewer-h:${rawId}`;
+  const savedViewerHeight = (() => {
+    try { return Number(sessionStorage.getItem(viewerHeightKey)) || 0; } catch { return 0; }
+  })();
+  const measureViewer = useCallback((el: HTMLDivElement | null) => {
+    viewerObserverRef.current?.disconnect();
+    viewerObserverRef.current = null;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(() => {
+      const h = Math.round(el.getBoundingClientRect().height);
+      if (h > 200) { try { sessionStorage.setItem(viewerHeightKey, String(h)); } catch { /* sans gravité */ } }
+    });
+    ro.observe(el);
+    viewerObserverRef.current = ro;
+  }, [viewerHeightKey]);
   const routeKey = `${location.pathname}${location.search}`;
   const returnTo = typeof returnState?.returnTo === "string"
     ? returnState.returnTo
@@ -739,7 +758,11 @@ export default function Publication() {
 
             {/* Vérification en cours (fiche confirmée par le serveur, droit de lecture) */}
             {!pdfUrl && !readingDenied && isOnline && (!publicationFresh || readingUrlQuery.isFetching) && (
-              <div className="mt-8 rounded-xl border border-border bg-card p-6 flex items-center justify-center gap-2 text-sm text-muted-foreground" id="document-viewer">
+              <div
+                className="mt-8 rounded-xl border border-border bg-card p-6 flex items-center justify-center gap-2 text-sm text-muted-foreground"
+                id="document-viewer"
+                style={savedViewerHeight ? { minHeight: savedViewerHeight } : undefined}
+              >
                 <Loader2 className="h-4 w-4 animate-spin" /> Préparation du document…
               </div>
             )}
@@ -761,7 +784,7 @@ export default function Publication() {
 
             {/* PDF Viewer + Annotations */}
             {pdfUrl && (
-              <div className="mt-8" id="document-viewer">
+              <div className="mt-8" id="document-viewer" ref={measureViewer}>
                 <h2 className="font-serif text-xl font-semibold text-foreground mb-4">{t("pub.document")}</h2>
                 <div className="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-4">
                   {/* min-w-0 : une page zoomée défile dans le lecteur au lieu d'élargir la colonne. */}

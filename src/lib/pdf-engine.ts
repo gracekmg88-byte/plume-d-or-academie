@@ -2,7 +2,9 @@ import { pdfjs } from "react-pdf";
 // Moteur PDF servi par le site lui-même (fichier du build, mis en cache 1 an) au lieu d'un CDN
 // extérieur : l'ouverture du premier livre n'attend plus un téléchargement lent depuis unpkg.com,
 // et l'appli Android l'embarque (lecture possible sans réseau pour ce fichier).
-import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
+// Version « legacy » du moteur : même version que la bibliothèque, mais compatible avec les
+// navigateurs plus anciens (téléphones dont Chrome n'est pas à jour).
+import pdfWorkerUrl from "pdfjs-dist/legacy/build/pdf.worker.min.mjs?url";
 
 pdfjs.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
 
