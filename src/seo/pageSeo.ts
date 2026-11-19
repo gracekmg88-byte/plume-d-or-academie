@@ -162,7 +162,7 @@ export function publicationSeo(p: SeoPublication): SeoPage {
     itemListElement: [
       { "@type": "ListItem", position: 1, name: "Accueil", item: SITE_URL },
       { "@type": "ListItem", position: 2, name: "Bibliothèque", item: `${SITE_URL}/bibliotheque` },
-      { "@type": "ListItem", position: 3, name: label, item: `${SITE_URL}/bibliotheque?category=${p.category}` },
+      { "@type": "ListItem", position: 3, name: label, item: `${SITE_URL}/bibliotheque?categorie=${p.category}` },
       { "@type": "ListItem", position: 4, name: title, item: url },
     ],
   };
@@ -176,7 +176,7 @@ export function publicationSeo(p: SeoPublication): SeoPage {
 
   const bodyHtml = [
     `<main class="seo-prerender">`,
-    `<nav aria-label="Fil d'Ariane"><a href="/">Accueil</a> › <a href="/bibliotheque">Bibliothèque</a> › <a href="/bibliotheque?category=${esc(p.category)}">${esc(label)}</a> › <span>${esc(title)}</span></nav>`,
+    `<nav aria-label="Fil d'Ariane"><a href="/">Accueil</a> › <a href="/bibliotheque">Bibliothèque</a> › <a href="/bibliotheque?categorie=${esc(p.category)}">${esc(label)}</a> › <span>${esc(title)}</span></nav>`,
     `<article>`,
     `<h1>${esc(title)}</h1>`,
     author ? `<p>${esc(label)} de <a href="${esc(authorPath!)}">${esc(author)}</a></p>` : `<p>${esc(label)}</p>`,
@@ -226,6 +226,11 @@ export function groupByAuthor(pubs: SeoPublication[]): Map<string, { name: strin
     map.get(s)!.pubs.push(p);
   }
   return map;
+}
+
+/** Auteur sans contenu propre : une seule publication et pas de biographie. */
+export function isThinAuthor(publicationCount: number, biography: string | null | undefined): boolean {
+  return publicationCount < 2 && !clean(biography);
 }
 
 export function authorSeo(name: string, pubs: SeoPublication[], profile?: SeoAuthorProfile | null): SeoPage {
@@ -303,6 +308,10 @@ export function authorSeo(name: string, pubs: SeoPublication[], profile?: SeoAut
 
   return {
     path,
+    // Page trop mince pour Google (une seule publication, aucune biographie) : visible pour les
+    // lecteurs mais non indexée et absente du sitemap ; elle le redevient dès qu'une biographie
+    // est saisie dans l'admin ou qu'une 2e publication est ajoutée.
+    noindex: isThinAuthor(n, bio),
     title: `${name} | Auteur | ${SITE_NAME}`,
     description,
     image: photo || first?.cover_image_url || DEFAULT_IMAGE,
@@ -384,6 +393,8 @@ export const STATIC_SITEMAP_PAGES: Array<{ path: string; changefreq: string; pri
   { path: "/contact", changefreq: "monthly", priority: "0.5" },
   { path: "/depot-memoire", changefreq: "monthly", priority: "0.6" },
   { path: "/verification", changefreq: "monthly", priority: "0.4" },
+  { path: "/abonnement", changefreq: "monthly", priority: "0.5" },
+  { path: "/confidentialite", changefreq: "yearly", priority: "0.3" },
 ];
 
 function xml(s: string) {
@@ -414,6 +425,7 @@ export function buildSitemapXml(
   const bySlug = new Map(profiles.map((p) => [p.slug, p]));
   for (const [slug, { name, pubs: list }] of authors.entries()) {
     const prof = bySlug.get(slug);
+    if (isThinAuthor(list.length, prof?.biography)) continue; // page non indexée → hors sitemap
     const last = [...list.map((p) => p.updated_at || p.created_at || ""), prof?.updated_at || ""].sort().pop();
     entries.push({
       loc: absoluteUrl(buildAuthorPath(name)),
@@ -436,6 +448,10 @@ export function buildSitemapXml(
   ).join("\n");
   return {
     xml: `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n${body}\n</urlset>\n`,
-    counts: { static: STATIC_SITEMAP_PAGES.length, publications: pubs.length, authors: authors.size },
+    counts: {
+      static: STATIC_SITEMAP_PAGES.length,
+      publications: pubs.length,
+      authors: entries.length - STATIC_SITEMAP_PAGES.length - pubs.length,
+    },
   };
 }

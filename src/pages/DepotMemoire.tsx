@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { GraduationCap, ArrowLeft, ArrowRight, CheckCircle } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
+import { SEO } from "@/components/seo/SEO";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useCreateSubmission, useMySubmissions } from "@/hooks/useSubmissions";
@@ -13,6 +14,15 @@ import { SubmissionStepPersonal } from "@/components/submissions/SubmissionStepP
 import { SubmissionStepDetails } from "@/components/submissions/SubmissionStepDetails";
 import { SubmissionStepFiles } from "@/components/submissions/SubmissionStepFiles";
 import { SubmissionsList } from "@/components/submissions/SubmissionsList";
+
+// Mêmes titre, description et adresse officielle que la page servie par le serveur (src/seo/staticPages.ts).
+const DEPOT_SEO = (
+  <SEO
+    title="Déposer un mémoire ou un TFC — KMG Bibliothèque"
+    description="Déposez votre mémoire, TFC ou article sur KMG Bibliothèque : formulaire en ligne, vérification avant publication et suivi de vos dépôts."
+    path="/depot-memoire"
+  />
+);
 
 const STEPS = [
   { label: "Identité", description: "Vos informations" },
@@ -54,6 +64,7 @@ export default function DepotMemoire() {
   if (loading) {
     return (
       <Layout>
+      {DEPOT_SEO}
         <div className="container py-16 text-center">
           <div className="h-8 w-8 mx-auto animate-spin rounded-full border-2 border-primary border-t-transparent" />
         </div>
@@ -64,6 +75,7 @@ export default function DepotMemoire() {
   if (!user) {
     return (
       <Layout>
+      {DEPOT_SEO}
         <div className="container py-16 text-center">
           <GraduationCap className="mx-auto mb-4 h-12 w-12 text-muted-foreground/30" />
           <h1 className="font-serif text-2xl font-bold text-foreground mb-3">
@@ -189,6 +201,7 @@ export default function DepotMemoire() {
   if (submitted) {
     return (
       <Layout>
+      {DEPOT_SEO}
         <div className="container py-16 text-center max-w-lg mx-auto">
           <CheckCircle className="mx-auto mb-4 h-16 w-16 text-green-500" />
           <h1 className="font-serif text-2xl font-bold text-foreground mb-3">
@@ -213,6 +226,7 @@ export default function DepotMemoire() {
 
   return (
     <Layout>
+      {DEPOT_SEO}
       <div className="container py-8 md:py-12 max-w-2xl mx-auto">
         <Link
           to="/bibliotheque"

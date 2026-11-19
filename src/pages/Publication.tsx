@@ -578,7 +578,7 @@ export default function Publication() {
         <Breadcrumb
           items={[
             { label: "Bibliothèque", to: "/bibliotheque" },
-            { label: categoryLabel, to: `/bibliotheque?category=${categoryRoute}` },
+            { label: categoryLabel, to: `/bibliotheque?categorie=${categoryRoute}` },
             { label: displayPub.title },
           ]}
         />
@@ -826,7 +826,7 @@ export default function Publication() {
                 </Link>
               )}
               <Link
-                to={`/bibliotheque?category=${displayPub.category}`}
+                to={`/bibliotheque?categorie=${displayPub.category}`}
                 className="px-3 py-1.5 rounded-full bg-muted text-foreground hover:bg-muted/70 transition-colors"
               >
                 Plus de {categoryLabel.toLowerCase()}

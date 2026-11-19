@@ -18,6 +18,7 @@ export default function VerifyCertificate() {
         title={`Vérification certificat ${number ?? ""}`}
         description="Page officielle de vérification d'un certificat de publication KMG Bibliothèque."
         path={`/verify/${number}`}
+        noindex
       />
       <div className="container max-w-3xl py-10 md:py-16">
         <Link

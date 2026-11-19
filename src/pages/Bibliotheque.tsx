@@ -28,7 +28,7 @@ export default function Bibliotheque() {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const initialCategory = (searchParams.get("categorie") as Category) || "all";
+  const initialCategory = ((searchParams.get("categorie") || searchParams.get("category")) as Category) || "all";
   const initialPage = Math.max(1, Number.parseInt(searchParams.get("page") || "1", 10) || 1);
   const initialSearch = searchParams.get("q") || "";
   const initialAuthor = searchParams.get("auteur") || "";

@@ -20,6 +20,7 @@ import {
   type SeoAuthorProfile,
   type SeoPublication,
 } from "./pageSeo";
+import { isStaticSeoPath, staticPageNeedsPublications, staticPageSeo } from "./staticPages";
 
 export interface EdgeEnv {
   ASSETS: { fetch: (req: Request | string) => Promise<Response> };
@@ -76,17 +77,21 @@ async function template(ctx: EdgeContext): Promise<string> {
   return await r.text();
 }
 
-function htmlResponse(html: string, status: number) {
-  return new Response(html, {
-    status,
-    headers: {
-      "Content-Type": "text/html; charset=utf-8",
-      // Le navigateur revalide toujours (le gabarit change à chaque mise en ligne) ;
-      // la mise en cache se fait côté Cloudflare via la Cache API ci-dessous.
-      "Cache-Control": "no-cache",
-      "X-KMG-Render": "edge",
-    },
-  });
+function htmlResponse(html: string, status: number, noindex = false) {
+  const headers: Record<string, string> = {
+    "Content-Type": "text/html; charset=utf-8",
+    // Le navigateur revalide toujours (le gabarit change à chaque mise en ligne) ;
+    // la mise en cache se fait côté Cloudflare via la Cache API ci-dessous.
+    "Cache-Control": "no-cache",
+    "X-KMG-Render": "edge",
+  };
+  if (noindex || status === 404) headers["X-Robots-Tag"] = "noindex";
+  return new Response(html, { status, headers });
+}
+
+/** Redirection permanente vers une adresse du site (chemin + paramètres). */
+function permanentRedirect(location: string) {
+  return new Response(null, { status: 301, headers: { Location: location, "Cache-Control": "no-cache" } });
 }
 
 /** Sert depuis le cache Cloudflare, sinon fabrique la réponse et la met en cache `ttl` secondes. */
@@ -139,10 +144,7 @@ async function findPublication(sb: Sb, segment: string, raw: string): Promise<Se
 /** « / » final → même adresse sans « / » (une seule URL par page). */
 function stripTrailingSlash(url: URL): Response | null {
   if (url.pathname.length > 1 && url.pathname.endsWith("/")) {
-    return new Response(null, {
-      status: 301,
-      headers: { Location: url.pathname.replace(/\/+$/, "") + url.search, "Cache-Control": "no-cache" },
-    });
+    return permanentRedirect((url.pathname.replace(/\/+$/, "") || "/") + url.search);
   }
   return null;
 }
@@ -171,10 +173,9 @@ export async function onPublicationRequest(ctx: EdgeContext): Promise<Response> 
       const pub = await findPublication(sb, segment, raw);
       if (!pub) return htmlResponse(renderSeoHtml(tpl, notFoundSeo(url.pathname)), 404);
       const page = publicationSeo(pub);
-      // Ancienne adresse (titre modifié, « / » final, mauvaise catégorie) → adresse canonique.
-      if (segment !== "publication" && url.pathname !== page.path) {
-        return new Response(null, { status: 301, headers: { Location: page.path + url.search, "Cache-Control": "no-cache" } });
-      }
+      // Ancienne adresse (titre modifié, mauvaise catégorie) et adresse courte /publication/<n°>
+      // (QR des certificats, liens internes) → une seule adresse : la fiche officielle.
+      if (url.pathname !== page.path) return permanentRedirect(page.path + url.search);
       return htmlResponse(renderSeoHtml(tpl, page), 200);
     });
   } catch (e) {
@@ -209,10 +210,9 @@ export async function onAuthorRequest(ctx: EdgeContext): Promise<Response> {
       }
       const [profile] = await authorProfiles(sb, `slug=eq.${slug}&limit=1`);
       const page = authorSeo(mine[0].author!.replace(/\s+/g, " ").trim(), mine, profile);
-      if (url.pathname !== page.path) {
-        return new Response(null, { status: 301, headers: { Location: page.path + url.search, "Cache-Control": "no-cache" } });
-      }
-      return htmlResponse(renderSeoHtml(tpl, page), 200);
+      if (url.pathname !== page.path) return permanentRedirect(page.path + url.search);
+      // Auteur à une seule publication et sans biographie : page affichée mais non indexée.
+      return htmlResponse(renderSeoHtml(tpl, page), 200, !!page.noindex);
     });
   } catch (e) {
     console.error("[seo] auteur", e);
@@ -279,18 +279,101 @@ export function isKnownAppPath(pathname: string): boolean {
   return APP_ROUTES.has(p) || APP_PREFIXES.some((prefix) => p.startsWith(prefix) && p.length > prefix.length);
 }
 
+// Espaces privés ou sans intérêt pour un moteur de recherche (compte, connexion, paiement,
+// administration, outils internes, pages de vérification qui affichent le nom de personnes) :
+// « noindex » envoyé dès la réponse du serveur (en-tête X-Robots-Tag), sans attendre le JavaScript.
+const PRIVATE_ROUTES = new Set([
+  "/auth",
+  "/reset-password",
+  "/profil",
+  "/abonnement/payer",
+  "/abonnement/retour",
+  "/chat",
+  "/diagnostic-catalogue",
+  "/admin",
+]);
+const PRIVATE_PREFIXES = ["/admin/", "/abonnement/retour/", "/verify/"];
+
+export function isPrivatePath(pathname: string): boolean {
+  const p = pathname.length > 1 ? pathname.replace(/\/+$/, "") : pathname;
+  return PRIVATE_ROUTES.has(p) || PRIVATE_PREFIXES.some((prefix) => p.startsWith(prefix));
+}
+
+async function notFound(ctx: EdgeContext, url: URL): Promise<Response> {
+  try {
+    const tpl = await template(ctx);
+    const res = htmlResponse(renderSeoHtml(tpl, notFoundSeo(url.pathname)), 404);
+    return ctx.request.method === "HEAD" ? new Response(null, res) : res;
+  } catch (e) {
+    console.error("[seo] 404", e);
+    return new Response("Page introuvable", {
+      status: 404,
+      headers: { "Content-Type": "text/plain; charset=utf-8", "X-Robots-Tag": "noindex" },
+    });
+  }
+}
+
+/** Réponse de Cloudflare (application) avec « noindex » ajouté. */
+async function withNoindex(ctx: EdgeContext): Promise<Response> {
+  const res = await ctx.next();
+  const out = new Response(res.body, res);
+  out.headers.set("X-Robots-Tag", "noindex, nofollow");
+  return out;
+}
+
+/** Page fixe (accueil, bibliothèque…) servie avec son titre, sa canonical, son H1 et son texte. */
+async function staticPage(ctx: EdgeContext, path: string): Promise<Response> {
+  try {
+    const tpl = await template(ctx);
+    const v = await shortHash(tpl);
+    return await cached(ctx, `https://kmg-seo.cache/${v}/page${path === "/" ? "/accueil" : path}`, PAGE_TTL, async () => {
+      let pubs: SeoPublication[] = [];
+      const sb = supabase(ctx.env);
+      if (sb && staticPageNeedsPublications(path)) {
+        pubs = await sb<SeoPublication>(
+          "publications",
+          `select=${PUBLICATION_SEO_COLUMNS}&is_published=eq.true&order=created_at.desc&limit=5000`,
+        );
+      }
+      return htmlResponse(renderSeoHtml(tpl, staticPageSeo(path, pubs)!), 200);
+    });
+  } catch (e) {
+    console.error("[seo] page fixe", e);
+    return ctx.next();
+  }
+}
+
 export async function onCatchAllRequest(ctx: EdgeContext): Promise<Response> {
   const { request } = ctx;
   if (request.method !== "GET" && request.method !== "HEAD") return ctx.next();
   const url = new URL(request.url);
-  const last = url.pathname.split("/").pop() || "";
-  if (last.includes(".") || isKnownAppPath(url.pathname)) return ctx.next();
-  try {
-    const tpl = await template(ctx);
-    const res = htmlResponse(renderSeoHtml(tpl, notFoundSeo(url.pathname)), 404);
-    return request.method === "HEAD" ? new Response(null, res) : res;
-  } catch (e) {
-    console.error("[seo] 404", e);
-    return ctx.next();
+  const path = url.pathname;
+  const last = path.split("/").pop() || "";
+
+  // Adresse de fichier (avec extension).
+  if (last.includes(".")) {
+    // « /contact.html », « /index.html » → adresse officielle sans « .html ».
+    if (/\.html?$/i.test(last)) {
+      const base = path.replace(/\.html?$/i, "");
+      const target = base === "/index" || base === "" ? "/" : base;
+      if (isKnownAppPath(target)) return permanentRedirect(target + url.search);
+    }
+    // Vrai fichier → servi tel quel. Fichier absent : Cloudflare renverrait la page d'accueil
+    // avec le code 200 (soft 404) → vraie 404.
+    const res = await ctx.next();
+    if (res.ok && (res.headers.get("Content-Type") || "").includes("text/html")) return notFound(ctx, url);
+    return res;
   }
+
+  // « / » final → même adresse sans « / » (une seule URL par page).
+  if (path.length > 1 && path.endsWith("/")) {
+    const target = path.replace(/\/+$/, "") || "/";
+    if (isKnownAppPath(target)) return permanentRedirect(target + url.search);
+    return notFound(ctx, url);
+  }
+
+  if (!isKnownAppPath(path)) return notFound(ctx, url);
+  if (isPrivatePath(path)) return withNoindex(ctx);
+  if (isStaticSeoPath(path)) return staticPage(ctx, path);
+  return ctx.next();
 }
