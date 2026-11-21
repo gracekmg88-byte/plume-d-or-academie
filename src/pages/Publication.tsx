@@ -177,7 +177,26 @@ export default function Publication() {
   // Adresse du PDF déjà ouverte dans le lecteur pour ce livre : gardée telle quelle pendant la
   // lecture (revérification de la fiche en arrière-plan, connexion qui saute un instant…). Sinon le
   // lecteur se fermait et rechargeait le document : page et zoom perdus, « chargement » sans fin.
-  const shownPdfRef = useRef<{ id: string; url: string } | null>(null);
+  const shownPdfRef = useRef<{ id: string; url: string; at: number; renew?: boolean } | null>(null);
+  // Hauteur du lecteur (et des annotations) pour ce livre, mémorisée pendant la session. Au retour sur
+  // la fiche (ex. après un « livre similaire »), la place est réservée pendant la vérification : la page
+  // garde sa hauteur et le retour ramène exactement à l'endroit quitté (avant : trop bas, vers le pied de page).
+  const viewerObserverRef = useRef<ResizeObserver | null>(null);
+  const viewerHeightKey = `kmg:viewer-h:${rawId}`;
+  const savedViewerHeight = (() => {
+    try { return Number(sessionStorage.getItem(viewerHeightKey)) || 0; } catch { return 0; }
+  })();
+  const measureViewer = useCallback((el: HTMLDivElement | null) => {
+    viewerObserverRef.current?.disconnect();
+    viewerObserverRef.current = null;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(() => {
+      const h = Math.round(el.getBoundingClientRect().height);
+      if (h > 200) { try { sessionStorage.setItem(viewerHeightKey, String(h)); } catch { /* sans gravité */ } }
+    });
+    ro.observe(el);
+    viewerObserverRef.current = ro;
+  }, [viewerHeightKey]);
   const routeKey = `${location.pathname}${location.search}`;
   const returnTo = typeof returnState?.returnTo === "string"
     ? returnState.returnTo
@@ -369,6 +388,18 @@ export default function Publication() {
     };
   }, [id, user, isOnline]);
 
+  // Livre Premium : le lien de lecture délivré par le serveur expire après 60 min. Si le lecteur
+  // n'arrive plus à lire le document après 40 min (ou plus) de lecture, on redemande un lien.
+  const refetchReadingUrl = readingUrlQuery.refetch;
+  const handleSourceError = useCallback(() => {
+    const s = shownPdfRef.current;
+    if (!s || s.id !== id || !navigator.onLine) return;
+    if ((publication as { access_level?: string | null } | undefined)?.access_level !== "premium") return;
+    if (Date.now() - s.at < 40 * 60_000 || s.renew) return;
+    s.renew = true;
+    void refetchReadingUrl();
+  }, [id, publication, refetchReadingUrl]);
+
   // Save page progress on every page change (debounced)
   const handlePageChange = useCallback((page: number) => {
     currentPageRef.current = page;
@@ -491,10 +522,12 @@ export default function Publication() {
     : !publicationFresh
       ? null
       : readingUrl ?? ((displayPub as { access_level?: string | null }).access_level !== "premium" ? displayPub.file_url : null);
-  const keptPdf = shownPdfRef.current?.id === id && !readingDenied ? shownPdfRef.current.url : null;
+  const shown = shownPdfRef.current?.id === id && !readingDenied ? shownPdfRef.current : null;
+  // Lien renouvelé demandé (lien Premium expiré) : on adopte le nouveau dès qu'il arrive.
+  const keptPdf = shown && !(shown.renew && computedPdfUrl && computedPdfUrl !== shown.url) ? shown.url : null;
   const pdfUrl = keptPdf ?? computedPdfUrl;
   if (readingDenied) shownPdfRef.current = null;
-  else if (pdfUrl && id) shownPdfRef.current = { id, url: pdfUrl };
+  else if (pdfUrl && id && pdfUrl !== shown?.url) shownPdfRef.current = { id, url: pdfUrl, at: Date.now() };
 
   const pubCategory = displayPub.category as Category | undefined;
   const pubType: "book" | "article" =
@@ -545,7 +578,7 @@ export default function Publication() {
         <Breadcrumb
           items={[
             { label: "Bibliothèque", to: "/bibliotheque" },
-            { label: categoryLabel, to: `/bibliotheque?category=${categoryRoute}` },
+            { label: categoryLabel, to: `/bibliotheque?categorie=${categoryRoute}` },
             { label: displayPub.title },
           ]}
         />
@@ -725,7 +758,11 @@ export default function Publication() {
 
             {/* Vérification en cours (fiche confirmée par le serveur, droit de lecture) */}
             {!pdfUrl && !readingDenied && isOnline && (!publicationFresh || readingUrlQuery.isFetching) && (
-              <div className="mt-8 rounded-xl border border-border bg-card p-6 flex items-center justify-center gap-2 text-sm text-muted-foreground" id="document-viewer">
+              <div
+                className="mt-8 rounded-xl border border-border bg-card p-6 flex items-center justify-center gap-2 text-sm text-muted-foreground"
+                id="document-viewer"
+                style={savedViewerHeight ? { minHeight: savedViewerHeight } : undefined}
+              >
                 <Loader2 className="h-4 w-4 animate-spin" /> Préparation du document…
               </div>
             )}
@@ -747,7 +784,7 @@ export default function Publication() {
 
             {/* PDF Viewer + Annotations */}
             {pdfUrl && (
-              <div className="mt-8" id="document-viewer">
+              <div className="mt-8" id="document-viewer" ref={measureViewer}>
                 <h2 className="font-serif text-xl font-semibold text-foreground mb-4">{t("pub.document")}</h2>
                 <div className="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-4">
                   {/* min-w-0 : une page zoomée défile dans le lecteur au lieu d'élargir la colonne. */}
@@ -757,6 +794,7 @@ export default function Publication() {
                       title={displayPub.title}
                       initialPage={resumePage}
                       onPageChange={handlePageChange}
+                      onSourceError={handleSourceError}
                     />
                     <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
                       <Lock className="h-3 w-3" />
@@ -788,7 +826,7 @@ export default function Publication() {
                 </Link>
               )}
               <Link
-                to={`/bibliotheque?category=${displayPub.category}`}
+                to={`/bibliotheque?categorie=${displayPub.category}`}
                 className="px-3 py-1.5 rounded-full bg-muted text-foreground hover:bg-muted/70 transition-colors"
               >
                 Plus de {categoryLabel.toLowerCase()}

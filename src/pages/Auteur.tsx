@@ -39,7 +39,7 @@ export default function Auteur() {
         image={seoPage?.image}
         keywords={[authorName, "auteur", "publications", "KMG Bibliothèque"]}
         jsonLd={seoPage?.jsonLd}
-        noindex={!isLoading && !seoPage}
+        noindex={(!isLoading && !seoPage) || !!seoPage?.noindex}
       />
       <div className="container py-8 md:py-12">
         <Breadcrumb

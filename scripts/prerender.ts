@@ -24,6 +24,7 @@ import {
   type SeoAuthorProfile,
   type SeoPublication,
 } from "../src/seo/pageSeo";
+import { STATIC_PAGES, staticPageSeo } from "../src/seo/staticPages";
 
 // Garde-fou : ne jamais dépasser les limites de fichiers de la plateforme.
 const MAX_PRERENDER_PAGES = Number(process.env.MAX_PRERENDER_PAGES || 5000);
@@ -89,6 +90,14 @@ async function fetchAuthorProfiles(): Promise<SeoAuthorProfile[]> {
     if (count >= MAX_PRERENDER_PAGES) break;
     const page = publicationSeo(p);
     writePage(page.path, renderSeoHtml(template, page));
+    count++;
+  }
+
+  // Pages fixes (secours si le rendu à la demande des Functions échoue). L'accueil n'est pas écrit :
+  // dist/index.html doit rester le gabarit de l'application.
+  for (const path of Object.keys(STATIC_PAGES)) {
+    if (path === "/") continue;
+    writePage(path, renderSeoHtml(template, staticPageSeo(path, pubs)!));
     count++;
   }
 

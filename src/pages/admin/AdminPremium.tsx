@@ -462,9 +462,21 @@ function PlanDialog({ plan, onClose }: { plan: Partial<SubscriptionPlan>; onClos
 }
 
 // ─── Livres réservés aux abonnés ────────────────────────────────────────────────────────
+// Filtre par type : « Livres » par défaut, pour ne pas réserver un mémoire ou un article par erreur
+// (le 16/11/2026, 7 mémoires et 2 articles avaient été réservés en les prenant pour des livres).
+const TYPE_FILTERS: { value: string; label: string }[] = [
+  { value: "livre", label: "Livres" },
+  { value: "memoire", label: "Mémoires" },
+  { value: "article", label: "Articles" },
+  { value: "tfc", label: "TFC" },
+  { value: "all", label: "Tous" },
+];
+const TYPE_LABEL: Record<string, string> = { livre: "Livre", memoire: "Mémoire", article: "Article", tfc: "TFC" };
+
 function BooksTab() {
   const setAccess = useSetPublicationAccess();
   const [q, setQ] = useState("");
+  const [type, setType] = useState("livre");
   const [busyId, setBusyId] = useState<string | null>(null);
   const { data: pubs = [], isLoading, error: loadError, refetch } = useQuery({
     queryKey: ["admin-premium-publications"],
@@ -477,7 +489,10 @@ function BooksTab() {
       return data;
     },
   });
-  const filtered = pubs.filter((p) => !q.trim() || `${p.title} ${p.author}`.toLowerCase().includes(q.trim().toLowerCase()));
+  const filtered = pubs.filter((p) =>
+    (type === "all" || p.category === type) &&
+    (!q.trim() || `${p.title} ${p.author}`.toLowerCase().includes(q.trim().toLowerCase())));
+  const countFor = (t: string) => (t === "all" ? pubs.length : pubs.filter((p) => p.category === t).length);
   const premiumCount = pubs.filter((p) => p.access_level === "premium").length;
 
   const toggle = async (id: string, premium: boolean) => {
@@ -501,6 +516,25 @@ function BooksTab() {
           par le serveur aux abonnés. « Rendre gratuit » annule l'opération.
         </p>
       </div>
+      <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Type de document">
+        {TYPE_FILTERS.filter((f) => f.value === "all" || f.value === "livre" || countFor(f.value) > 0).map((f) => (
+          <button
+            key={f.value}
+            type="button"
+            role="radio"
+            aria-checked={type === f.value}
+            onClick={() => setType(f.value)}
+            className={`rounded-full border px-3 py-1 text-sm transition ${type === f.value ? "border-amber-500 bg-amber-500 text-white" : "border-border bg-card hover:border-amber-500/60"}`}
+          >
+            {f.label} <span className="opacity-70">({countFor(f.value)})</span>
+          </button>
+        ))}
+      </div>
+      {type !== "livre" && (
+        <p className="text-xs rounded-md border border-amber-500/40 bg-amber-500/5 p-2">
+          Attention : vous affichez {type === "all" ? "tous les types de documents" : `les ${TYPE_FILTERS.find((f) => f.value === type)?.label.toLowerCase()}`}, pas seulement les livres.
+        </p>
+      )}
       <div className="relative max-w-md">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input className="pl-9" placeholder="Rechercher une publication…" value={q} onChange={(e) => setQ(e.target.value)} />
@@ -513,14 +547,20 @@ function BooksTab() {
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-2">
+          {filtered.length === 0 && <p className="text-sm text-muted-foreground">Aucun document de ce type.</p>}
           {filtered.map((p) => {
             const premium = p.access_level === "premium";
             return (
               <div key={p.id} className={`min-w-0 rounded-lg border p-3 flex flex-wrap sm:flex-nowrap items-center gap-3 ${premium ? "border-amber-500/50 bg-amber-500/5" : "border-border bg-card"}`}>
                 {premium ? <Lock className="h-4 w-4 text-amber-600 shrink-0" /> : <Unlock className="h-4 w-4 text-muted-foreground shrink-0" />}
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium truncate">{p.title}</div>
-                  <div className="text-xs text-muted-foreground truncate">{p.author} · {p.category}{!p.is_published ? " · non publiée" : ""}</div>
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Badge variant={p.category === "livre" ? "secondary" : "outline"} className={`shrink-0 ${p.category === "livre" ? "" : "border-sky-500/60 text-sky-700 dark:text-sky-400"}`}>
+                      {TYPE_LABEL[p.category] ?? p.category}
+                    </Badge>
+                    <div className="font-medium truncate">{p.title}</div>
+                  </div>
+                  <div className="text-xs text-muted-foreground truncate">{p.author}{!p.is_published ? " · non publiée" : ""}</div>
                 </div>
                 <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
                   <span className={`text-xs font-medium ${premium ? "text-amber-700 dark:text-amber-400" : "text-muted-foreground"}`}>
