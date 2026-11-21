@@ -3,15 +3,6 @@ import { Link, useLocation } from "react-router-dom";
 import { Capacitor } from "@capacitor/core";
 import { ShieldCheck, Smartphone } from "lucide-react";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -21,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { isSearchBot } from "@/lib/is-bot";
 
 const PLAY_STORE_URL =
   "https://play.google.com/store/apps/details?id=app.lovable.d11bc5d4512e4b5f9f8a79e7ee7ad869";
@@ -80,11 +72,21 @@ function useSplashGone(): boolean {
 }
 
 /**
- * 1re visite : message « respect de la vie privée » (à accepter une fois par appareil).
+ * 1re visite : bandeau « respect de la vie privée » en bas de l'écran (à accepter une fois par
+ * appareil). Ce n'est plus une fenêtre par-dessus la page : le contenu reste visible et lisible
+ * (meilleur sur téléphone, et Google ne prend plus la page pour une page vide).
+ * Aucun message n'est montré aux robots des moteurs de recherche (src/lib/is-bot.ts).
  * Ensuite, sur un navigateur Android : invitation à installer l'appli depuis Google Play
  * (« Plus tard » = de nouveau dans 7 jours ; « Télécharger » = plus jamais).
  */
 export function WelcomeDialogs() {
+  // Calculé une seule fois : la signature du navigateur ne change pas pendant la visite.
+  const [bot] = useState(() => isSearchBot());
+  if (bot) return null;
+  return <WelcomeMessages />;
+}
+
+function WelcomeMessages() {
   const { t } = useLanguage();
   const { pathname } = useLocation();
   const splashGone = useSplashGone();
@@ -119,34 +121,35 @@ export function WelcomeDialogs() {
 
   return (
     <>
-      <AlertDialog open={privacyOpen}>
-        <AlertDialogContent className="max-h-[90dvh] overflow-y-auto w-[calc(100%-2rem)] max-w-md rounded-2xl">
-          <AlertDialogHeader className="items-center text-center sm:text-center">
-            <img src="/kmg-logo-256.webp" alt="" width={64} height={64} className="h-16 w-16 rounded-2xl shadow-md" />
-            <AlertDialogTitle className="font-serif text-xl leading-snug pt-2">
-              {t("welcome.privacyTitle")}
-            </AlertDialogTitle>
-            <AlertDialogDescription asChild>
-              <div className="space-y-3 text-left text-sm text-muted-foreground pt-1">
-                <p>{t("welcome.privacyIntro")}</p>
-                <p>{t("welcome.privacyAccount")}</p>
-                <p className="flex items-start gap-2 font-medium text-foreground">
+      {privacyOpen && (
+        <section
+          role="region"
+          aria-label={t("welcome.privacyTitle")}
+          className="fixed inset-x-0 bottom-0 z-50 p-3 sm:p-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] animate-in slide-in-from-bottom-4 fade-in duration-300"
+        >
+          <div className="mx-auto max-w-3xl max-h-[40dvh] overflow-y-auto rounded-2xl border border-border bg-card/95 backdrop-blur shadow-2xl p-3.5 sm:p-5">
+            <div className="flex items-start gap-3">
+              <img src="/kmg-logo-256.webp" alt="" width={40} height={40} className="h-10 w-10 shrink-0 rounded-xl shadow-sm" />
+              <div className="min-w-0 space-y-1.5">
+                <p className="font-serif text-base font-semibold leading-snug text-foreground">{t("welcome.privacyTitle")}</p>
+                <p className="text-sm text-muted-foreground leading-relaxed">{t("welcome.privacyIntro")}</p>
+                <p className="flex items-start gap-2 text-sm font-medium text-foreground">
                   <ShieldCheck className="h-4 w-4 mt-0.5 shrink-0 text-emerald-600" />
                   <span>{t("welcome.privacyNoAds")}</span>
                 </p>
               </div>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="flex-col gap-2 sm:flex-col sm:space-x-0">
-            <AlertDialogAction onClick={acceptPrivacy} className="w-full h-11 font-semibold uppercase tracking-wide">
-              {t("welcome.accept")}
-            </AlertDialogAction>
-            <Button variant="outline" asChild className="w-full h-11">
-              <Link to="/confidentialite">{t("welcome.learnMore")}</Link>
-            </Button>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+            </div>
+            <div className="mt-3 grid grid-cols-2 gap-2 sm:flex sm:justify-end">
+              <Button variant="outline" asChild className="h-10 px-2 sm:w-auto sm:px-4">
+                <Link to="/confidentialite">{t("welcome.learnMore")}</Link>
+              </Button>
+              <Button onClick={acceptPrivacy} className="h-10 px-2 font-semibold sm:w-auto sm:px-4">
+                {t("welcome.accept")}
+              </Button>
+            </div>
+          </div>
+        </section>
+      )}
 
       <Dialog open={appInviteOpen} onOpenChange={(open) => { if (!open) closeAppInvite("later"); }}>
         <DialogContent className="w-[calc(100%-2rem)] max-w-sm rounded-2xl">
