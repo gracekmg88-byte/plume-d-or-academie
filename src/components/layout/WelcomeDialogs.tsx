@@ -127,7 +127,7 @@ function WelcomeMessages() {
           aria-label={t("welcome.privacyTitle")}
           className="fixed inset-x-0 bottom-0 z-50 p-3 sm:p-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] animate-in slide-in-from-bottom-4 fade-in duration-300"
         >
-          <div className="mx-auto max-w-3xl max-h-[40dvh] overflow-y-auto rounded-2xl border border-border bg-card/95 backdrop-blur shadow-2xl p-3.5 sm:p-5">
+          <div className="mx-auto max-w-3xl max-h-[60dvh] overflow-y-auto rounded-2xl border border-border bg-card/95 backdrop-blur shadow-2xl p-3.5 sm:p-5">
             <div className="flex items-start gap-3">
               <img src="/kmg-logo-256.webp" alt="" width={40} height={40} className="h-10 w-10 shrink-0 rounded-xl shadow-sm" />
               <div className="min-w-0 space-y-1.5">
