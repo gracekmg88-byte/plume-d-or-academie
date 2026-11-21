@@ -138,17 +138,18 @@ export default function Confidentialite() {
         path="/confidentialite"
       />
 
-      <section className="bg-gradient-to-b from-secondary/90 to-background py-12 md:py-16">
+      {/* Bandeau bleu nuit plein + texte clair, comme Contact / À propos (l'ancien dégradé vers le blanc rendait le texte foncé illisible). */}
+      <section className="bg-gradient-to-r from-secondary via-secondary/95 to-secondary/90 py-12 md:py-16">
         <div className="container max-w-4xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/15 text-primary text-sm font-medium mb-4">
             <Shield className="h-4 w-4" />
             Confiance & confidentialité
           </div>
-          <h1 className="font-serif text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4">
+          <h1 className="font-serif text-3xl md:text-4xl lg:text-5xl font-bold text-secondary-foreground mb-4">
             Confidentialité & sécurité
           </h1>
-          <p className="text-muted-foreground text-base md:text-lg leading-relaxed">
-            Cette page est maintenue par <strong>KMG Multi Services</strong>, éditeur de Plume d'Or
+          <p className="text-secondary-foreground/85 text-base md:text-lg leading-relaxed">
+            Cette page est maintenue par <strong className="text-secondary-foreground">KMG Multi Services</strong>, éditeur de Plume d'Or
             KMG, pour répondre aux questions courantes sur la sécurité, la confidentialité et la
             gestion des données dans la bibliothèque. Elle décrit les pratiques actuelles de
             l'application et ne constitue pas une certification indépendante.
