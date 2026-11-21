@@ -50,8 +50,9 @@ export function Header() {
     });
   };
 
+  // pt = marge de la barre d'état iPhone (0 sur le site et Android, voir src/main.tsx).
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+    <header className="sticky top-0 z-50 w-full border-b border-border/50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 pt-[env(safe-area-inset-top)]">
       <div className="container flex h-16 items-center justify-between gap-2 md:h-20">
         {/* Logo */}
         <Link to="/" onClick={(event) => handleInternalNavigation("/", event)} className="flex items-center gap-2 group min-w-0 flex-shrink">

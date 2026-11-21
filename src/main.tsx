@@ -6,6 +6,17 @@ import App from "./App.tsx";
 import "./index.css";
 import { initNativeAuth } from "./lib/native-auth";
 import { hideAppSplashWhenReady } from "./lib/app-splash";
+import { Capacitor } from "@capacitor/core";
+
+// Appli iPhone : la vue web passe sous la barre d'état (heure, batterie). « viewport-fit=cover »
+// active les marges de sécurité env(safe-area-inset-*) utilisées par l'en-tête et les bandeaux.
+// Uniquement dans l'appli iOS : le site et l'appli Android ne changent pas (marges à 0).
+if (Capacitor.getPlatform() === "ios") {
+  const vp = document.querySelector('meta[name="viewport"]');
+  if (vp && !/viewport-fit/.test(vp.getAttribute("content") || "")) {
+    vp.setAttribute("content", `${vp.getAttribute("content")}, viewport-fit=cover`);
+  }
+}
 
 const CACHE_RESET_RELOAD_FLAG = "plume-cache-reset-reload-done";
 const APP_RUNTIME_VERSION = "2026-05-28-02";

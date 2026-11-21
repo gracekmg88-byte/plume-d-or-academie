@@ -981,7 +981,7 @@ export function ProtectedPdfViewer({ fileUrl, title, initialPage, onPageChange, 
       ref={containerRef}
       className={cn(
         "rounded-xl overflow-hidden border border-border bg-muted relative select-none min-w-0 max-w-full",
-        isFullscreen && "fixed inset-0 z-[100] rounded-none border-0",
+        isFullscreen && "fixed inset-0 z-[100] rounded-none border-0 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]",
       )}
       style={{
         WebkitUserSelect: "none",
