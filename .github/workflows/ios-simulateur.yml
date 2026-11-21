@@ -1,0 +1,101 @@
+# Version iPhone : construction sur un Mac de GitHub, installation dans le simulateur iPhone et
+# captures d'écran (fichiers téléchargeables en bas de la page de l'exécution, « Artifacts »).
+# Ne publie rien : aucune signature Apple, aucun envoi à l'App Store, le site n'est pas touché.
+name: iOS – simulateur
+
+on:
+  push:
+    branches: [app-store]
+  workflow_dispatch:
+
+concurrency:
+  group: ios-simulateur-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  simulateur:
+    runs-on: macos-15
+    timeout-minutes: 60
+    env:
+      # Valeurs PUBLIQUES (adresse du projet et clé publishable, déjà visibles dans le site en ligne).
+      VITE_SUPABASE_URL: https://bwepnibdlmuwtcacyyec.supabase.co
+      VITE_SUPABASE_PROJECT_ID: bwepnibdlmuwtcacyyec
+      VITE_SITE_URL: https://www.kmgbibliotheque.com
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Clé publishable Supabase (publique, lue depuis le site en ligne)
+        run: |
+          # Évite de recopier la clé dans le dépôt : on la reprend dans le JavaScript du site en ligne.
+          JS=$(curl -fsSL https://www.kmgbibliotheque.com/ | grep -o '/assets/index-[^"]*\.js' | head -1)
+          KEY=$(curl -fsSL "https://www.kmgbibliotheque.com$JS" | grep -o 'sb_publishable_[A-Za-z0-9_-]*' | head -1)
+          if [ -z "$KEY" ]; then KEY=$(curl -fsSL "https://www.kmgbibliotheque.com$JS" | grep -o 'eyJ[A-Za-z0-9_-]*\.eyJ[A-Za-z0-9_-]*\.[A-Za-z0-9_-]*' | head -1); fi
+          test -n "$KEY" || { echo "Clé publishable introuvable"; exit 1; }
+          echo "VITE_SUPABASE_PUBLISHABLE_KEY=$KEY" >> "$GITHUB_ENV"
+
+      - name: Dépendances
+        run: npm ci --no-audit --no-fund
+
+      - name: Site (contenu de l'appli)
+        run: npx vite build
+
+      - name: Fichier Firebase de test (factice, suffisant pour le simulateur)
+        run: |
+          # Le vrai GoogleService-Info.plist reste hors GitHub ; il ne sert qu'aux notifications,
+          # indisponibles dans le simulateur. Il sera fourni par un secret pour la version TestFlight.
+          cat > ios/App/App/GoogleService-Info.plist <<'EOF'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0"><dict>
+            <key>API_KEY</key><string>AIzaSyDUMMY-simulateur-0000000000000000</string>
+            <key>GCM_SENDER_ID</key><string>000000000000</string>
+            <key>PLIST_VERSION</key><string>1</string>
+            <key>BUNDLE_ID</key><string>com.kmgbibliotheque.app</string>
+            <key>PROJECT_ID</key><string>simulateur-kmg</string>
+            <key>STORAGE_BUCKET</key><string>simulateur-kmg.appspot.com</string>
+            <key>IS_ADS_ENABLED</key><false/>
+            <key>IS_ANALYTICS_ENABLED</key><false/>
+            <key>IS_APPINVITE_ENABLED</key><true/>
+            <key>IS_GCM_ENABLED</key><true/>
+            <key>IS_SIGNIN_ENABLED</key><true/>
+            <key>GOOGLE_APP_ID</key><string>1:000000000000:ios:0000000000000000000000</string>
+          </dict></plist>
+          EOF
+
+      - name: Synchronisation Capacitor iOS
+        run: npx cap sync ios
+
+      - name: Construction pour le simulateur (sans signature)
+        run: |
+          set -o pipefail
+          xcodebuild -version
+          xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Debug \
+            -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath build CODE_SIGNING_ALLOWED=NO build | tail -40
+
+      - name: Lancement dans le simulateur + captures
+        run: |
+          mkdir -p captures
+          UDID=$(xcrun simctl list devices available -j | python3 -c "import json,sys; d=json.load(sys.stdin)['devices']; c=[x for k,v in d.items() if 'iOS' in k for x in v if x['name'].startswith('iPhone')]; c.sort(key=lambda x: x['name']); print(c[-1]['udid'])")
+          xcrun simctl list devices available | grep "$UDID"
+          xcrun simctl boot "$UDID"
+          xcrun simctl bootstatus "$UDID" -b
+          xcrun simctl install "$UDID" build/Build/Products/Debug-iphonesimulator/App.app
+          xcrun simctl launch "$UDID" com.kmgbibliotheque.app
+          sleep 20; xcrun simctl io "$UDID" screenshot captures/1-demarrage-20s.png
+          sleep 25; xcrun simctl io "$UDID" screenshot captures/2-accueil-45s.png
+          sleep 30; xcrun simctl io "$UDID" screenshot captures/3-accueil-75s.png
+          xcrun simctl spawn "$UDID" log show --last 3m --predicate 'process == "App"' --style compact > captures/journal-app.txt 2>&1 || true
+          tail -60 captures/journal-app.txt || true
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: captures-iphone
+          path: captures/
+          retention-days: 30
